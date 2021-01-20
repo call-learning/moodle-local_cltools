@@ -15,39 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renderer for CL Tools
+ * Delete Entity template page
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+require_once(__DIR__ . '/../../../../../config.php');
+global $CFG;
+require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+// Only run through behat or if we are in debug mode.
+debugging() || defined('BEHAT_SITE_RUNNING') || die();
 
-namespace local_cltools\output;
+use local_cltools\local\crud\helper\base as crud_helper;
+use local_cltools\local\crud\helper\crud_delete;
 
-defined('MOODLE_INTERNAL') || die();
+global $CFG, $OUTPUT, $PAGE;
+require_login();;
 
-use plugin_renderer_base;
-use local_cltools\local\crud\entity_list_renderable;
+$crudmgmt = crud_helper::create(
+    '\\local_cltools\\local\\simple\\entity',
+    crud_delete::ACTION
+);
 
-/**
- * Renderer for CompetVetEval
- *
- * @package    local_resourcelibrary
- * @copyright  2020 CALL Learning 2²020 - Laurent David laurent@call-learning.fr
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class renderer extends plugin_renderer_base {
 
-    // This is used as a default renderer for the crud_helper.
+$crudmgmt->setup_page($PAGE);
 
-    /**
-     * @param entity_list_renderable $entitylist
-     */
-    public function render_entity_list(entity_list_renderable $entitylist) {
-        ob_start();
-        $entitylist->entitylist->out($entitylist->perpage, true);
-        $o = ob_get_contents();
-        ob_end_clean();
-        return $o;
-    }
-}
+$out = $crudmgmt->action_process();
+
+echo $OUTPUT->header();
+echo $out;
+echo $OUTPUT->footer();

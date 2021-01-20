@@ -15,39 +15,47 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renderer for CL Tools
+ * Persistent navigation utils class
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\output;
+namespace local_cltools\local\crud\navigation;
 
 defined('MOODLE_INTERNAL') || die();
 
-use plugin_renderer_base;
-use local_cltools\local\crud\entity_list_renderable;
-
 /**
- * Renderer for CompetVetEval
+ * Interface persistent_navigation
  *
- * @package    local_resourcelibrary
- * @copyright  2020 CALL Learning 2²020 - Laurent David laurent@call-learning.fr
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_cltools\local\crud\navigation
  */
-class renderer extends plugin_renderer_base {
-
-    // This is used as a default renderer for the crud_helper.
+interface  persistent_navigation {
+    /***
+     * Get URL for a list of entities
+     * @return mixed
+     */
+    public function get_list_url();
 
     /**
-     * @param entity_list_renderable $entitylist
+     * Get the URL for adding a new entity
+     * @return mixed
      */
-    public function render_entity_list(entity_list_renderable $entitylist) {
-        ob_start();
-        $entitylist->entitylist->out($entitylist->perpage, true);
-        $o = ob_get_contents();
-        ob_end_clean();
-        return $o;
-    }
+    public function get_add_url();
+    /**
+     * Get the URL for deleting an entity
+     * @return mixed
+     */
+    public function get_delete_url();
+    /**
+     * Get the URL for editing an entity
+     * @return mixed
+     */
+    public function get_edit_url();
+    /**
+     * Get the URL for viewing an entity
+     * @return mixed
+     */
+    public function get_view_url();
 }
