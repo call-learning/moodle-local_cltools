@@ -50,6 +50,27 @@ class crud_delete extends base {
     const ACTION_DONE = 'deleted';
 
     /**
+     * crud_helper constructor.
+     *
+     * @param string $entityclassname
+     * @param string $action
+     * @param \core_renderer $renderer
+     * @throws \ReflectionException
+     */
+    public function __construct(string $entityclassname,
+        $entityprefix = null,
+        $formclassname = null,
+        $listclassname = null,
+        $exporterclassname = null,
+        $persistentnavigation = null,
+        $pagesrooturl = null
+    ) {
+        parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
+            $exporterclassname, $persistentnavigation, $pagesrooturl);
+        $this->actionurl = $this->persistentnavigation->get_delete_url();
+    }
+
+    /**
      * Process the action
      *
      * @param null $postprocesscb
@@ -70,22 +91,19 @@ class crud_delete extends base {
                     array('confirm' => true, 'id' => $id, 'sesskey' => sesskey()));
             $cancelurl = new moodle_url($this->persistentnavigation->get_list_url());
             $returnedtext .= $this->renderer->confirm(
-                get_string('delete',
-                    'local_cltools'),
+                persistent_utils::get_string_for_entity($this->refpersistentclass, 'delete'),
                 $confirmurl,
                 $cancelurl
             );
         } else {
             $persistentprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
-            $entitydisplayname = get_string($persistentprefix, 'local_cltools');
+            $entitydisplayname = persistent_utils::get_string_for_entity($this->refpersistentclass, $persistentprefix);
             require_sesskey();
             $entity = $this->refpersistentclass->newInstance($id);
             $entity->delete();
             $this->trigger_event($entity);
             $returnedtext .= $this->renderer->notification(
-                get_string('entity:deleted',
-                    'local_cltools',
-                    $entitydisplayname),
+                persistent_utils::get_string_for_entity($this->refpersistentclass, 'entity:deleted', $entitydisplayname),
                 'notifysuccess');
             $returnedtext .= $this->renderer->single_button($this->persistentnavigation->get_list_url(), get_string('continue'));
         }

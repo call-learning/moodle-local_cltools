@@ -47,6 +47,26 @@ class crud_edit extends base {
     const ACTION_DONE = 'edited';
 
     /**
+     * crud_helper constructor.
+     *
+     * @param string $entityclassname
+     * @param string $action
+     * @param \core_renderer $renderer
+     * @throws \ReflectionException
+     */
+    public function __construct(string $entityclassname,
+        $entityprefix = null,
+        $formclassname = null,
+        $listclassname = null,
+        $exporterclassname = null,
+        $persistentnavigation = null,
+        $pagesrooturl = null
+    ) {
+        parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
+            $exporterclassname, $persistentnavigation, $pagesrooturl);
+        $this->actionurl = $this->persistentnavigation->get_edit_url();
+    }
+    /**
      * Process the action
      *
      * @param null $postprocesscb

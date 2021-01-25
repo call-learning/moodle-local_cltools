@@ -82,19 +82,20 @@ class persistent_utils {
      *
      * @param $persistentclass
      * @param $stringname
+     * @params $args
      * @return \lang_string|string
      * @throws \ReflectionException
      * @throws \coding_exception
      */
-    public static function get_string_for_entity($persistentclass, $stringname) {
+    public static function get_string_for_entity($persistentclass, $stringname, $args = null) {
         $entityprefix = persistent_utils::get_persistent_prefix($persistentclass);
         $component = persistent_utils::get_component($persistentclass);
         $stringmanager = get_string_manager();
         $label = '';
         if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
-            $label = get_string($entityprefix . ':' . $stringname, $component);
+            $label = get_string($entityprefix . ':' . $stringname, $component, $args);
         } else {
-            $label = get_string($stringname, $component);
+            $label = get_string($stringname, $component, $args);
         }
         return $label;
     }

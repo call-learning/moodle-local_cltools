@@ -57,19 +57,24 @@ class behat_local_cltools extends behat_base {
     /**
      * Create the simple entity / other entities tables for testing
      *
-     * @BeforeSuite
+     * @BeforeFeature
      */
-    public static function setup_simple_entity_table(SuiteEvent $event) {
-        \local_cltools\local\simple\entity::create_table();
+    public static function setup_simple_entity_table(\Behat\Behat\Hook\Scope\BeforeFeatureScope $scope) {
+        global $CFG;
+        var_dump($scope->getFeature());
+        //require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
+        //\local_cltools\local\simple\entity::create_table();
     }
 
     /**
      * Delete the simple entity / other entities tables for testing
      *
-     * @AfterSuite
+     * @AfterFeature
      */
-    public static function drop_simple_entity_table(SuiteEvent $event) {
-        \local_cltools\local\simple\entity::delete_table();
+    public static function drop_simple_entity_table(\Behat\Behat\Hook\Scope\AfterFeatureScope $scope) {
+        global $CFG;
+        //require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
+        //\local_cltools\local\simple\entity::delete_table();
     }
 
 }

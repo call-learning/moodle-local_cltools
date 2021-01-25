@@ -55,7 +55,7 @@ class entity extends \core\persistent {
                 'type' => PARAM_TEXT,
             ),
             'description' => array(
-                'type' => PARAM_TEXT,
+                'type' => PARAM_RAW,
                 'default' => ''
             ),
             'descriptionformat' => array(

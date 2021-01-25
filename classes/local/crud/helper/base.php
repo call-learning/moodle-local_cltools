@@ -133,12 +133,12 @@ abstract class base {
     /**
      * Get related form
      *
-     * @param array $formparameters
+     * @param $formparameters
      * @return persistent_form|object
      * @throws \ReflectionException*
      */
-    public function instanciate_related_form(array ...$formparameters) {
-        return $this->refpersistentformclass->newInstanceArgs(...$formparameters);
+    public function instanciate_related_form(...$formparameters) {
+        return $this->refpersistentformclass->newInstanceArgs($formparameters);
     }
 
     /**
@@ -188,7 +188,9 @@ abstract class base {
      */
     protected function get_action_event_description() {
         $entityname = persistent_utils::get_persistent_prefix($this->refpersistentclass);
-        return ucfirst(get_string('entity:' . static::ACTION_DONE, 'local_cltools', $entityname));
+
+        return ucfirst(persistent_utils::get_string_for_entity($this->refpersistentclass,
+            'entity:' . static::ACTION_DONE, $entityname));
     }
 
     /**
@@ -219,7 +221,8 @@ abstract class base {
      */
     protected function setup_page_navigation($page) {
         $stringprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
-        $entities = get_string($stringprefix . ':plural', 'local_cltools');
+
+        $entities = persistent_utils::get_string_for_entity( $this->refpersistentclass, $stringprefix . ':plural');
         $header = $this->get_page_header();;
         $listpageurl = $this->persistentnavigation->get_list_url();
         $page->navbar->add(
@@ -238,7 +241,7 @@ abstract class base {
     protected function get_page_header() {
         $stringprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
         $action = get_string(static::ACTION, 'local_cltools');
-        return $action . ' ' . get_string($stringprefix, 'local_cltools');
+        return $action . ' ' . persistent_utils::get_string_for_entity( $this->refpersistentclass,$stringprefix.':entity');
     }
 
     /**

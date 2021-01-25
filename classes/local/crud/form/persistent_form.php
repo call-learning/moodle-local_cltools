@@ -24,7 +24,6 @@
 
 namespace local_cltools\local\crud\form;
 
-use core\form\persistent;
 use local_cltools\local\crud\persistent_utils;
 use stdClass;
 
@@ -52,7 +51,7 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright  2015 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class persistent_form extends persistent {
+abstract class persistent_form extends \core\form\persistent {
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
 
@@ -104,6 +103,7 @@ abstract class persistent_form extends persistent {
      *
      * @param stdClass $data The data to filter the fields out of.
      * @return object.
+     * @throws \coding_exception
      */
     protected function filter_data_for_persistent($data) {
         $filtereddata = parent::filter_data_for_persistent($data);
@@ -226,6 +226,7 @@ abstract class persistent_form extends persistent {
                 }
             } else {
                 switch ($forminfo->type) {
+                    case 'entities_sortable_list':
                     case 'editor':
                         $forminfo->rawtype = PARAM_RAW;
                         break;
@@ -233,9 +234,6 @@ abstract class persistent_form extends persistent {
                     case 'select_choice':
                     case 'int':
                         $forminfo->rawtype = PARAM_INT;
-                        break;
-                    case 'entities_sortable_list':
-                        $forminfo->rawtype = PARAM_RAW;
                         break;
                     case 'text':
                         $forminfo->rawtype = PARAM_TEXT;
@@ -412,7 +410,8 @@ abstract class persistent_form extends persistent {
         $context = \context_system::instance();
         $component = persistent_utils::get_component(static::$persistentclass);
         $filearearoot = persistent_utils::get_persistent_prefix(static::$persistentclass);
-        $itemdata = $this->get_persistent()->to_record();
+        $item = $this->get_persistent();
+        $itemdata = $item->to_record();
         $itemid = $itemdata ? $itemdata->id : 0;
 
         foreach ($allfilefields as $field) {
@@ -430,7 +429,7 @@ abstract class persistent_form extends persistent {
                 $itemdata->{$filemanagerformelt} = $draftitemid;
             }
             if ($field->type == 'editor') {
-                $itemid = $this->get_persistent()->get('id');
+                $itemid = $item->get('id');
                 $options = $this->editor_get_option($allfilefields[$field->name]);
                 file_prepare_standard_editor($itemdata,
                     $field->name,
