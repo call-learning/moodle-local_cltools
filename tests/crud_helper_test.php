@@ -42,7 +42,7 @@ class local_cltools_crud_helper_testcase extends \advanced_testcase {
      */
     public function setUp() {
         $this->resetAfterTest();
-        \local_cltools\local\simple\entity::create_table();
+        \local_cltools\local\simple\entity::create_table(true);
     }
 
     public function tearDown() {

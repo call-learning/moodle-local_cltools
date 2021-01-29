@@ -21,7 +21,7 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(__DIR__ . '/../../../../../config.php');
+require_once(__DIR__ . '/../../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
 // Only run through behat or if we are in debug mode.

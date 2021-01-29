@@ -231,7 +231,7 @@ abstract class persistent_list extends table_sql {
      * @throws \dml_exception
      */
     protected function internal_col_files($entity, $entityfilearea, $entityfilecomponent, $altmessage = 'entity-image') {
-        $imagesurls = persistent_utils::get_files_images_urls(
+        $imagesurls = persistent_utils::get_files_urls(
             $entity->id,
             $entityfilearea,
             $entityfilecomponent);

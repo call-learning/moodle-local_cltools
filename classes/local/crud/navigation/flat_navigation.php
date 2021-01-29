@@ -50,29 +50,45 @@ class flat_navigation implements persistent_navigation {
      * @throws \ReflectionException
      */
     public function __construct($persistentclass, $rooturl = null) {
-        static $lastpersistentclass = null;
-        static $lastrooturl = null;
         $this->persistentclass = $persistentclass;
         if (!$rooturl) {
             global $CFG;
             // Deduce the path from the persistent class path.
             $rc = new \ReflectionClass($persistentclass);
             $filepath = dirname($rc->getFileName());
-            while ($filepath == $CFG->dirroot || empty($filepath)) {
-                if (file_exists($filepath . '/pages')) {
-                    $this->rooturl = $filepath . '/pages';
+            $foldername = basename($filepath);
+            if (strstr($filepath, $CFG->dirroot) === false) {
+                throw new \moodle_exception('pagesdirectoryoutofrootdir', 'local_cltools', '', $filepath);
+            }
+            $filepath = str_replace($CFG->dirroot, '', $filepath);
+            while ($filepath != '.' || empty($filepath)) {
+
+                if (file_exists("{$CFG->dirroot}{$filepath}/pages/")) {
+                    $rooturl = "{$filepath}/pages/$foldername";
+                    break;
+                }
+                if (file_exists("{$CFG->dirroot}{$filepath}/pages/$foldername" )) {
+                    $rooturl = "{$filepath}/pages/$foldername";
                     break;
                 }
                 $filepath = dirname($filepath);
-                if (empty($this->rooturl)) {
-                    new \moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $filepath);
-                }
             }
-            $lastrooturl = $this->rooturl;
-            $lastpersistentclass = $persistentclass;
-        } else {
-            $this->rooturl = $rooturl;
+            if (empty($rooturl)) {
+                throw new \moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $filepath);
+            }
         }
+        $this->set_root_url($rooturl);
+    }
+
+    /**
+     * @param $rooturl
+     */
+    protected function set_root_url($rooturl) {
+        global $CFG;
+        if (!file_exists("{$CFG->dirroot}{$rooturl}")) {
+            throw new \moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $rooturl);
+        }
+        $this->rooturl = $rooturl;
     }
 
     /**
@@ -80,11 +96,7 @@ class flat_navigation implements persistent_navigation {
      * @throws \ReflectionException
      */
     protected function get_root_url() {
-        static $rooturl = null;
-        if (!$rooturl) {
-            $rooturl = $this->rooturl . '/' . persistent_utils::get_persistent_prefix($this->persistentclass);;
-        }
-        return $rooturl;
+        return $this->rooturl;
     }
 
     /**
@@ -93,7 +105,7 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_list_url() {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/list.php");
+        return new moodle_url("$rootdir/index.php");
     }
 
     /**
@@ -125,6 +137,6 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_view_url() {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php");
+        return new moodle_url("$rootdir/view.php");
     }
 }

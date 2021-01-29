@@ -38,7 +38,7 @@ class local_cltools_persistent_list_testcase extends \advanced_testcase {
      * Setup persistent table
      */
     public function setUp() {
-        \local_cltools\sample\simple\entity::create_table();
+        \local_cltools\sample\simple\entity::create_table(true);
         $this->resetAfterTest();
     }
 

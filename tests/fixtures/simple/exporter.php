@@ -52,8 +52,8 @@ class exporter extends persistent_exporter {
     protected function get_format_parameters_for_description() {
         return [
             'context' => \context_system::instance(),
-            'component' => persistent_utils::get_component($this->persistent),
-            'filearea' => 'rotation_description',
+            'component' => persistent_utils::get_component(get_class($this->persistent)),
+            'filearea' => 'description',
             'itemid' => empty($this->data->id) ? 0 : $this->data->id
         ];
     }

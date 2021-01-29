@@ -15,36 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Delete Entity template page
+ * List Entities templates
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(__DIR__ . '/../../../../../config.php');
+require_once(__DIR__ . '/../../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
 // Only run through behat or if we are in debug mode.
 debugging() || defined('BEHAT_SITE_RUNNING') || die();
 
 use local_cltools\local\crud\helper\base as crud_helper;
-use local_cltools\local\crud\helper\crud_delete;
+use local_cltools\local\crud\helper\crud_list;
 
 global $CFG, $OUTPUT, $PAGE;
 require_login();;
-
 // To make sure the table is created.
 \local_cltools\local\simple\entity::create_table();
 
 $crudmgmt = crud_helper::create(
     '\\local_cltools\\local\\simple\\entity',
-    crud_delete::ACTION
+    crud_list::ACTION
 );
-
 
 $crudmgmt->setup_page($PAGE);
 
-$out = $crudmgmt->action_process();
+$out  = $crudmgmt->action_process($PAGE);
 
 echo $OUTPUT->header();
 echo $out;

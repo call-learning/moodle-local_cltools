@@ -26,6 +26,7 @@ namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
 use local_cltools\local\crud\persistent_navigation;
+use local_cltools\local\crud\persistent_utils;
 use moodle_url;
 use single_button;
 
@@ -99,12 +100,13 @@ class crud_view extends base {
      */
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
-        $persistentprefix = $this->persistentnavigation->get_persistent_prefix($this->refpersistentclass);
+        $persistentprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
+        $persistentcomponent = persistent_utils::get_component($this->refpersistentclass);
         $id = required_param('id', PARAM_INT);
         $entity = $this->refpersistentclass->newInstance($id);
         $returnedtext .= $this->renderer->container_start();
         $returnedtext .= $this->renderer->render_from_template(
-            'local_cltools/' . $persistentprefix,
+            "$persistentcomponent/$persistentprefix",
             ($this->refpersistentexporterclass->newInstance($entity))->export($this->renderer)
         );
         $returnedtext .= $this->renderer->container_end();

@@ -24,6 +24,7 @@
 
 namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
+
 use renderer_base;
 
 /**
@@ -34,6 +35,56 @@ use renderer_base;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class persistent_exporter extends \core\external\persistent_exporter {
+
+    /**
+     * Persistent component
+     *
+     * @var null
+     */
+    protected $persistentcomponent = null;
+
+    /**
+     * Persistent context
+     *
+     * @var null
+     */
+    protected $persistentcontext = null;
+
+    /**
+     * @var null
+     */
+    protected $instanceid = null;
+
+    /**
+     * persistent_exporter constructor.
+     *
+     * @param \core\persistent $persistent
+     * @param array $related
+     * @throws \ReflectionException
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function __construct(\core\persistent $persistent, $related = array()) {
+        $this->persistentcomponent = persistent_utils::get_component(get_class($persistent));
+        $this->instanceid = (int) $persistent->get('id');
+        $this->persistentcontext = \context_system::instance();
+        if (method_exists($persistent, 'get_context')) {
+            $this->persistentcontext = $persistent->get_context();
+        }
+        $related = array_merge($related,
+            [
+                'context' => $this->persistentcontext,
+                'component' => $this->persistentcomponent,
+                'itemid' => (int) $persistent->get('id')
+            ]
+        );
+        parent::__construct($persistent, $related);
+    }
+
+    protected static function define_related() {
+        return array('context' => '\\context', 'component' => 'string?', 'itemid' => 'int?');
+    }
+
     /**
      * Get value for persistent fields
      *
@@ -46,15 +97,12 @@ class persistent_exporter extends \core\external\persistent_exporter {
         return $values;
     }
 
-    protected function export_file($filearea, $fileprefix=null, $filetypegroup=null) {
+    protected function export_file($filearea, $fileprefix = null, $filetypegroup = null) {
         // Retrieve the file from the Files API.
-        $contextid = \context_system::instance()->id;
-        $fs = get_file_storage();
-
-        $files = $fs->get_area_files($contextid, 'local_cltools', $filearea);
+        $files = persistent_utils::get_files($this->instanceid, $filearea, $this->persistentcomponent, $this->persistentcontext);
         $returnedfiled = null;
-        foreach($files as $file) {
-            $foundfile = $fileprefix && strpos($file->get_filename(), $fileprefix)!==FALSE;
+        foreach ($files as $file) {
+            $foundfile = $fileprefix && strpos($file->get_filename(), $fileprefix) !== false;
             $foundfile = $foundfile || ($filetypegroup &&
                     file_mimetype_in_typegroup($file->get_mimetype(), $filetypegroup));
             if ($foundfile) {
@@ -65,8 +113,10 @@ class persistent_exporter extends \core\external\persistent_exporter {
         if (!$returnedfiled) {
             return null;
         }
-        return \moodle_url::make_pluginfile_url($contextid,
-            'local_cltools', $filearea,
+        return \moodle_url::make_pluginfile_url(
+            $this->persistentcontext->id,
+            $this->persistentcomponent,
+            $filearea,
             $returnedfiled->get_itemid(),
             $returnedfiled->get_filepath(),
             $returnedfiled->get_filename()

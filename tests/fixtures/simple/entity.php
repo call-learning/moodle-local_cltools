@@ -86,10 +86,27 @@ class entity extends \core\persistent {
     /**
      * This is specific to the test environment. We create the table structure.
      */
-    public static function create_table() {
+
+    /**
+     * This is specific to the test environment. We create the table structure.
+     *
+     * @param false $dropexistingtable
+     * @throws \ddl_exception
+     * @throws \ddl_table_missing_exception
+     */
+    public static function create_table($dropexistingtable = false) {
         global $DB;
         $dbman = $DB->get_manager();
         $table = new xmldb_table(static::TABLE);
+
+
+        if ($dbman->table_exists($table)) {
+            if ($dropexistingtable) {
+                $dbman->drop_table($table);
+            } else {
+                return;
+            }
+        }
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, null, null, null);
         $table->add_field('idnumber', XMLDB_TYPE_CHAR, '100', null, null, null, null);
@@ -104,11 +121,6 @@ class entity extends \core\persistent {
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
 
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-        if ($dbman->table_exists($table)) {
-            $dbman->drop_table($table);
-        }
-
         $dbman->create_table($table);
     }
     /**

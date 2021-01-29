@@ -156,28 +156,24 @@ class persistent_utils {
     }
 
     /**
-     * Get associated images
+     * Get associated files urls
      *
      * @param int $entityid
      * @param string $filearea
      * @param string $component
+     * @param \context $context
      * @return array
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public static function get_files_images_urls($entityid, $filearea, $component = null) {
-        $contextsystemid = \context_system::instance()->id;
-        $component = $component ? $component : persistent_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($contextsystemid,
-            $component,
-            $filearea,
-            $entityid);
+    public static function get_files_urls($entityid, $filearea, $component = null, $context = null) {
+        $context = empty($context) ? \context_system::instance()->id: $context;
+        $files = static::get_files($entityid, $filearea, $component, $context);
         $imagesurls = [];
         foreach ($files as $image) {
             if ($image->is_valid_image()) {
                 $imagesurls[] = \moodle_url::make_pluginfile_url(
-                    $contextsystemid,
+                    $context->id,
                     $component,
                     $filearea,
                     $entityid,
@@ -188,6 +184,29 @@ class persistent_utils {
         }
         return $imagesurls;
     }
+
+    /**
+     * Get associated files
+     *
+     * @param int $entityid
+     * @param string $filearea
+     * @param string $component
+     * @param \context $context
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function get_files($entityid, $filearea, $component = null, $context = null) {
+        $contextid = empty($context) ? \context_system::instance()->id: $context->id;
+        $component = $component ? $component : persistent_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($contextid,
+            $component,
+            $filearea,
+            $entityid);
+        return $files;
+    }
+
 
     /**
      * Default plugin component name

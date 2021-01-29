@@ -46,7 +46,7 @@ class local_cltools_persistent_utils_testcase extends \advanced_testcase {
      * Setup persistent table
      */
     public function setUp() {
-        entity::create_table();
+        entity::create_table(true);
         $this->resetAfterTest();
     }
 
@@ -72,24 +72,24 @@ class local_cltools_persistent_utils_testcase extends \advanced_testcase {
         $this->assertnotNull(static::external_get_filter_generic_parameters());
     }
 
-    public function test_external_get_files_images_url() {
+    public function test_external_get_files_url() {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->upload_files(array('icon.png'), array('icon'), 'simple', 'local_cltools');
-        $files = persistent_utils::get_files_images_urls(0, 'simple', 'local_cltools');
+        $files = persistent_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(1, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/0/icon',
             $files[0]->out());
         $this->delete_files('testfilearea', 'local_cltools');
     }
 
-    public function test_external_get_files_images_url_with_item_id() {
+    public function test_external_get_files_url_with_item_id() {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->upload_files(array('icon.png', 'icon.png'), array('icon', 'icon2'), 'simple', 'local_cltools', 1);
-        $files = persistent_utils::get_files_images_urls(0, 'simple', 'local_cltools');
+        $files = persistent_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(0, $files);
-        $files = persistent_utils::get_files_images_urls(1, 'simple', 'local_cltools');
+        $files = persistent_utils::get_files_urls(1, 'simple', 'local_cltools');
         $this->assertCount(2, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/1/icon',
             $files[0]->out());

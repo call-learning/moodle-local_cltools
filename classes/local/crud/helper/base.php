@@ -83,12 +83,16 @@ abstract class base {
         $formclassname = null,
         $listclassname = null,
         $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+        $persistentnavigation = null
     ) {
         $actionclass = "\\local_cltools\\local\\crud\\helper\\crud_$action";
-        return new $actionclass($entityclassname, $entityprefix, $formclassname, $listclassname, $exporterclassname,
-            $persistentnavigation, $pagesrooturl);
+        return new $actionclass($entityclassname,
+            $entityprefix,
+            $formclassname,
+            $listclassname,
+            $exporterclassname,
+            $persistentnavigation
+        );
     }
 
     /**
@@ -104,8 +108,7 @@ abstract class base {
         $formclassname = null,
         $listclassname = null,
         $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+        $persistentnavigation = null
     ) {
         $this->refpersistentclass = new \ReflectionClass($entityclassname);
         $entitynamespace = $this->refpersistentclass->getNamespaceName();
@@ -118,7 +121,7 @@ abstract class base {
         $this->refpersistentexporterclass = ($exporterclassname) ? new \ReflectionClass($exporterclassname)
             : new \ReflectionClass($entitynamespace . "\\exporter");
         $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
-            new flat_navigation($entityclassname,$pagesrooturl);
+            new flat_navigation($entityclassname);
     }
 
     /**

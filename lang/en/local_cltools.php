@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'CALL Learning Tools';
 
 $string['simple:entity'] = 'Simple entity';
+$string['simple:plural'] = 'Simple entities';
 $string['simple:title'] = 'Simple entity Title';
 $string['simple:description'] = 'Simple entity Description';
 $string['simple:shortname'] = 'Simple entity Shortname';
@@ -40,6 +41,7 @@ $string['add'] = 'Add';
 $string['edit'] = 'Edit';
 $string['view'] = 'View';
 $string['delete'] = 'Delete';
+$string['list'] = 'List';
 $string['orderby'] = 'Order by';
 $string['actions'] = 'Actions';
 $string['sortorder'] = 'Sort Order';
@@ -48,4 +50,5 @@ $string['timemodified'] = 'Time modified';
 $string['usermodified'] = 'User modified';
 $string['id'] = 'Identifier';
 $string['files'] = 'Attached files';
+$string['entity:added'] = 'Entity {$a} added';
 
