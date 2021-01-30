@@ -18,20 +18,21 @@
  * Persistent utils class
  *
  * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
+use local_cltools\local\simple\entity;
 use renderer_base;
 
 /**
  * Class persistent_exporter
  *
  * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning>
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class persistent_exporter extends \core\external\persistent_exporter {
@@ -97,6 +98,16 @@ class persistent_exporter extends \core\external\persistent_exporter {
         return $values;
     }
 
+    /**
+     * Export linked file
+     *
+     * @param $filearea
+     * @param null $fileprefix
+     * @param null $filetypegroup
+     * @return \moodle_url|null
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     protected function export_file($filearea, $fileprefix = null, $filetypegroup = null) {
         // Retrieve the file from the Files API.
         $files = persistent_utils::get_files($this->instanceid, $filearea, $this->persistentcomponent, $this->persistentcontext);
@@ -123,4 +134,12 @@ class persistent_exporter extends \core\external\persistent_exporter {
         );
     }
 
+    /**
+     * Returns the specific class the persistent should be an instance of.
+     *
+     * @return string
+     */
+    protected static function define_class() {
+        return entity::class;
+    }
 }
