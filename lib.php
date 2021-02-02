@@ -25,6 +25,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_table\local\filter\filter;
+use core_table\local\filter\integer_filter;
+
 defined('MOODLE_INTERNAL') || die();
 
 function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
@@ -64,4 +67,27 @@ function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $for
 
     // We can now send the file back to the browser - in this case with a cache lifetime of 1 day and no filtering.
     send_stored_file($file, 86400, 0, $forcedownload, $options);
+}
+
+
+function local_cltools_output_fragment_userselector_table($args) {
+    global $DB, $PAGE;
+    $randomid = \html_writer::random_id();
+    $userlisttable = new \local_cltools\table\user_list_selector("users-table-$randomid");
+    $context = context_course::instance(SITEID);
+
+    $renderable = new local_cltools\output\users_filter($userlisttable->uniqueid);
+    $renderer = $PAGE->get_renderer('local_cltools');
+    $filters = $renderable->export_for_template($renderer);
+    $filtershtml = $renderer->render_from_template('core_user/participantsfilter', $filters);
+    $filterset = new \local_cltools\table\user_list_selector_filterset();
+    ob_start();
+    $userlisttable->set_filterset($filterset);
+    $userlisttable->out(20, true);
+    $userlisttable = ob_get_contents();
+    ob_end_clean();
+    $PAGE->requires->js_call_amd('local_cltools/user_selector', 'init', [[
+        'uniqueid' => $args['uniqid'],
+    ]]);
+    return $filtershtml . $userlisttable;
 }

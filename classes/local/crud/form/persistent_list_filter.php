@@ -31,6 +31,7 @@ use local_cltools\local\crud\persistent_utils;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
 
 /**
  * Filter selection form
@@ -136,7 +137,6 @@ abstract class persistent_list_filter extends \moodleform {
         $entityprefix = persistent_utils::get_persistent_prefix(static::$persistentclass);
         $filters = [];
         $ordersbychoices = [];
-        $stringmanager = get_string_manager();
         foreach ($properties as $key => $prop) {
             $propoverride = null;
             if (!empty($propertiesoverride[$key])) {
@@ -156,11 +156,7 @@ abstract class persistent_list_filter extends \moodleform {
             if (!empty($propoverride->fullname)) {
                 $label = $propoverride->fullname;
             } else {
-                if ($stringmanager->string_exists($entityprefix . ':' . $key, 'local_cltools')) {
-                    $label = get_string($entityprefix . ':' . $key, 'local_cltools');
-                } else {
-                    $label = get_string($key, 'local_cltools');
-                }
+                $label = persistent_utils::get_string_for_entity(static::$persistentclass, $key);
             }
             $filters[$key] = (object) [
                 'datatype' => $prop['type'],

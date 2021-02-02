@@ -26,7 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'CALL Learning Tools';
-
+$string['ascending'] = 'Ascending';
+$string['descending'] = 'Descending';
 $string['simple:entity'] = 'Simple entity';
 $string['simple:plural'] = 'Simple entities';
 $string['simple:title'] = 'Simple entity Title';
@@ -48,6 +49,8 @@ $string['sortorder'] = 'Sort Order';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
 $string['usermodified'] = 'User modified';
+$string['userselector'] = 'Select a user';
+$string['usersearch'] = 'Search';
 $string['id'] = 'Identifier';
 $string['files'] = 'Attached files';
 $string['entity:added'] = 'Entity {$a} added';

@@ -1,0 +1,90 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_cltools/element-sortable_list.mustache
+
+
+    Example context (json):
+    {
+        "element": {
+            "id": "id_xxxx",
+            "nameraw": "sortablelist",
+            "name": "sortablelist",
+            "label": null,
+            "multiple": null,
+            "checked": null,
+            "error": null,
+            "size": null,
+            "value": null,
+            "helpbutton": "",
+            "hiddenlabel": false,
+            "frozen": false,
+            "hardfrozen": false,
+            "extraclasses": null,
+            "type": "select",
+            "attributes": "",
+            "options": [{ 'text': 'Text value', 'value': '134' },...]
+        }
+    }
+}}
+{{< core_form/element-template }}
+    {{$element}}
+            <input type="hidden" name="{{element.name}}" id="{{element.id}}" value="{{element.listitems}}">
+            <span id="user-selected-fullname-{{element.id}}">{{element.username}}</span>
+            {{#element.action}}
+                {{< core/action_link }}
+                {{/ core/action_link }}
+            {{/element.action}}
+    {{/element}}
+{{/ core_form/element-template }}
+<div class="d-flex justify-content-end" data-region="wrapper">
+    {{{element.tablecontent}}}
+</div>
+{{#js}}
+    require(['jquery', 'core/templates'], function($, Templates) {
+        var elementid = $('#{{element.id}}');
+        var elusername = $('#user-selected-fullname-{{element.id}}');
+        $('body').on('user-selected-event', function(e, uniqueId, userid, userfullname) {
+            if( uniqueId == '{{uniqid}}') {
+                elementid.val(userid);
+                Templates.replaceNodeContents(elusername, '<span class="user-selector-username p-2">' + userfullname + '</span>', '');
+            }
+        });
+    });
+{{/js}}
+{{^element.frozen}}
+    {{#js}}
+        require(['jquery', 'core/templates', 'core/modal_factory','core/fragment'],
+            function($, Templates, ModalFactory, Fragment) {
+                var trigger = $('#{{element.action.id}}');
+                var modalPromise = ModalFactory.create({
+                        large: true,
+                        type: ModalFactory.types.CANCEL,
+                        body: Fragment.loadFragment('local_cltools', 'userselector_table', {{element.contextid}}, {'uniqid': '{{uniqid}}'})
+                }, trigger);
+                $.when(modalPromise).done(function (modal) {
+                    modal.setTitle('{{#str}} userselector, local_cltools {{/str}}');
+                    $('body').on('user-selected-event', function(e, uniqueId) {
+                        if( uniqueId == '{{uniqid}}') {
+                            modal.hide();
+                        }
+                    });
+                });
+            });
+    {{/js}}
+{{/element.frozen}}
+

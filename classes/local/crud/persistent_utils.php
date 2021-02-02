@@ -94,8 +94,10 @@ class persistent_utils {
         $label = '';
         if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
             $label = get_string($entityprefix . ':' . $stringname, $component, $args);
-        } else {
+        } else if( $stringmanager->string_exists($stringname, $component, $args)) {
             $label = get_string($stringname, $component, $args);
+        } else {
+            $label = get_string($stringname, static::DEFAULT_PLUGIN_COMPONENT_NAME, $args);
         }
         return $label;
     }

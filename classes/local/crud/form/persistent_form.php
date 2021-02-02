@@ -23,13 +23,16 @@
  */
 
 namespace local_cltools\local\crud\form;
-
-use local_cltools\local\crud\persistent_utils;
-use stdClass;
-
 defined('MOODLE_INTERNAL') || die();
+use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\forms\form_cltools_elements;
+use local_cltools\local\forms\form_element_accept;
+use stdClass;
+// Custom form element types
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
+
 
 /**
  * Persistent form abstract class.
@@ -52,6 +55,7 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class persistent_form extends \core\form\persistent {
+
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
 

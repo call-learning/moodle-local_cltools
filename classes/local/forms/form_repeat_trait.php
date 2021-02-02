@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\crud;
+namespace local_cltools\local\forms;
 
 use coding_exception;
 use HTML_QuickForm_group;

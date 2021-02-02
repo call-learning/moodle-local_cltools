@@ -84,7 +84,7 @@ class crud_add extends base {
         // Add a new entity or edit it.
         $entity = null;
         $mform = null;
-        $mform = $this->instanciate_related_form(null, ['persistent' => null]);
+        $mform = $this->instanciate_related_form($this->actionurl, ['persistent' => null]);
         $mform->prepare_for_files();
         if ($mform->is_cancelled()) {
             redirect($this->persistentnavigation->get_list_url());
