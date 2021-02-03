@@ -245,11 +245,14 @@ abstract class persistent_form extends \core\form\persistent {
                     case 'bool':
                         $forminfo->rawtype = PARAM_BOOL;
                         break;
+                    case 'hidden':
+                        // Leave default type here.
+                        break;
                     default:
                         $forminfo->rawtype = PARAM_RAW;
                 }
             }
-            $forminfo->required = (!empty($prop['null']) && $prop['null'] != NULL_ALLOWED) ? true : false;
+            $forminfo->required = persistent_utils::is_property_required($prop);
             $formproperties[$name] = $forminfo; // Update it.
         }
         return $formproperties;

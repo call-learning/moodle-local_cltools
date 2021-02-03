@@ -25,7 +25,7 @@
 namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
-use local_cltools\local\simple\entity;
+use coding_exception;
 use renderer_base;
 
 /**
@@ -55,6 +55,10 @@ class persistent_exporter extends \core\external\persistent_exporter {
      * @var null
      */
     protected $instanceid = null;
+
+
+    /** @var string The fully qualified classname. */
+    protected static $persistentclass = null;
 
     /**
      * persistent_exporter constructor.
@@ -140,6 +144,10 @@ class persistent_exporter extends \core\external\persistent_exporter {
      * @return string
      */
     protected static function define_class() {
-        return entity::class;
+        if (empty(static::$persistentclass) || !class_exists(static::$persistentclass)) {
+            throw new coding_exception('Invalid class for persistent, it either does not exist or is empty ' .
+                'got: ' . get_class(static::$persistentclasssistent));
+        }
+        return static::$persistentclass;
     }
 }

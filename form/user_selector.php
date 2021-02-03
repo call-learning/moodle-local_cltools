@@ -95,11 +95,24 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
         $data['username'] = '';
         if ($data['value']) {
             $canviewfullnames = has_capability('moodle/site:viewfullnames', context_system::instance());
-            $data['username'] = fullname($data, $canviewfullnames);
+            $data['username'] = fullname(core_user::get_user($data['value']), $canviewfullnames);
         }
 
         $data['contextid'] = context_course::instance(SITEID)->instanceid;
         return $data;
     }
+
+    /**
+     * Sets the value of the form element
+     *
+     * @param     string    $value      Default value of the form element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+        $this->updateAttributes(array('value'=>$value));
+    } // end func setValue
 
 }

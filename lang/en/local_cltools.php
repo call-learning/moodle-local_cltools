@@ -54,4 +54,5 @@ $string['usersearch'] = 'Search';
 $string['id'] = 'Identifier';
 $string['files'] = 'Attached files';
 $string['entity:added'] = 'Entity {$a} added';
+$string['entity:edited'] = 'Entity {$a} modified';
 

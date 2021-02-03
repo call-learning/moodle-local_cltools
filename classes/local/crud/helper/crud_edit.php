@@ -24,7 +24,9 @@
 
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
+
 use moodle_url;
+
 /**
  * Class crud_helper. Edit an entity.
  *
@@ -66,6 +68,7 @@ class crud_edit extends base {
             $exporterclassname, $persistentnavigation, $pagesrooturl);
         $this->actionurl = $this->persistentnavigation->get_edit_url();
     }
+
     /**
      * Process the action
      *
@@ -83,8 +86,7 @@ class crud_edit extends base {
         $mform = null;
         $id = required_param('id', PARAM_INT);
         $entity = $this->refpersistentclass->newInstance($id);
-        $mform = $this->instanciate_related_form(null,
-            ['persistent' => $entity]);
+        $mform = $this->instanciate_related_form($this->actionurl, ['persistent' => $entity]);
         $mform->prepare_for_files();
         if ($mform->is_cancelled()) {
             redirect($this->persistentnavigation->get_list_url());

@@ -94,7 +94,7 @@ class persistent_utils {
         $label = '';
         if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
             $label = get_string($entityprefix . ':' . $stringname, $component, $args);
-        } else if( $stringmanager->string_exists($stringname, $component, $args)) {
+        } else if ($stringmanager->string_exists($stringname, $component, $args)) {
             $label = get_string($stringname, $component, $args);
         } else {
             $label = get_string($stringname, static::DEFAULT_PLUGIN_COMPONENT_NAME, $args);
@@ -169,7 +169,7 @@ class persistent_utils {
      * @throws \dml_exception
      */
     public static function get_files_urls($entityid, $filearea, $component = null, $context = null) {
-        $context = empty($context) ? \context_system::instance()->id: $context;
+        $context = empty($context) ? \context_system::instance()->id : $context;
         $files = static::get_files($entityid, $filearea, $component, $context);
         $imagesurls = [];
         foreach ($files as $image) {
@@ -199,7 +199,7 @@ class persistent_utils {
      * @throws \dml_exception
      */
     public static function get_files($entityid, $filearea, $component = null, $context = null) {
-        $contextid = empty($context) ? \context_system::instance()->id: $context->id;
+        $contextid = empty($context) ? \context_system::instance()->id : $context->id;
         $component = $component ? $component : persistent_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
         $fs = get_file_storage();
         $files = $fs->get_area_files($contextid,
@@ -209,9 +209,22 @@ class persistent_utils {
         return $files;
     }
 
-
     /**
      * Default plugin component name
      */
     const DEFAULT_PLUGIN_COMPONENT_NAME = 'local_cltools';
+
+    /**
+     * Check if the property is required
+     *
+     * The wording "null"/"null allowed" is confusing so we use this method as a way to make
+     * it less ambiguous.
+     *
+     * @param $prop
+     * @return bool
+     */
+    public static function is_property_required($prop) {
+        return !empty($prop['null'])
+            && ($prop['null'] == NULL_NOT_ALLOWED);
+    }
 }
