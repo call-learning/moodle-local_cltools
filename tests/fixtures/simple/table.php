@@ -24,24 +24,21 @@
 
 namespace local_cltools\local\simple;
 
-use local_cltools\local\crud\persistent_list;
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_table;
+use local_cltools\local\crud\entity_utils;
 use moodle_url;
 use pix_icon;
 use popup_action;
 
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
-
 /**
- * Persistent list
+ * Entity table/list
  *
  * @package     local_cltools
  * @copyright   2019 CALL Learning <laurent@call-learning.fr>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entities_list extends persistent_list {
+class table extends entity_table {
     /** @var string The fully qualified classname. */
     protected static $persistentclass = '\\local_cltools\\local\\simple\\entity';
 
@@ -155,9 +152,9 @@ class entities_list extends persistent_list {
      * @throws \dml_exception
      */
     public function col_files($entity) {
-        $component = persistent_utils::get_component(self::$persistentclass);
+        $component = entity_utils::get_component(self::$persistentclass);
         return $this->internal_col_files($entity,
-            persistent_utils::get_persistent_prefix(static::$persistentclass),
+            entity_utils::get_persistent_prefix(static::$persistentclass),
             $component
         );
     }
@@ -174,7 +171,7 @@ class entities_list extends persistent_list {
         global $OUTPUT;
         $formatparams = [
             'context' => \context_system::instance(),
-            'component' => persistent_utils::get_component(static::$persistentclass),
+            'component' => entity_utils::get_component(static::$persistentclass),
             'filearea' => 'rotation_description',
             'itemid' => $rotation->id
         ];

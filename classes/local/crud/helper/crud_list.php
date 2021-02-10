@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use core\persistent;
 use local_cltools\local\crud\entity_list_renderable;
+use local_cltools\local\crud\output\entity_table_renderable;
 use local_cltools\sample\simple\entities_list;
 use moodle_url;
 use single_button;
@@ -101,18 +102,9 @@ class crud_list extends base {
         $returnedtext = '';
         $entitylist = $this->instanciate_related_persistent_list();
         // Here the form is just the filter form.
-        $filterform = $entitylist->get_filter_form();
-        // Get filter parameters.
-        $filtervalues = [];
-        foreach ($filterform->get_filter_definition() as $filtername => $filterdef) {
-            $filtervalues[$filtername] = optional_param($filtername, $filterdef->default, $filterdef->datatype);
-        }
-        $filterform->set_data($filtervalues);
+        $renderable = new entity_table_renderable($entitylist);
 
-        $renderable = new entity_list_renderable($entitylist);
-
-        /** @var entities_list entitylist */
-        $returnedtext .= $filterform->render();
+        /** @var entity_table_renderable entity table */
         $returnedtext .= $this->renderer->render($renderable);
 
         return $returnedtext;

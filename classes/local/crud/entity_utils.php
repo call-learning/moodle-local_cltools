@@ -32,7 +32,7 @@ use external_value;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-class persistent_utils {
+class entity_utils {
     /**
      * @param \ReflectionClass| string $persistentclass
      * @return string
@@ -88,8 +88,8 @@ class persistent_utils {
      * @throws \coding_exception
      */
     public static function get_string_for_entity($persistentclass, $stringname, $args = null) {
-        $entityprefix = persistent_utils::get_persistent_prefix($persistentclass);
-        $component = persistent_utils::get_component($persistentclass);
+        $entityprefix = entity_utils::get_persistent_prefix($persistentclass);
+        $component = entity_utils::get_component($persistentclass);
         $stringmanager = get_string_manager();
         $label = '';
         if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
@@ -200,7 +200,7 @@ class persistent_utils {
      */
     public static function get_files($entityid, $filearea, $component = null, $context = null) {
         $contextid = empty($context) ? \context_system::instance()->id : $context->id;
-        $component = $component ? $component : persistent_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
+        $component = $component ? $component : entity_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
         $fs = get_file_storage();
         $files = $fs->get_area_files($contextid,
             $component,

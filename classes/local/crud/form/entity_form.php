@@ -24,9 +24,8 @@
 
 namespace local_cltools\local\crud\form;
 defined('MOODLE_INTERNAL') || die();
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 use local_cltools\local\forms\form_cltools_elements;
-use local_cltools\local\forms\form_element_accept;
 use stdClass;
 // Custom form element types
 global $CFG;
@@ -35,7 +34,7 @@ require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
 
 
 /**
- * Persistent form abstract class.
+ * Entity form abstract class.
  *
  * This provides some shortcuts to validate objects based on the persistent model.
  *
@@ -54,7 +53,7 @@ require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
  * @copyright  2015 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class persistent_form extends \core\form\persistent {
+abstract class entity_form extends \core\form\persistent {
 
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
@@ -76,6 +75,9 @@ abstract class persistent_form extends \core\form\persistent {
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
         $editable = true, $ajaxformdata = null) {
         $this->formdefinition = $this->get_mix_persistent_form_properties();
+        // TODO: at some point we will need to get rid of persistentclass as static.
+        // The only exception right not if the provided persistent is null...
+
         if (!$customdata) {
             $customdata = ['persistent' => null];
         }
@@ -175,10 +177,10 @@ abstract class persistent_form extends \core\form\persistent {
 
             // Uniformise the name.
             if (empty($forminfo->fullname)) {
-                $forminfo->fullname = persistent_utils::get_string_for_entity(static::$persistentclass, $name);
+                $forminfo->fullname = entity_utils::get_string_for_entity(static::$persistentclass, $name);
             }
             $possibledefault = '';
-            if (persistent_utils::is_reserved_property($name)) {
+            if (entity_utils::is_reserved_property($name)) {
                 switch ($name) {
                     case 'id':
                         $possibledefault = 0;
@@ -252,7 +254,7 @@ abstract class persistent_form extends \core\form\persistent {
                         $forminfo->rawtype = PARAM_RAW;
                 }
             }
-            $forminfo->required = persistent_utils::is_property_required($prop);
+            $forminfo->required = entity_utils::is_property_required($prop);
             $formproperties[$name] = $forminfo; // Update it.
         }
         return $formproperties;
@@ -415,8 +417,8 @@ abstract class persistent_form extends \core\form\persistent {
     public function prepare_for_files() {
         $allfilefields = $this->get_file_fields();
         $context = \context_system::instance();
-        $component = persistent_utils::get_component(static::$persistentclass);
-        $filearearoot = persistent_utils::get_persistent_prefix(static::$persistentclass);
+        $component = entity_utils::get_component(static::$persistentclass);
+        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
         $item = $this->get_persistent();
         $itemdata = $item->to_record();
         $itemid = $itemdata ? $itemdata->id : 0;
@@ -463,8 +465,8 @@ abstract class persistent_form extends \core\form\persistent {
 
         $allfilefields = $this->get_file_fields();
         $context = \context_system::instance();
-        $component = persistent_utils::get_component(static::$persistentclass);
-        $filearearoot = persistent_utils::get_persistent_prefix(static::$persistentclass);
+        $component = entity_utils::get_component(static::$persistentclass);
+        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
         $itemid = $this->get_persistent()->get('id');
         foreach ($allfilefields as $field) {
             $filearea = $filearearoot . '_' . $field->name;

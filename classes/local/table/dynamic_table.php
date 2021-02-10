@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Common library for tests (behat + phpunit)
+ * Dynamic table addons
+ *
+ * This is basically for Moodle 3.9 the same as 'extends \table_sql implements dynamic_table'
+ * but with the capability to find the core table in persistent namespace
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_cltools\local\table;
 
-// Replace autoloading.
-require_once(__DIR__.'/fixtures/simple/entity.php');
-require_once(__DIR__.'/fixtures/simple/table.php');
-require_once(__DIR__.'/fixtures/simple/exporter.php');
-require_once(__DIR__.'/fixtures/simple/external.php');
-require_once(__DIR__.'/fixtures/simple/form.php');
+use html_writer;
+use table_sql;
+
+global $CFG;
+
+class dynamic_table_sql extends table_sql implements \core_table\dynamic {
+
+}

@@ -24,7 +24,7 @@
 
 namespace local_cltools\local\simple;
 
-use local_cltools\local\crud\form\persistent_form;
+use local_cltools\local\crud\form\entity_form;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -37,7 +37,7 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright   2019 CALL Learning <laurent@call-learning.fr>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class form extends persistent_form {
+class form extends entity_form {
     /**
      * Form property in order to display the right widget for the form.
      *

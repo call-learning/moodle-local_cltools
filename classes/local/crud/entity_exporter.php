@@ -35,7 +35,7 @@ use renderer_base;
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class persistent_exporter extends \core\external\persistent_exporter {
+class entity_exporter extends \core\external\persistent_exporter {
 
     /**
      * Persistent component
@@ -45,20 +45,9 @@ class persistent_exporter extends \core\external\persistent_exporter {
     protected $persistentcomponent = null;
 
     /**
-     * Persistent context
-     *
-     * @var null
-     */
-    protected $persistentcontext = null;
-
-    /**
      * @var null
      */
     protected $instanceid = null;
-
-
-    /** @var string The fully qualified classname. */
-    protected static $persistentclass = null;
 
     /**
      * persistent_exporter constructor.
@@ -70,15 +59,11 @@ class persistent_exporter extends \core\external\persistent_exporter {
      * @throws \dml_exception
      */
     public function __construct(\core\persistent $persistent, $related = array()) {
-        $this->persistentcomponent = persistent_utils::get_component(get_class($persistent));
+        $this->persistentcomponent = entity_utils::get_component(get_class($persistent));
         $this->instanceid = (int) $persistent->get('id');
-        $this->persistentcontext = \context_system::instance();
-        if (method_exists($persistent, 'get_context')) {
-            $this->persistentcontext = $persistent->get_context();
-        }
         $related = array_merge($related,
             [
-                'context' => $this->persistentcontext,
+                'context' => \context_system::instance(),
                 'component' => $this->persistentcomponent,
                 'itemid' => (int) $persistent->get('id')
             ]
@@ -114,7 +99,7 @@ class persistent_exporter extends \core\external\persistent_exporter {
      */
     protected function export_file($filearea, $fileprefix = null, $filetypegroup = null) {
         // Retrieve the file from the Files API.
-        $files = persistent_utils::get_files($this->instanceid, $filearea, $this->persistentcomponent, $this->persistentcontext);
+        $files = entity_utils::get_files($this->instanceid, $filearea, $this->persistentcomponent, $this->related['context']);
         $returnedfiled = null;
         foreach ($files as $file) {
             $foundfile = $fileprefix && strpos($file->get_filename(), $fileprefix) !== false;
@@ -129,25 +114,12 @@ class persistent_exporter extends \core\external\persistent_exporter {
             return null;
         }
         return \moodle_url::make_pluginfile_url(
-            $this->persistentcontext->id,
+            $this->related['context']->id,
             $this->persistentcomponent,
             $filearea,
             $returnedfiled->get_itemid(),
             $returnedfiled->get_filepath(),
             $returnedfiled->get_filename()
         );
-    }
-
-    /**
-     * Returns the specific class the persistent should be an instance of.
-     *
-     * @return string
-     */
-    protected static function define_class() {
-        if (empty(static::$persistentclass) || !class_exists(static::$persistentclass)) {
-            throw new coding_exception('Invalid class for persistent, it either does not exist or is empty ' .
-                'got: ' . get_class(static::$persistentclasssistent));
-        }
-        return static::$persistentclass;
     }
 }

@@ -26,10 +26,10 @@ namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
 use core\persistent;
-use local_cltools\local\crud\form\persistent_form;
+use local_cltools\local\crud\form\entity_form;
 use local_cltools\local\crud\navigation\flat_navigation;
-use local_cltools\local\crud\persistent_list;
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_table;
+use local_cltools\local\crud\entity_utils;
 use moodle_url;
 
 /**
@@ -117,7 +117,7 @@ abstract class base {
         $this->refpersistentformclass = ($formclassname) ? new \ReflectionClass($formclassname)
             : new \ReflectionClass($entitynamespace . "\\form");
         $this->refpersistentlistclass = ($listclassname) ? new \ReflectionClass($listclassname)
-            : new \ReflectionClass($entitynamespace . "\\entities_list");
+            : new \ReflectionClass($entitynamespace . "\\table");
         $this->refpersistentexporterclass = ($exporterclassname) ? new \ReflectionClass($exporterclassname)
             : new \ReflectionClass($entitynamespace . "\\exporter");
         $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
@@ -137,7 +137,7 @@ abstract class base {
      * Get related form
      *
      * @param $formparameters
-     * @return persistent_form|object
+     * @return entity_form|object
      * @throws \ReflectionException*
      */
     public function instanciate_related_form(...$formparameters) {
@@ -148,11 +148,11 @@ abstract class base {
      * Get related list class
      *
      * @param array $formparameters
-     * @return persistent_list|object
+     * @return entity_table|object
      * @throws \ReflectionException*
      */
     public function instanciate_related_persistent_list() {
-        $uniqueid = \html_writer::random_id(persistent_utils::get_persistent_prefix($this->refpersistentclass));
+        $uniqueid = \html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
             'edit' => (object) [
                 'icon' => 't/edit',
@@ -179,7 +179,7 @@ abstract class base {
      * @throws \ReflectionException
      */
     protected function get_action_event_class() {
-        return persistent_utils::get_persistent_prefix($this->refpersistentclass) . static::ACTION_DONE;
+        return entity_utils::get_persistent_prefix($this->refpersistentclass) . static::ACTION_DONE;
     }
 
     /**
@@ -190,9 +190,9 @@ abstract class base {
      * @throws \coding_exception
      */
     protected function get_action_event_description() {
-        $entityname = persistent_utils::get_persistent_prefix($this->refpersistentclass);
+        $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
-        return ucfirst(persistent_utils::get_string_for_entity($this->refpersistentclass,
+        return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
             'entity:' . static::ACTION_DONE, $entityname));
     }
 
@@ -223,9 +223,9 @@ abstract class base {
      * @throws \moodle_exception
      */
     protected function setup_page_navigation($page) {
-        $stringprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
+        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
-        $entities = persistent_utils::get_string_for_entity( $this->refpersistentclass, $stringprefix . ':plural');
+        $entities = entity_utils::get_string_for_entity( $this->refpersistentclass, $stringprefix . ':plural');
         $header = $this->get_page_header();;
         $listpageurl = $this->persistentnavigation->get_list_url();
         $page->navbar->add(
@@ -242,9 +242,9 @@ abstract class base {
      * @throws \coding_exception
      */
     protected function get_page_header() {
-        $stringprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
+        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
         $action = get_string(static::ACTION, 'local_cltools');
-        return $action . ' ' . persistent_utils::get_string_for_entity( $this->refpersistentclass,$stringprefix.':entity');
+        return $action . ' ' . entity_utils::get_string_for_entity( $this->refpersistentclass,$stringprefix.':entity');
     }
 
     /**

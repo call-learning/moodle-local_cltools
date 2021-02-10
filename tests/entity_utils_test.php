@@ -27,7 +27,7 @@ namespace local_cltools;
 require_once(__DIR__ . '/fixtures/simple/entity.php');
 
 use context_user;
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 use local_cltools\simple\entity;
 
 defined('MOODLE_INTERNAL') || die();
@@ -41,7 +41,7 @@ global $CFG;
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_persistent_utils_testcase extends \advanced_testcase {
+class local_cltools_entity_utils_testcase extends \advanced_testcase {
     /**
      * Setup persistent table
      */
@@ -56,16 +56,16 @@ class local_cltools_persistent_utils_testcase extends \advanced_testcase {
     }
 
     public function test_get_persistent_prefix() {
-        $persistentprefix = persistent_utils::get_persistent_prefix("\\local_cltools\\simple\\entity");
+        $persistentprefix = entity_utils::get_persistent_prefix("\\local_cltools\\simple\\entity");
         $this->assertEquals('simple', $persistentprefix);
     }
 
     public function test_is_reserved_property() {
-        $this->assertTrue(persistent_utils::is_reserved_property('timecreated'));
-        $this->assertTrue(persistent_utils::is_reserved_property('timemodified'));
-        $this->assertTrue(persistent_utils::is_reserved_property('usermodified'));
-        $this->assertTrue(persistent_utils::is_reserved_property('id'));
-        $this->assertFalse(persistent_utils::is_reserved_property('name'));
+        $this->assertTrue(entity_utils::is_reserved_property('timecreated'));
+        $this->assertTrue(entity_utils::is_reserved_property('timemodified'));
+        $this->assertTrue(entity_utils::is_reserved_property('usermodified'));
+        $this->assertTrue(entity_utils::is_reserved_property('id'));
+        $this->assertFalse(entity_utils::is_reserved_property('name'));
     }
 
     public function test_external_get_filter_generic_parameters() {
@@ -76,7 +76,7 @@ class local_cltools_persistent_utils_testcase extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->upload_files(array('icon.png'), array('icon'), 'simple', 'local_cltools');
-        $files = persistent_utils::get_files_urls(0, 'simple', 'local_cltools');
+        $files = entity_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(1, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/0/icon',
             $files[0]->out());
@@ -87,9 +87,9 @@ class local_cltools_persistent_utils_testcase extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->upload_files(array('icon.png', 'icon.png'), array('icon', 'icon2'), 'simple', 'local_cltools', 1);
-        $files = persistent_utils::get_files_urls(0, 'simple', 'local_cltools');
+        $files = entity_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(0, $files);
-        $files = persistent_utils::get_files_urls(1, 'simple', 'local_cltools');
+        $files = entity_utils::get_files_urls(1, 'simple', 'local_cltools');
         $this->assertCount(2, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/1/icon',
             $files[0]->out());

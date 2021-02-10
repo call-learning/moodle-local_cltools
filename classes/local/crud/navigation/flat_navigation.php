@@ -24,7 +24,7 @@
 
 namespace local_cltools\local\crud\navigation;
 
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 use moodle_url;
 
 /**

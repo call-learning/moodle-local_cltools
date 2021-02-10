@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,20 +13,22 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Common library for tests (behat + phpunit)
+ * Cltools services
  *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     local_cltools
+ * @category    upgrade
+ * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-// Replace autoloading.
-require_once(__DIR__.'/fixtures/simple/entity.php');
-require_once(__DIR__.'/fixtures/simple/table.php');
-require_once(__DIR__.'/fixtures/simple/exporter.php');
-require_once(__DIR__.'/fixtures/simple/external.php');
-require_once(__DIR__.'/fixtures/simple/form.php');
+$functions = array(
+    'cltools_table_get_dynamic_table_content' => [
+        'classname' => 'local_cltools\external\dynamic_table_get',
+        'methodname' => 'execute',
+        'description' => 'Get the dynamic table content raw html',
+        'type' => 'read',
+        'ajax' => true,
+        // 'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
+);

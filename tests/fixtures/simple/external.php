@@ -27,7 +27,7 @@ namespace local_cltools\local\simple;
 use external_api;
 use external_multiple_structure;
 use external_single_structure;
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,7 +43,7 @@ global $CFG;
  */
 class external extends external_api {
     public static function get_rotations_parameters() {
-        return persistent_utils::external_get_filter_generic_parameters();
+        return entity_utils::external_get_filter_generic_parameters();
     }
 
     public static function get_rotations($filters) {

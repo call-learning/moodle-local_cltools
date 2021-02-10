@@ -25,7 +25,7 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 use moodle_url;
 
 /**
@@ -91,19 +91,19 @@ class crud_delete extends base {
                     array('confirm' => true, 'id' => $id, 'sesskey' => sesskey()));
             $cancelurl = new moodle_url($this->persistentnavigation->get_list_url());
             $returnedtext .= $this->renderer->confirm(
-                persistent_utils::get_string_for_entity($this->refpersistentclass, 'delete'),
+                entity_utils::get_string_for_entity($this->refpersistentclass, 'delete'),
                 $confirmurl,
                 $cancelurl
             );
         } else {
-            $persistentprefix = persistent_utils::get_persistent_prefix($this->refpersistentclass);
-            $entitydisplayname = persistent_utils::get_string_for_entity($this->refpersistentclass, $persistentprefix);
+            $persistentprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
+            $entitydisplayname = entity_utils::get_string_for_entity($this->refpersistentclass, $persistentprefix);
             require_sesskey();
             $entity = $this->refpersistentclass->newInstance($id);
             $entity->delete();
             $this->trigger_event($entity);
             $returnedtext .= $this->renderer->notification(
-                persistent_utils::get_string_for_entity($this->refpersistentclass, 'entity:deleted', $entitydisplayname),
+                entity_utils::get_string_for_entity($this->refpersistentclass, 'entity:deleted', $entitydisplayname),
                 'notifysuccess');
             $returnedtext .= $this->renderer->single_button($this->persistentnavigation->get_list_url(), get_string('continue'));
         }

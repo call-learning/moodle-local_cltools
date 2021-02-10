@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
-use local_cltools\local\crud\form\persistent_list_filter;
+use html_writer;
 use moodle_url;
 use pix_icon;
 use popup_action;
@@ -40,15 +40,12 @@ use table_sql;
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class persistent_list extends table_sql {
+class entity_table extends table_sql implements \core_table\dynamic  {
 
     /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
      * avoid hitting the DB too much
      */
     private $userfullnames = array();
-
-    /** @var persistent_list_filter $filterform filterform */
-    private $filterform = null;
 
     protected static $persistentclass = null;
 
@@ -58,8 +55,6 @@ abstract class persistent_list extends table_sql {
      * Sets up the page_table parameters.
      *
      * @param string $uniqueid unique id of form.
-     * @param string $persistentclass
-     * @param persistent_list_filter $filterform (optional) filter form.
      * @throws \coding_exception
      * @see page_list::get_filter_definition() for filter definition
      */
@@ -70,12 +65,10 @@ abstract class persistent_list extends table_sql {
 
         // Create the related persistent filter form.
 
-        $refpersistentfiltersclass = (new \ReflectionClass(static::$persistentclass))->getNamespaceName() . "\\list_filters";
-        $this->filterform = new $refpersistentfiltersclass($this);
         $cols = [];
         $headers = [];
 
-        $persistentprefix = persistent_utils::get_persistent_prefix(static::$persistentclass);
+        $persistentprefix = entity_utils::get_persistent_prefix(static::$persistentclass);
 
         foreach (static::define_properties() as $name => $prop) {
             $cols[] = $name;
@@ -95,8 +88,19 @@ abstract class persistent_list extends table_sql {
         $this->pageable(true);
         $this->set_attribute('class', 'generaltable generalbox table-sm');
         $this->actionsdefs = $actionsdefs;
+        $this->set_entity_sql();
     }
 
+    /**
+     * Set SQL parameters (where, from,....) from the entity
+     *
+     * This can be overridden when we are looking at linked entities.
+     */
+    protected function set_entity_sql() {
+        $sqlfields = forward_static_call([static::$persistentclass, 'get_sql_fields'], 'entity', '');
+        $from = static::$persistentclass::TABLE;
+        $this->set_sql($sqlfields,'{'.$from.'} entity','1=1', []);
+    }
     /**
      * Default property definition
      *
@@ -120,24 +124,16 @@ abstract class persistent_list extends table_sql {
     protected static function add_all_definition_from_persistent(&$existingproperties) {
 
         foreach (static::$persistentclass::properties_definition() as $name => $prop) {
-            if (persistent_utils::is_reserved_property($name) || !(empty($existingproperties[$name]))) {
+            if (entity_utils::is_reserved_property($name) || !(empty($existingproperties[$name]))) {
                 continue;
             }
-            $label = persistent_utils::get_string_for_entity(static::$persistentclass, $name);
+            $label = entity_utils::get_string_for_entity(static::$persistentclass, $name);
             $existingproperties[$name] = (object) [
                 'fullname' => $label
             ];
         }
     }
 
-    /**
-     * Get associated filter form
-     *
-     * @return persistent_list_filter|null
-     */
-    public function get_filter_form() {
-        return $this->filterform;
-    }
 
     /**
      * Gets the user full name helper
@@ -231,7 +227,7 @@ abstract class persistent_list extends table_sql {
      * @throws \dml_exception
      */
     protected function internal_col_files($entity, $entityfilearea, $entityfilecomponent, $altmessage = 'entity-image') {
-        $imagesurls = persistent_utils::get_files_urls(
+        $imagesurls = entity_utils::get_files_urls(
             $entity->id,
             $entityfilearea,
             $entityfilecomponent);
@@ -243,75 +239,20 @@ abstract class persistent_list extends table_sql {
     }
 
     /**
-     * Build a search query for the given field
+     * Get the dynamic table end wrapper.
      *
-     * @param string $fieldname
-     * @param array $joins
-     * @param array $params
-     */
-    protected function build_search_filter($fieldname, $def, $searchedvalue, &$joins, &$params) {
-        global $DB;
-        // TODO : deal with SQL in or sql = for int.
-        switch ($def->datatype) {
-            case 'int':
-                $joins[] = "$fieldname =:$fieldname";
-                $params[$fieldname] = $searchedvalue;
-                break;
-            case 'text':
-                $joins[] = $DB->sql_like($fieldname, ':' . $fieldname, false, false);
-                $params[$fieldname] = '%' . $DB->sql_like_escape($searchedvalue) . '%';
-        }
-    }
-
-    /**
-     * Query the database. Store results in the object for use by build_table.
+     * This ones has a specificity that will help with entities/crud.
      *
-     * @param int $pagesize size of page for paginated displayed table.
-     * @param bool $useinitialsbar do you want to use the initials bar.
-     * @throws \dml_exception
+     * @return string
      */
-    public function query_db($pagesize, $useinitialsbar = true) {
-        global $DB;
+    protected function get_dynamic_table_html_end(): string {
+        global $PAGE;
 
-        $joins = array('1=1');
-        $params = array();
-
-        $orderby = '';
-        if ($this->filterform) {
-            if ($data = $this->filterform->get_data()) {
-                $filterdefinitions = $this->filterform->get_filter_definition();
-                foreach ($filterdefinitions as $key => $filterdef) {
-                    if ($key != 'orderby') {
-                        if (!empty($data->$key)) {
-                            $this->build_search_filter($key, $filterdef, $data->$key, $joins, $params);
-                        }
-                    } else {
-                        $orderby = ''; // TODO Deal with this case.
-                    }
-                }
-            }
-        }
-        $selector = implode(' AND ', $joins);
-
-        if (!$this->is_downloading()) {
-            $total = $DB->count_records_select(static::$persistentclass::TABLE, $selector, $params);
-            $this->pagesize($pagesize, $total);
-        } else {
-            $this->pageable(false);
+        if (is_a($this, \core_table\dynamic::class)) {
+            $PAGE->requires->js_call_amd('local_cltools/entity_dynamic_table', 'init');
+            return html_writer::end_tag('div');
         }
 
-        // Get all matching data.
-        $this->rawdata = $DB->get_recordset_select(static::$persistentclass::TABLE,
-            $selector,
-            $params,
-            $orderby,
-            '*',
-            $this->get_page_start(),
-            $this->get_page_size());
-
-        // Set initial bars.
-        if ($useinitialsbar && !$this->is_downloading()) {
-            $this->initialbars($total > $pagesize);
-        }
+        return '';
     }
 }

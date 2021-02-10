@@ -26,8 +26,8 @@ namespace local_cltools\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_cltools\local\crud\output\entity_table_renderable;
 use plugin_renderer_base;
-use local_cltools\local\crud\entity_list_renderable;
 
 /**
  * Renderer for CompetVetEval
@@ -41,11 +41,11 @@ class renderer extends plugin_renderer_base {
     // This is used as a default renderer for the crud_helper.
 
     /**
-     * @param entity_list_renderable $entitylist
+     * @param entity_table_renderable $entitytable
      */
-    public function render_entity_list(entity_list_renderable $entitylist) {
+    public function render_entity_table(entity_table_renderable $entitytable) {
         ob_start();
-        $entitylist->entitylist->out($entitylist->perpage, true);
+        $entitytable->entitytable->out($entitytable->perpage, true);
         $o = ob_get_contents();
         ob_end_clean();
         return $o;

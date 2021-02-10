@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Persistent form test case
+ * Persistent list test case
  *
  * @package     local_cltools
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
@@ -27,13 +27,13 @@ use local_cltools\local\crud\helper as crud_helper;
 global $CFG;
 
 /**
- * Persistent form test case
+ * Persistent list test case
  *
  * @package     local_cltools
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_persistent_form_testcase extends \advanced_testcase {
+class local_cltools_entity_list_testcase extends \advanced_testcase {
     /**
      * Setup persistent table
      */

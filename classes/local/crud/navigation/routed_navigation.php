@@ -28,7 +28,7 @@ use local_cltools\local\crud\helper\crud_add;
 use local_cltools\local\crud\helper\crud_delete;
 use local_cltools\local\crud\helper\crud_edit;
 use local_cltools\local\crud\helper\crud_view;
-use local_cltools\local\crud\persistent_utils;
+use local_cltools\local\crud\entity_utils;
 use moodle_url;
 
 /**
