@@ -15,22 +15,28 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_cltools/simple
+    @template local_cltools/dynamic_table_sql
 
 
     Example context (json):
     {
-        "starttime": <int timestamp>,
-        "endtime": <int timestamp>,
-        "mineval": 1,
+
 
     }
 }}
-<div>
-    <h3>{{title}}</h3>
-    <p>{{{description}}}</p>
-    <span class="starttime">{{#userdate}} {{starttime}}, {{#str}} strftimedate {{/str}} {{/userdate}}</span>
-    <span class="endtime">{{#userdate}} {{endtime}}, {{#str}} strftimedate {{/str}} {{/userdate}}</span>
-    <span class="mineval">{{mineval}}</span>
-    {{>local_cltools/persistent_info}}
+<div id="table-{{uniqid}}"
+     class="dynamic-table-sql"
+     data-table-uniqueid="{{tableuniqueid}}"
+     data-table-pagesize="{{pagesize}}"
+     data-table-filters="{{{filtersetjson}}}"
+     data-table-sort-data="{{sortdatajson}}"
+     data-table-handler="{{handler}}"
+     data-table-iscrud="{{tableuniqueid}}"
+    >
 </div>
+
+{{#js}}
+    require(['local_cltools/local/table/dynamic'], function(dynamic) {
+        dynamic.init('table-{{uniqid}}');
+    });
+{{/js}}

@@ -25,6 +25,8 @@
 namespace local_cltools\local\crud\form;
 defined('MOODLE_INTERNAL') || die();
 use local_cltools\local\crud\entity_utils;
+use local_cltools\local\formatter\base;
+use local_cltools\local\formatter\hidden;
 use local_cltools\local\forms\form_cltools_elements;
 use stdClass;
 // Custom form element types
@@ -58,7 +60,7 @@ abstract class entity_form extends \core\form\persistent {
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
 
-    protected $formdefinition = null;
+    protected $formatters = [];
 
     /**
      * persistent_form constructor.
@@ -74,7 +76,7 @@ abstract class entity_form extends \core\form\persistent {
      */
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
         $editable = true, $ajaxformdata = null) {
-        $this->formdefinition = $this->get_mix_persistent_form_properties();
+        $this->mix_persistent_definition();
         // TODO: at some point we will need to get rid of persistentclass as static.
         // The only exception right not if the provided persistent is null...
 
@@ -94,7 +96,7 @@ abstract class entity_form extends \core\form\persistent {
     }
 
     /**
-     * Additional definitions
+     * Additional definitions for the form
      *
      * @return array|array[]
      */
@@ -148,38 +150,41 @@ abstract class entity_form extends \core\form\persistent {
     }
 
     /**
-     * Get dynamic form properties
+     * Get dynamic form properties from either form definition or directly from the persistent
      *
-     * @return array|array[]
      * @throws \coding_exception
      */
-    protected function get_mix_persistent_form_properties() {
+    protected function mix_persistent_definition() {
         $properties = (static::$persistentclass)::properties_definition();
         $formproperties = $this->define_properties();
+        $properties = array_map(
+            function($prop) {
+                return !empty($prop['format'])? $prop['format']: [];
+            },
+            $properties
+        );
         $allproperties = array_merge(array_keys($properties), array_keys($formproperties));
         foreach ($allproperties as $name) {
-            $forminfo = !empty($formproperties[$name])? (object)$formproperties[$name]: null;
-            if (empty($forminfo)) {
-                $forminfo = new \stdClass();
-                $forminfo->type = 'hidden';
-                $forminfo->rawtype = $prop['type'];
-            }
+            $forminfo = (object) array_merge(
+                [
+                    'type'=> 'hidden',
+                ],
+                !empty($allproperties[$name])? $allproperties[$name]: []
+            );
             if (empty($properties[$name])) {
                 switch ($forminfo->type) {
                     case 'file_manager':
-                        $prop['type'] = 'filemanager';
-                        $prop['default'] = '';
+                        $forminfo->type = 'filemanager';
+                        $possibledefault = '';
                         break;
                 }
-            } else {
-                $prop = $properties[$name];
             }
-
             // Uniformise the name.
             if (empty($forminfo->fullname)) {
                 $forminfo->fullname = entity_utils::get_string_for_entity(static::$persistentclass, $name);
             }
             $possibledefault = '';
+            $formatter = null;
             if (entity_utils::is_reserved_property($name)) {
                 switch ($name) {
                     case 'id':
@@ -194,71 +199,15 @@ abstract class entity_form extends \core\form\persistent {
                         $possibledefault = $USER->id;
                         break;
                 }
-                $forminfo->type = 'hidden';
-                $forminfo->rawtype = $prop['type'];
-            }
-            // Set default value.
-            $forminfo->default = !empty($prop['default']) ? $prop['default'] : $possibledefault;
-
-            // Now the type.
-
-            if (empty($forminfo->type)) {
-                switch ($prop['type']) {
-                    // TODO: Deal with more form types and further attributes.
-                    // Maybe we can have a closure for this as it happens for default value.
-                    case PARAM_TEXT:
-                    case PARAM_ALPHANUMEXT:
-                    case PARAM_ALPHANUM:
-                    case PARAM_ALPHA:
-                        $forminfo->type = 'text';
-                        $forminfo->rawtype = $prop['type'];
-                        break;
-                    case PARAM_INT:
-                        if (!empty($prop['choices'])) {
-                            $forminfo->choices = $prop['choices'];
-                            $forminfo->type = 'select_choice';
-                        } else {
-                            $forminfo->type = 'int';
-                        }
-                        $forminfo->rawtype = PARAM_INT;
-                        break;
-                    case PARAM_BOOL:
-                        $forminfo->type = 'bool';
-                        $forminfo->rawtype = PARAM_BOOL;
-                        break;
-                    default:
-                        $forminfo->type = 'text';
-                        $forminfo->rawtype = PARAM_RAW;
-                }
+                $formatter = new hidden();
+                $formatter->set_param_type(PARAM_INT);
             } else {
-                switch ($forminfo->type) {
-                    case 'entities_sortable_list':
-                    case 'editor':
-                        $forminfo->rawtype = PARAM_RAW;
-                        break;
-                    case 'entity_selector':
-                    case 'select_choice':
-                    case 'int':
-                        $forminfo->rawtype = PARAM_INT;
-                        break;
-                    case 'text':
-                        $forminfo->rawtype = PARAM_TEXT;
-                        break;
-                    case 'bool':
-                        $forminfo->rawtype = PARAM_BOOL;
-                        break;
-                    case 'hidden':
-                        // Leave default type here.
-                        break;
-                    default:
-                        $forminfo->rawtype = PARAM_RAW;
-                }
+                $formatter = base::get_instance_from_type($forminfo->type);
             }
-            $forminfo->required = entity_utils::is_property_required($prop);
-            $formproperties[$name] = $forminfo; // Update it.
+            $formatter->set_required(entity_utils::is_property_required($properties[$name]));
+            $formatter->set_default($possibledefault);
+            $this->formatters[$name] = $forminfo; // Update it.
         }
-        return $formproperties;
-
     }
 
     /**
@@ -266,47 +215,8 @@ abstract class entity_form extends \core\form\persistent {
      */
     public function definition() {
         $mform = $this->_form;
-        foreach ($this->formdefinition as $name => $prop) {
-            switch ($prop->type) {
-                case 'file_manager':
-                    global $DB;
-                    $formoptions = $this->file_get_option($prop);
-                    $mform->addElement('filemanager', $name, $prop->fullname, $formoptions);
-                    $mform->setType($name, PARAM_INT);
-                    break;
-                case 'editor':
-                    $formoptions = $this->editor_get_option($prop);
-                    $mform->addElement('editor', $name . '_editor', $prop->fullname, null, $formoptions);
-                    $mform->setType($name, PARAM_RAW);
-                    break;
-                case 'entity_selector':
-                    global $DB;
-                    $info = $prop->selector_info;
-                    if (!$info) {
-                        debugging('Issue with persistent form defintion for' . $prop->fullname);
-                    } else {
-                        $entitytype = $info->entity_type;
-                        $allrecords = $DB->get_records_menu($entitytype::TABLE, null, $fields = 'id,' . $info->display_field);
-                        $mform->addElement('searchableselector', $name, $prop->fullname, $allrecords);
-                    }
-                    break;
-                case 'select_choice':
-                    $choices = $prop->choices;
-                    $mform->addElement('select', $name, $prop->fullname, $choices);
-                    break;
-                case 'text':
-                case 'int':
-                    $mform->addElement('text', $name, $prop->fullname);
-                    break;
-                case 'bool':
-                    $mform->addElement('advcheckbox', $name, $prop->fullname);
-                    break;
-                case 'hidden':
-                    $mform->addElement('hidden', $name, $prop->default);
-                    break;
-                default:
-                    $mform->addElement($prop->type, $name, $prop->fullname);
-            }
+        foreach ($this->formatters as $name => $formatter) {
+            $formatter->add_form_element($mform)
             $mform->setType($name, $prop->rawtype);
             // TODO: Deal with default value.
             if ($prop->required) {
@@ -365,7 +275,7 @@ abstract class entity_form extends \core\form\persistent {
     protected function get_file_fields() {
         $mform = $this->_form;
         $filefield = [];
-        $properties = $this->get_mix_persistent_form_properties();
+        $properties = $this->mix_persistent_definition();
         foreach ($mform->_elements as $e) {
             $elementtype = $e->getType();
             $elementname = $this->get_real_element_name($e);

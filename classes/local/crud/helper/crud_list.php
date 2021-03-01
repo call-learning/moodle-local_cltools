@@ -25,11 +25,7 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
-use core\persistent;
-use local_cltools\local\crud\entity_list_renderable;
-use local_cltools\local\crud\output\entity_table_renderable;
-use local_cltools\sample\simple\entities_list;
-use moodle_url;
+use local_cltools\output\table\entity_table_renderable;
 use single_button;
 
 /**
@@ -71,7 +67,7 @@ class crud_list extends base {
         $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation, $pagesrooturl);
+            $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_list_url();
     }
     /**

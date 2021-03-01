@@ -220,7 +220,7 @@ class entity_utils {
      * The wording "null"/"null allowed" is confusing so we use this method as a way to make
      * it less ambiguous.
      *
-     * @param $prop
+     * @param array $prop
      * @return bool
      */
     public static function is_property_required($prop) {

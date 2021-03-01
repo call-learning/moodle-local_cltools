@@ -15,23 +15,37 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dynamic table addons
- *
- * This is basically for Moodle 3.9 the same as 'extends \table_sql implements dynamic_table'
- * but with the capability to find the core table in persistent namespace
+ * Renderable for entities table
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\table;
+namespace local_cltools\output\table;
 
-use html_writer;
-use table_sql;
+use local_cltools\local\crud\entity_table;
+use local_cltools\local\table\dynamic_table_sql;
+use moodle_url;
+use renderable;
 
-global $CFG;
+defined('MOODLE_INTERNAL') || die();
 
-class dynamic_table_sql extends table_sql implements \core_table\dynamic {
-
+/**
+ * Renderable for entities table
+ *
+ * @package    local_resourcelibrary
+ * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class entity_table_renderable extends dynamic_table_sql_renderable {
+    /**
+     * Download logs in specified format.
+     */
+    public function download() {
+        $filename = 'page_list' . userdate(time(), get_string('backupnameformat', 'langconfig'), 99, false);
+        $this->entitytable->is_downloading('csv', $filename);
+        $this->entitytable->out($this->perpage, false);
+    }
 }
+

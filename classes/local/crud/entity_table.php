@@ -24,14 +24,13 @@
 
 namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/tablelib.php');
 
+use context;
 use html_writer;
+use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use pix_icon;
 use popup_action;
-use table_sql;
 
 /**
  * Persistent list base class
@@ -40,7 +39,7 @@ use table_sql;
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity_table extends table_sql {
+class entity_table extends dynamic_table_sql {
 
     /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
      * avoid hitting the DB too much
@@ -77,10 +76,16 @@ class entity_table extends table_sql {
             } else {
                 $headers[] = get_string($persistentprefix . ':' . $name, 'local_cltools');
             }
-
+            switch($prop->type) {
+                case PARAM_
+            }
         }
         $cols[] = 'actions';
+        if (!in_array('id', $cols)) {
+            $cols[] = 'id';
+        }
         $headers[] = get_string('actions', 'local_cltools');
+        $headers[] = get_string('id', 'local_cltools');
         $this->define_columns($cols);
         $this->define_headers($headers);
         $this->collapsible(false);
@@ -129,7 +134,8 @@ class entity_table extends table_sql {
             }
             $label = entity_utils::get_string_for_entity(static::$persistentclass, $name);
             $existingproperties[$name] = (object) [
-                'fullname' => $label
+                'fullname' => $label,
+                'type' => $prop['type']
             ];
         }
     }
@@ -218,7 +224,7 @@ class entity_table extends table_sql {
 
 
     /**
-     * Utility to get the relevant files for a givent entity
+     * Utility to get the relevant files for a given entity
      *
      * @param object $entity
      * @return string
@@ -238,21 +244,7 @@ class entity_table extends table_sql {
         return $imageshtml;
     }
 
-    /**
-     * Get the dynamic table end wrapper.
-     *
-     * This ones has a specificity that will help with entities/crud.
-     *
-     * @return string
-     */
-    protected function get_dynamic_table_html_end(): string {
-        global $PAGE;
-
-        if (is_a($this, \core_table\dynamic::class)) {
-            $PAGE->requires->js_call_amd('local_cltools/entity_dynamic_table', 'init');
-            return html_writer::end_tag('div');
-        }
-
-        return '';
+    public function get_context() {
+        return \context_system::instance();
     }
 }

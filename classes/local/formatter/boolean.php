@@ -15,41 +15,56 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renderer for CL Tools
+ * Base formatter
+ *
+ * For input and output
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\output;
 
+namespace local_cltools\local\formatter;
 defined('MOODLE_INTERNAL') || die();
 
-use local_cltools\output\table\entity_table_renderable;
-use plugin_renderer_base;
-
-/**
- * Renderer for CompetVetEval
- *
- * @package    local_resourcelibrary
- * @copyright  2020 CALL Learning 2²020 - Laurent David laurent@call-learning.fr
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class renderer extends plugin_renderer_base {
-
-    // This is used as a default renderer for the crud_helper.
+class boolean extends base  {
 
     /**
-     * @param entity_table_renderable $entitytable
+     * Return a printable version of the current value
+     * @param $value
+     * @return mixed
      */
-    public function render_entity_table(entity_table_renderable $entitytable) {
-//        ob_start();
-//        $entitytable->dynamictable->out($entitytable->perpage, true);
-//        $o = ob_get_contents();
-//        ob_end_clean();
+    public function get_printable($value, ...$additionalargs) {
+        return $value;
+    }
 
-        return $this->render_from_template('local_cltools/dynamic_table_sql',
-            $entitytable->export_for_template($this));
+    /**
+     * Get an identifier for this type of format
+     *
+     * @return mixed
+     */
+    public function get_format_type() {
+        return 'checkbox';
+    }
+
+    /**
+     * Get an identifier for this type of format
+     *
+     * @return mixed
+     */
+    public function get_param_type() {
+        return PARAM_BOOL;
+    }
+
+
+    /**
+     * Add element onto the form
+     * @param $mform
+     * @param mixed ...$additionalargs
+     * @return mixed
+     */
+    public function internal_add_form_element(&$mform, $name, $fullname, $options = null) {
+        $mform->addElement('advcheckbox', $name, $fullname);
     }
 }

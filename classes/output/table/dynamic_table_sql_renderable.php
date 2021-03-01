@@ -22,22 +22,26 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\crud\output;
+namespace local_cltools\output\table;
 
 use local_cltools\local\crud\entity_table;
+use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use renderable;
+use renderer_base;
+use stdClass;
+use templatable;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Renderable for entities table
+ * Renderable for dynamic table
  *
  * @package    local_resourcelibrary
- * @copyright  2020 CALL Learning 2020 - Laurent David laurent@call-learning.fr
+ * @copyright  2020 CALL Learning - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity_table_renderable implements renderable {
+class dynamic_table_sql_renderable implements renderable, templatable  {
     /** @var int page number */
     public $page;
 
@@ -50,13 +54,13 @@ class entity_table_renderable implements renderable {
     /** @var string order to sort */
     public $order;
 
-    /** @var entity_table page list */
-    public $entitytable;
+    /** @var dynamic_table_sql table */
+    public $dynamictable;
 
     /**
      * Constructor
      *
-     * @param entity_table $entitytable
+     * @param dynamic_table_sql $dynamictable
      * @param string $url
      * @param int $page
      * @param int $perpage
@@ -64,7 +68,7 @@ class entity_table_renderable implements renderable {
      * @throws \dml_exception
      */
     public function __construct(
-        $entitytable,
+        $dynamictable,
         $url = "",
         $page = 0,
         $perpage = 100
@@ -76,13 +80,13 @@ class entity_table_renderable implements renderable {
         } else {
             $url = new moodle_url($url);
         }
-        $this->entitytable = $entitytable;
+        $this->dynamictable = $dynamictable;
         $this->page = $page;
         $this->perpage = $perpage;
         $this->url = $url;
-        $this->entitytable->define_baseurl($this->url);
-        $this->entitytable->is_downloadable(true);
-        $this->entitytable->show_download_buttons_at(array(TABLE_P_BOTTOM));
+        $this->dynamictable->define_baseurl($this->url);
+        $this->dynamictable->is_downloadable(true);
+        $this->dynamictable->show_download_buttons_at(array(TABLE_P_BOTTOM));
     }
 
     /**
@@ -90,8 +94,20 @@ class entity_table_renderable implements renderable {
      */
     public function download() {
         $filename = 'page_list' . userdate(time(), get_string('backupnameformat', 'langconfig'), 99, false);
-        $this->entitytable->is_downloading('csv', $filename);
-        $this->entitytable->out($this->perpage, false);
+        $this->dynamictable->is_downloading('csv', $filename);
+        $this->dynamictable->out($this->perpage, false);
+    }
+
+    public function export_for_template(renderer_base $output) {
+        $context = new stdClass();
+        $context->tableuniqueid = $this->dynamictable->uniqueid;
+        $context->filtersetjson = '';
+        $context->sortdatajson = '';
+        $context->pagesize = $this->perpage;
+        $context->handler = get_class($this->dynamictable);
+        return $context;
     }
 }
+
+
 

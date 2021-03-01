@@ -17,18 +17,24 @@
  * Cltools services
  *
  * @package     local_cltools
- * @category    upgrade
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @category    services
+ * @copyright   2021 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $functions = array(
-    'cltools_table_get_dynamic_table_content' => [
-        'classname' => 'local_cltools\external\dynamic_table_get',
-        'methodname' => 'execute',
-        'description' => 'Get the dynamic table content raw html',
+    'cltools_dynamic_table_get_rows' => [
+        'classname' => 'local_cltools\\local\\table\\external',
+        'methodname' => 'get_rows',
+        'description' => 'Get rows from a table',
         'type' => 'read',
-        'ajax' => true,
-        // 'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+        'ajax' => true
+    ],
+    'cltools_dynamic_table_get_columns' => [
+        'classname' => 'local_cltools\\local\\table\\external',
+        'methodname' => 'get_columns',
+        'description' => 'Get columns definition for a table',
+        'type' => 'read',
+        'ajax' => true
     ],
 );
