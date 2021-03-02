@@ -1,11 +1,23 @@
+Moment 2.29.1
+-------------
+
+https://github.com/moment/moment
+
+Instructions to import Moment into CLTools:
+
+1. Download the latest release from https://github.com/moment/moment
+2. copy 'moment.js' into 'amd/src/moment-lazy.js'
+   Add /* eslint-disable */ in the beginning
+
 Tabulator 4.9.3
 ---------------
 https://github.com/olifolkerd/tabulator
 
-Instructions to import Tabulator player into CLTools:
+Instructions to import Tabulator into CLTools:
 
 1. Download the latest release from https://github.com/olifolkerd/tabulator
-2. copy 'dist/tabulator-lazy.js' into 'amd/src/tabulator-lazy.js'
+2. copy 'dist/tabulator-lazy.js' into 'amd/src/table/tabulator-lazy.js'
    Add /* eslint-disable */ in the beginning
-4. copy 'tabulator.css' into 'styles.css'
+3. copy 'tabulator.css' into 'styles.css'
    Add /* stylelint-disable */ in the beginning.
+

@@ -25,9 +25,7 @@
 namespace local_cltools\local\crud\form;
 defined('MOODLE_INTERNAL') || die();
 use local_cltools\local\crud\entity_utils;
-use local_cltools\local\formatter\base;
-use local_cltools\local\formatter\hidden;
-use local_cltools\local\forms\form_cltools_elements;
+use local_cltools\local\field\base;
 use stdClass;
 // Custom form element types
 global $CFG;
@@ -60,7 +58,7 @@ abstract class entity_form extends \core\form\persistent {
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
 
-    protected $formatters = [];
+    protected $fields = [];
 
     /**
      * persistent_form constructor.
@@ -76,7 +74,7 @@ abstract class entity_form extends \core\form\persistent {
      */
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
         $editable = true, $ajaxformdata = null) {
-        $this->mix_persistent_definition();
+        $this->build_fields_info();
         // TODO: at some point we will need to get rid of persistentclass as static.
         // The only exception right not if the provided persistent is null...
 
@@ -115,10 +113,10 @@ abstract class entity_form extends \core\form\persistent {
      */
     protected function filter_data_for_persistent($data) {
         $filtereddata = parent::filter_data_for_persistent($data);
-        $allfilefields = $this->get_file_fields();
+        $fields = $this->get_file_fields_info();
         foreach ($this->_form->_elements as $e) {
             $ename = $e->getName();
-            if ($e->getType() == 'editor' && key_exists($ename, $allfilefields)) {
+            if ($e->getType() == 'editor' && key_exists($ename, $fields)) {
                 unset($filtereddata->$ename);
             }
         }
@@ -154,37 +152,46 @@ abstract class entity_form extends \core\form\persistent {
      *
      * @throws \coding_exception
      */
-    protected function mix_persistent_definition() {
-        $properties = (static::$persistentclass)::properties_definition();
+    protected function build_fields_info() {
+        $persistentprops = (static::$persistentclass)::properties_definition();
         $formproperties = $this->define_properties();
-        $properties = array_map(
+        // Merge array recursively so to get the values from the
+        // Form definition last.
+        $persistentprops = array_map(
             function($prop) {
-                return !empty($prop['format'])? $prop['format']: [];
+                $prop['rawtype'] =$prop['type'];
+                $format = empty($prop['format'])? $prop['format']: [];
+                return array_merge($prop, $format); // We make sure that the raw type is the
+                // PARAM_XXX
             },
-            $properties
+            $persistentprops
         );
-        $allproperties = array_merge(array_keys($properties), array_keys($formproperties));
-        foreach ($allproperties as $name) {
-            $forminfo = (object) array_merge(
+        $allproperties = array_merge_recursive($persistentprops, $formproperties);
+        foreach ($allproperties as $name => $format) {
+
+            $fieldinfo = (object) array_merge(
                 [
                     'type'=> 'hidden',
+                    'rawtype' => PARAM_RAW,
+                    'fullname' => entity_utils::get_string_for_entity(static::$persistentclass, $name),
+                    'fieldname' => $name
                 ],
                 !empty($allproperties[$name])? $allproperties[$name]: []
             );
-            if (empty($properties[$name])) {
-                switch ($forminfo->type) {
+
+            $this->fullname = empty($fielddef->fullname) ? PARAM_RAW : $fielddef->fullname;
+            $this->fieldname = empty($fielddef->fieldname) ? PARAM_RAW : $fielddef->fieldname;
+
+                switch ($fieldinfo->type) {
                     case 'file_manager':
-                        $forminfo->type = 'filemanager';
-                        $possibledefault = '';
+                        $fieldinfo['filemanageroptions'] = $this->filemanager_get_default_options($fieldinfo);
                         break;
+                    case 'editor':
+                        $fieldinfo['filemanageroptions'] = $this->editor_get_option($fieldinfo);
                 }
-            }
-            // Uniformise the name.
-            if (empty($forminfo->fullname)) {
-                $forminfo->fullname = entity_utils::get_string_for_entity(static::$persistentclass, $name);
-            }
+
             $possibledefault = '';
-            $formatter = null;
+            $field = null;
             if (entity_utils::is_reserved_property($name)) {
                 switch ($name) {
                     case 'id':
@@ -199,14 +206,15 @@ abstract class entity_form extends \core\form\persistent {
                         $possibledefault = $USER->id;
                         break;
                 }
-                $formatter = new hidden();
-                $formatter->set_param_type(PARAM_INT);
-            } else {
-                $formatter = base::get_instance_from_type($forminfo->type);
+                $fieldinfo['rawtype'] = PARAM_INT;
+                $fieldinfo['type'] = 'hidden';
+                $fieldinfo['default'] = $possibledefault;
             }
-            $formatter->set_required(entity_utils::is_property_required($properties[$name]));
-            $formatter->set_default($possibledefault);
-            $this->formatters[$name] = $forminfo; // Update it.
+
+            $field = base::get_instance_from_def($fieldinfo->type,
+                $fieldinfo
+            );
+            $this->fields[$name] = $field; // Update it.
         }
     }
 
@@ -215,16 +223,8 @@ abstract class entity_form extends \core\form\persistent {
      */
     public function definition() {
         $mform = $this->_form;
-        foreach ($this->formatters as $name => $formatter) {
-            $formatter->add_form_element($mform)
-            $mform->setType($name, $prop->rawtype);
-            // TODO: Deal with default value.
-            if ($prop->required) {
-                $mform->addRule($name, get_string('required'), 'required');
-            }
-            if ($prop->default) {
-                $mform->setDefault($name, $prop->default);
-            }
+        foreach ($this->fields as $name => $field) {
+            $field->add_form_element($mform);
         }
         $this->additional_definitions($mform);
         $this->add_action_buttons(true, get_string('save'));
@@ -233,11 +233,11 @@ abstract class entity_form extends \core\form\persistent {
     /**
      * Get options for editor
      *
-     * @param $forminfo
+     * @param $fieldinfo
      * @return array
      * @throws \dml_exception
      */
-    protected function editor_get_option($forminfo) {
+    protected function editor_get_option($fieldinfo) {
         global $CFG;
         $formoptions =
             [
@@ -248,21 +248,19 @@ abstract class entity_form extends \core\form\persistent {
                 'context' => \context_system::instance()
             ];
         $formoptions =
-            empty($forminfo->editor_options) ? $formoptions : array_merge($formoptions, $forminfo->editor_options);
+            empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
         return $formoptions;
     }
 
     /**
      * Get options for filemanager
      *
-     * @param $forminfo
+     * @param $fieldinfo
      * @return array
      * @throws \dml_exception
      */
-    protected function file_get_option($forminfo) {
+    protected function filemanager_get_default_options(&$fieldinfo) {
         $formoptions = ['context' => \context_system::instance()];
-        $formoptions =
-            empty($forminfo->file_options) ? $formoptions : array_merge($formoptions, $forminfo->file_options);
         return $formoptions;
     }
 
@@ -272,22 +270,21 @@ abstract class entity_form extends \core\form\persistent {
      * @return array
      * @throws \coding_exception
      */
-    protected function get_file_fields() {
+    protected function get_file_fields_info() {
+        static $fields = [];
+        if (!empty($fields)) {
+            return $fields;
+        }
         $mform = $this->_form;
-        $filefield = [];
-        $properties = $this->mix_persistent_definition();
+        $fields = [];
         foreach ($mform->_elements as $e) {
             $elementtype = $e->getType();
             $elementname = $this->get_real_element_name($e);
             if (in_array($elementtype, ['filemanager', 'file', 'editor'])) {
-                $filefield[$elementname] = (object) [
-                    'type' => $elementtype,
-                    'name' => $elementname,
-                    'definition' => $properties[$elementname]
-                ];
+                $fields[$elementname] = $this->fields[$elementname];
             }
         }
-        return $filefield;
+        return $fields;
     }
 
     /**
@@ -325,7 +322,7 @@ abstract class entity_form extends \core\form\persistent {
      * @throws \dml_exception
      */
     public function prepare_for_files() {
-        $allfilefields = $this->get_file_fields();
+        $fields = $this->get_file_fields_info();
         $context = \context_system::instance();
         $component = entity_utils::get_component(static::$persistentclass);
         $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
@@ -333,26 +330,24 @@ abstract class entity_form extends \core\form\persistent {
         $itemdata = $item->to_record();
         $itemid = $itemdata ? $itemdata->id : 0;
 
-        foreach ($allfilefields as $field) {
-            $filearea = $filearearoot . '_' . $field->name;
-            if ($field->type == 'filemanager') {
-                $options = $this->file_get_option($allfilefields[$field->name]);
-                $filemanagerformelt = $field->name;
+        foreach ($fields as $fieldname => $field) {
+            $filearea = $filearearoot . '_' . $fieldname;
+            if ($field->get_type() == 'file_manager') {
+                $filemanagerformelt = $fieldname;
                 $draftitemid = file_get_submitted_draft_itemid($filemanagerformelt);
                 file_prepare_draft_area($draftitemid,
                     $context->id,
                     $component,
                     $filearea,
                     $itemid,
-                    $options);
+                    $field->get_formatter_parameters()['filemanageroptions']);
                 $itemdata->{$filemanagerformelt} = $draftitemid;
             }
-            if ($field->type == 'editor') {
+            if ($field->get_type() == 'editor') {
                 $itemid = $item->get('id');
-                $options = $this->editor_get_option($allfilefields[$field->name]);
                 file_prepare_standard_editor($itemdata,
-                    $field->name,
-                    $options,
+                    $fieldname,
+                    $field->get_formatter_parameters()['editoroptions'],
                     $context,
                     'local_cltools',
                     $filearea,
@@ -373,38 +368,36 @@ abstract class entity_form extends \core\form\persistent {
     public function save_submitted_files(&$originaldata) {
         $data = \moodleform::get_data();
 
-        $allfilefields = $this->get_file_fields();
+        $formatters = $this->get_file_fields_info();
         $context = \context_system::instance();
         $component = entity_utils::get_component(static::$persistentclass);
         $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
         $itemid = $this->get_persistent()->get('id');
-        foreach ($allfilefields as $field) {
-            $filearea = $filearearoot . '_' . $field->name;
-            if ($field->type == 'filemanager') {
-                $options = $this->file_get_option($allfilefields[$field->name]);
-                file_save_draft_area_files($data->{$field->name},
+        foreach ($formatters as $fieldname => $field) {
+            $filearea = $filearearoot . '_' . $fieldname;
+            if ($field->get_type() == 'file_manager') {
+                file_save_draft_area_files($data->{$fieldname},
                     $context->id,
                     $component,
                     $filearea,
                     $itemid,
-                    $options);
-            } else if ($field->type == 'editor') {
-                $options = $this->editor_get_option($allfilefields[$field->name]);
-                $data = file_postupdate_standard_editor($data, $field->name,
-                    $options,
+                    $field->get_formatter_parameters()['filemanageroptions']);
+            } else if ($field->get_type() == 'editor') {
+                $data = file_postupdate_standard_editor($data, $fieldname,
+                    $field->get_formatter_parameters()['editoroptions'],
                     $context,
                     $component,
                     $filearea,
                     $itemid);
-                $originaldata->{$field->name} = $data->{$field->name};
-                $originaldata->{$field->name . 'format'} = $data->{$field->name . 'format'};
+                $originaldata->{$fieldname} = $data->{$fieldname};
+                $originaldata->{$fieldname . 'format'} = $data->{$fieldname . 'format'};
             } else {
-                $this->save_stored_file($field->name,
+                $this->save_stored_file($fieldname,
                     $context->id,
                     $component,
                     $filearea,
                     $itemid,
-                    $options);
+                    $this->filemanager_get_default_options());
             }
 
         }

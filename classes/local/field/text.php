@@ -25,46 +25,40 @@
  */
 
 
-namespace local_cltools\local\formatter;
+namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class file_manager  extends base  {
-
-    /**
-     * Return a printable version of the current value
-     * @param $value
-     * @return mixed
-     */
-    public function get_printable($value, ...$additionalargs) {
-        return $value;
-    }
-
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function get_format_type() {
-        return 'html';
-    }
-
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function get_param_type() {
-        return PARAM_INT;
-    }
-
-
+class text extends base  {
     /**
      * Add element onto the form
      * @param $mform
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    protected function internal_add_form_element(&$mform, $name, $fullname, $options = null) {
-        $mform->addElement('filemanager', $name, $fullname, $options);
+    protected function internal_add_form_element(&$mform, $name, $fullname) {
+        $mform->addElement('text', $name, $fullname);
+    }
+    /**
+     * Get the additional information related to the way we need to format this
+     * information
+     *
+     * @return array|null associatvie array with related information on the way
+     * to format the data.
+     *
+     * @throws \coding_exception
+     */
+    public function get_formatter_parameters() {
+        return null;
+    }
+    /**
+     * Get the additional information related to the way we need to format this
+     * information
+     *
+     * @return array|null associatvie array with related information on the way
+     * to filter the data.
+     *
+     */
+    public function get_filter_parameters() {
+        return null;
     }
 }

@@ -71,7 +71,7 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
         $dynamictable,
         $url = "",
         $page = 0,
-        $perpage = 100
+        $perpage = 30
     ) {
         global $PAGE;
         // Use page url if empty.

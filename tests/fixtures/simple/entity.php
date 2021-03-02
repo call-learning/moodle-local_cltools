@@ -56,7 +56,10 @@ class entity extends \core\persistent {
             ),
             'description' => array(
                 'type' => PARAM_RAW,
-                'default' => ''
+                'default' => '',
+                'format' => [
+                    'type' => 'editor'
+                ]
             ),
             'descriptionformat' => array(
                 'choices' => array(FORMAT_HTML, FORMAT_MOODLE, FORMAT_PLAIN, FORMAT_MARKDOWN),

@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use context;
 use html_writer;
+use local_cltools\local\field\base;
+use local_cltools\local\field\html;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use pix_icon;
@@ -40,11 +42,6 @@ use popup_action;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entity_table extends dynamic_table_sql {
-
-    /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
-     * avoid hitting the DB too much
-     */
-    private $userfullnames = array();
 
     protected static $persistentclass = null;
 
@@ -61,31 +58,7 @@ class entity_table extends dynamic_table_sql {
         $actionsdefs = null
     ) {
         parent::__construct($uniqueid);
-
-        // Create the related persistent filter form.
-
-        $cols = [];
-        $headers = [];
-
-        $persistentprefix = entity_utils::get_persistent_prefix(static::$persistentclass);
-
-        foreach (static::define_properties() as $name => $prop) {
-            $cols[] = $name;
-            if ($prop && !empty($prop->fullname)) {
-                $headers[] = $prop->fullname;
-            } else {
-                $headers[] = get_string($persistentprefix . ':' . $name, 'local_cltools');
-            }
-            switch($prop->type) {
-                case PARAM_
-            }
-        }
-        $cols[] = 'actions';
-        if (!in_array('id', $cols)) {
-            $cols[] = 'id';
-        }
-        $headers[] = get_string('actions', 'local_cltools');
-        $headers[] = get_string('id', 'local_cltools');
+        list($cols, $headers) = $this->get_persistent_columns_definition();
         $this->define_columns($cols);
         $this->define_headers($headers);
         $this->collapsible(false);
@@ -96,6 +69,33 @@ class entity_table extends dynamic_table_sql {
         $this->set_entity_sql();
     }
 
+    protected function get_persistent_columns_definition() {
+        // Create the related persistent filter form.
+        $cols = [];
+        $headers = [];
+
+        $persistentprefix = entity_utils::get_persistent_prefix(static::$persistentclass);
+
+        $this->fields = static::define_properties();
+        $this->fields['actions'] =  base::get_instance_from_def('html',[
+            'fullname' => get_string('actions', 'local_cltools'),
+            'fieldname' => 'actions',
+            'rawtype' => PARAM_RAW,
+        ]);
+        foreach ($this->fields as $name => $field) {
+            $cols[] = $name;
+            if ($field && !empty($field->get_display_name())) {
+                $headers[] = $field->get_display_name();
+            } else {
+                $headers[] = get_string($persistentprefix . ':' . $name, 'local_cltools');
+            }
+        }
+        if (!in_array('id', $cols)) {
+            $cols[] = 'id';
+        }
+        $headers[] = get_string('id', 'local_cltools');
+        return [$cols, $headers];
+    }
     /**
      * Set SQL parameters (where, from,....) from the entity
      *
@@ -106,6 +106,7 @@ class entity_table extends dynamic_table_sql {
         $from = static::$persistentclass::TABLE;
         $this->set_sql($sqlfields,'{'.$from.'} entity','1=1', []);
     }
+
     /**
      * Default property definition
      *
@@ -115,85 +116,21 @@ class entity_table extends dynamic_table_sql {
      * @throws \ReflectionException
      */
     public static function define_properties() {
-        $props = [];
-        static::add_all_definition_from_persistent($props);
-        return $props;
-    }
-
-    /**
-     * Add all the fields from persistent class except the reserved ones
-     *
-     * @return array
-     * @throws \ReflectionException
-     */
-    protected static function add_all_definition_from_persistent(&$existingproperties) {
-
+        $fields = [];
         foreach (static::$persistentclass::properties_definition() as $name => $prop) {
             if (entity_utils::is_reserved_property($name) || !(empty($existingproperties[$name]))) {
                 continue;
             }
-            $label = entity_utils::get_string_for_entity(static::$persistentclass, $name);
-            $existingproperties[$name] = (object) [
-                'fullname' => $label,
-                'type' => $prop['type']
-            ];
+            $prop['fullname'] =  entity_utils::get_string_for_entity(static::$persistentclass, $name);
+            $prop['fieldname'] =  $name;
+            $prop['rawtype'] =  $prop['type'];
+
+            $formattype = empty($prop['format']['type']) ? 'text': $prop['format']['type'];
+            $fields[$name] =  base::get_instance_from_def($formattype,
+                array_merge($prop, empty($prop['format'])?[]:$prop['format'])
+            );
         }
-    }
-
-
-    /**
-     * Gets the user full name helper
-     *
-     * This function is useful because, in the unlikely case that the user is
-     * not already loaded in $this->userfullname it will fetch it from db.
-     *
-     * @param int $userid
-     * @return false|\lang_string|mixed|string
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    protected function get_user_fullname($userid) {
-        global $DB;
-
-        if (empty($userid)) {
-            return false;
-        }
-
-        if (!empty($this->userfullnames[$userid])) {
-            return $this->userfullnames[$userid];
-        }
-
-        // We already looked for the user and it does not exist.
-        if (isset($this->userfullnames[$userid]) && $this->userfullnames[$userid] === false) {
-            return false;
-        }
-
-        // If we reach that point new users logs have been generated since the last users db query.
-        list($usql, $uparams) = $DB->get_in_or_equal($userid);
-        $sql = "SELECT id," . get_all_user_name_fields(true) . " FROM {user} WHERE id " . $usql;
-        if (!$user = $DB->get_record_sql($sql, $uparams)) {
-            $this->userfullnames[$userid] = false;
-            return false;
-        }
-
-        $this->userfullnames[$userid] = fullname($user);
-        return $this->userfullnames[$userid];
-    }
-
-    /**
-     * Get time helper
-     *
-     * @param $time
-     * @return string
-     * @throws \coding_exception
-     */
-    protected function get_time($time) {
-        if (empty($this->download)) {
-            $dateformat = get_string('strftimedatetime', 'core_langconfig');
-        } else {
-            $dateformat = get_string('strftimedatetimeshort', 'core_langconfig');
-        }
-        return userdate($time, $dateformat);
+        return $fields;
     }
 
     /**

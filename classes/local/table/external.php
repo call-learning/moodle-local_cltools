@@ -32,6 +32,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use external_warnings;
+use local_cltools\local\filter\basic_filterset;
 
 class external extends \external_api {
     /**
@@ -73,7 +74,8 @@ class external extends \external_api {
             ),
             'filters' => new external_multiple_structure(
                 new external_single_structure([
-                    'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
+                    'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
+                    'name' => new external_value(PARAM_ALPHANUM, 'Name of the field', VALUE_REQUIRED),
                     'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
                     'values' => new external_multiple_structure(
                         new external_value(PARAM_RAW, 'Filter value'),
@@ -186,6 +188,30 @@ class external extends \external_api {
         ]);
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
+
+
+        $instanceclass= get_class($instance);
+        $filtersetclass = "{$instanceclass}_filterset";
+        if (!class_exists($filtersetclass)) {
+            $filtertypedef =  [];
+            foreach ($filters as $rawfilter) {
+                $filtertypedef[$rawfilter['name']] = 'local_cltools\\local\filter\\'. $rawfilter['type'];
+            }
+            $filterset = new basic_filterset($filtertypedef);
+
+        } else {
+            $filterset = new $filtersetclass();
+        }
+        $filterset->set_join_type($jointype);
+        foreach ($filters as $rawfilter) {
+            $filterset->add_filter_from_params(
+                $rawfilter['name'], // Field name.
+                $rawfilter['jointype'],
+                $rawfilter['values']
+            );
+        }
+
+        $instance->set_filterset($filterset);
         if ($pagenumber !== null) {
             $instance->set_page_number($pagenumber);
         }
@@ -194,10 +220,6 @@ class external extends \external_api {
             $pagesize = 20;
         }
 
-        //if ($hiddencolumns !== null) {
-        //    $instance->set_hidden_columns($hiddencolumns);
-        //}
-
         if ($resetpreferences === true) {
             $instance->mark_table_to_reset();
         }
@@ -205,15 +227,28 @@ class external extends \external_api {
         $PAGE->set_url($instance->baseurl);
 
         /* @var dynamic_table_sql $instance */
+        $instance->pageable(true);
+        $instance->set_page_number($pagenumber);
+        // Convert from an array of sort definition to column => sortorder
+        if (!empty($sortdata)) {
+            $sortdef = [];
+            foreach ($sortdata as $def) {
+                $def = (object) $def;
+                $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
+            }
+            $instance->set_sort_data($sortdef);
+        }
+
         $instance->build_table();
-        $rows = $instance->retrieve_row_data($pagesize);
+
+        $rows = $instance->retrieve_raw_data($pagesize);
         if (!empty($rows) && empty($rows[0]->id)) {
             throw new \UnexpectedValueException("The table handler class {$handler} must be return an id column 
             that will then be hidden but keep reference to the row unique identifier.");
         }
 
         return [
-            'pagescount' => 5,
+            'pagescount' => floor($instance->totalrows / $instance->pagesize),
             "data" => array_map(
                 function($r) {
                     return json_encode($r);
@@ -310,8 +345,10 @@ class external extends \external_api {
                     'title' => new external_value(PARAM_TEXT, 'Column title.'),
                     'field' => new external_value(PARAM_TEXT, 'Field name in reference to this title.'),
                     'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
-                    'formatter' => new external_value(PARAM_TEXT, 'Formatter: image, html, datetime ....'),
-                    'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....', VALUE_OPTIONAL),
+                    'filter' => new external_value(PARAM_ALPHANUMEXT, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
+                    'filterparams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
+                    'formatter' => new external_value(PARAM_ALPHANUMEXT, 'Formatter: image, html, datetime ....', VALUE_OPTIONAL),
+                    'formatterparams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....', VALUE_OPTIONAL),
                 ])
             );
     }
@@ -332,29 +369,8 @@ class external extends \external_api {
             throw new \UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
-
-        //$filtersetclass = "{$handler}_filterset";
-        //if (!class_exists($filtersetclass)) {
-        //    throw new \UnexpectedValueException("The filter specified ({$filtersetclass}) is invalid.");
-        //}
-
-        //$filterset = new $filtersetclass();
-        //$filterset->set_join_type($jointype);
-        //foreach ($filters as $rawfilter) {
-        //    $filterset->add_filter_from_params(
-        //        $rawfilter['name'],
-        //        $rawfilter['jointype'],
-        //        $rawfilter['values']
-        //    );
-        //}
-
         $instance = new $handler($uniqueid);
         self::validate_context($instance->get_context());
-
-        //        $instance->set_filterset($filterset);
-        //        $instance->set_sortdata($sortdata);
-        //        $alphabet = get_string('alphabet', 'langconfig');
-
         return $instance;
     }
 

@@ -46,29 +46,7 @@ class form extends entity_form {
      */
     protected static function define_properties() {
         global $DB;
-        $scales = $DB->get_records_menu('scale', null, '', 'id,name');
         return array(
-            'shortname' => (object) [
-                'type' => 'text'
-            ],
-            'idnumber' => [
-                'type' => 'text'
-            ],
-            'description' => [
-                'type' => 'editor'
-            ],
-            'parentid' => [
-                'type' => 'int'
-            ],
-            'path' => [
-                'type' => 'text'
-            ],
-            'sortorder' => array(
-                'type' => 'int'
-            ),
-            'scaleid' => array(
-                'type' => 'int'
-            ),
             'files' => [
                 'type' => 'file_manager'
             ]

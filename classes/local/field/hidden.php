@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Base formatter
+ * Base field
  *
  * For input and output
  *
@@ -25,58 +25,43 @@
  */
 
 
-namespace local_cltools\local\formatter;
+namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
 class hidden extends base  {
-
-    protected $rawtype = PARAM_RAW;
-
-    /**
-     * Return a printable version of the current value
-     * @param $value
-     * @return mixed
-     */
-    public function get_printable($value, ...$additionalargs) {
-        return $value;
-    }
-
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function get_format_type() {
-        return 'checkbox';
-    }
-
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function get_param_type() {
-        return $this->rawtype;
-    }
-
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function set_param_type($type) {
-        $this->rawtype = $type;
-    }
-
-
     /**
      * Add element onto the form
      * @param $mform
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_add_form_element(&$mform, $name, $fullname, $options = null) {
+    public function internal_add_form_element(&$mform, $name, $fullname) {
         $mform->addElement('hidden', $name);
         $mform->setType($name, $this->get_param_type());
+    }
+
+    /**
+     * Get the additional information related to the way we need to format this
+     * information
+     *
+     * @return array|null associatvie array with related information on the way
+     * to format the data.
+     *
+     * @throws \coding_exception
+     */
+    public function get_formatter_parameters() {
+        return [];
+    }
+
+    /**
+     * Get the additional information related to the way we need to format this
+     * information
+     *
+     * @return array|null associatvie array with related information on the way
+     * to filter the data.
+     *
+     */
+    public function get_filter_parameters() {
+        return [];
     }
 }
