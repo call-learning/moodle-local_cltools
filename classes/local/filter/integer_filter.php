@@ -60,4 +60,22 @@ class integer_filter extends filter {
 
         return $this;
     }
+
+    /**
+     * Get a specific filter for an element
+     *
+     * @param $fieldval
+     * @param string $joinsql
+     * @param null $tableprefix
+     * @return array
+     */
+    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
+        static $paramcount = 0;
+
+        $paramname = "intergerp_". ($paramcount++);
+        $params = [];
+        $where = " {$this->get_name()}  =  :$paramname ";
+        $params[$paramname] = $fieldval->value;
+        return array($where, $params);
+    }
 }

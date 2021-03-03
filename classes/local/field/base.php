@@ -28,7 +28,7 @@
 namespace local_cltools\local\field;
 
 defined('MOODLE_INTERNAL') || die();
-abstract class base  {
+abstract class base {
 
     protected $formatparameters = null;
 

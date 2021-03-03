@@ -40,7 +40,7 @@ use Iterator;
  * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filter implements Countable, Iterator, JsonSerializable {
+abstract class filter implements Countable, Iterator, JsonSerializable {
 
     /** @var in The default filter type (ANY) */
     const JOINTYPE_DEFAULT = 1;
@@ -266,4 +266,35 @@ class filter implements Countable, Iterator, JsonSerializable {
             'values' => $this->get_filter_values(),
         ];
     }
+
+    /**
+     * Get the sql where / params used for filtering
+     * @param $tableprefix
+     * @return array
+     */
+    public function get_sql_for_filter($tableprefix=null) {
+        $filtervalues = $this->get_filter_values();
+        $join ='AND';
+        if($this->get_join_type() === filterset::JOINTYPE_ANY) {
+            $join = 'OR';
+        }
+        $filterwheres = [];
+        $filterparams = [];
+        foreach($filtervalues as $fieldval) {
+           list($wheres, $params) = $this->get_sql_filter_element($fieldval, $tableprefix);
+           $filterwheres[]= $wheres;
+           $filterparams += $params;
+        }
+        return array(join(" $join ", $filterwheres), $filterparams);
+    }
+
+    /**
+     * Get a specific filter for an element that can be joined later
+     *
+     * @param $fieldval
+     * @param string $joinsql
+     * @param null $tableprefix
+     * @return array
+     */
+    abstract protected function get_sql_filter_element($fieldval, $tableprefix=null);
 }

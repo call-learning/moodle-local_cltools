@@ -41,13 +41,13 @@ const dateEditor = (cell, onRendered, success) => {
     editor.value = moment(cell.getValue(), "DD/MM/YYYY").format("YYYY-MM-DD");
 
     // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM)
-    onRendered(function(){
+    onRendered(function() {
         editor.focus();
         editor.style.css = "100%";
     });
 
     // When the value has been set, trigger the cell to update
-    function successFunc(){
+    function successFunc() {
         success(moment(editor.value, "YYYY-MM-DD").format("DD/MM/YYYY"));
     }
 
@@ -59,20 +59,22 @@ const dateEditor = (cell, onRendered, success) => {
 };
 
 const TABULATOR_FILTER_CONVERTER = {
-    'text' : {
+    'text': {
         to: 'input'
     },
     'select_choice': {
         to: 'select',
         transformer: (args) => {
-            return { values: args.choices };
-        }
+            return {values: args.choices};
+        },
+        headerFilterFunc: "="
     },
     'entity_selector': {
         to: 'select',
         transformer: (args) => {
-            return { values: args.choices };
-        }
+            return {values: args.choices};
+        },
+        headerFilterFunc: "="
     },
     'datetime': {
         to: 'datetime',
@@ -113,28 +115,61 @@ const formatterFilterTransform = (columndefs) => {
                 if ('editor' in converter) {
                     columndef.editor = converter.editor;
                 }
+                if ('headerFilterFunc' in converter) {
+                    columndef.headerFilterFunc = converter.headerFilterFunc;
+                }
             }
             return columndef;
         }
     );
 };
 
+const toNumericEqual = (val) => JSON.stringify({
+    direction: '=',
+    value: val,
+});
+
 const MOODLE_FILTER_CONVERTER = {
-    'input' : {
-        to: 'string_filter'
-    },
     'like': {
+        to: 'string_filter',
+        transformer: (args) => {
+            return {value: args};
+        }
+    },
+    '=': {
         to: 'numeric_comparison_filter',
-        transformer:(args) => {
-            return [
-                JSON.stringify({
-                direction : '=',
-                value : args,
-            })];
+        transformer: (args) => {
+            if (Array.isArray(args)) {
+                return args.map(toNumericEqual);
+            } else {
+                return [toNumericEqual(args)];
+            }
         }
     }
 };
-const rowQuery = (tableHandler, tableUniqueid, pageSize, params)  => {
+
+const JOINTYPE_ANY = 1;
+const JOINTYPE_ALL = 2;
+
+const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
+    let filters = (typeof params.filters === "undefined") ? [] : params.filters.map(
+        (e) => {
+            let filter = {
+                'name': e.field, 'type': e.type, 'jointype': JOINTYPE_ANY, 'values': e.value
+            };
+            if (e.type in MOODLE_FILTER_CONVERTER) {
+                const converter = MOODLE_FILTER_CONVERTER[e.type];
+                filter.type = converter.to;
+                if (typeof converter.transformer !== "undefined") {
+                    filter.values = converter.transformer(e.value);
+                }
+            }
+            return filter;
+        }
+    );
+    if (initialFilters) {
+        filters.concat(initialFilters);
+    }
     const args = {
         handler: tableHandler,
         uniqueid: tableUniqueid,
@@ -143,22 +178,8 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params)  => {
                 return {'sortby': e.field, 'sortorder': e.dir.toUpperCase()};
             }
         ),
-        filters: (typeof params.filters === "undefined") ? [] : params.filters.map(
-            (e) => {
-                let filter = {
-                    'name': e.field, 'type': e.type ,'jointype': 1, 'values': e.value
-                };
-                if (e.type in MOODLE_FILTER_CONVERTER) {
-                    const converter = MOODLE_FILTER_CONVERTER[e.type];
-                    filter.type = converter.to;
-                    if (typeof converter.transformer !== "undefined") {
-                        filter.values = converter.transformer(e.value);
-                    }
-                }
-                return filter;
-            }
-        ),
-        jointype: 1,
+        filters: filters,
+        jointype: JOINTYPE_ALL,
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
@@ -176,14 +197,14 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params)  => {
     ).catch(Notification.exception);
 };
 
-const ajaxResponseProcessor = function (url, params, response) {
+const ajaxResponseProcessor = function(url, params, response) {
     response.data = response.data.map(
         (rowstring) => JSON.parse(rowstring)
     );
     return response;
 };
 
-export const init = async (tabulatorelementid) => {
+export const init = async(tabulatorelementid, requiredFilters) => {
     if (typeof window.moment == "undefined") {
         window.moment = moment;
     }
@@ -199,11 +220,11 @@ export const init = async (tabulatorelementid) => {
             }
         }])).catch(Notification.exception);
     new Tabulator("#" + tabulatorelementid, {
-        ajaxRequestFunc: function (url, config, params) {
+        ajaxRequestFunc: function(url, config, params) {
             const tableHandler = tableelement.data('tableHandler');
             const tableUniqueid = tableelement.data('tableUniqueid');
             const pageSize = this.table.getPageSize();
-            return rowQuery(tableHandler, tableUniqueid, pageSize, params);
+            return rowQuery(tableHandler, tableUniqueid, pageSize, params, requiredFilters);
         },
         ajaxURL: true, // If not set the RequestFunct will never be called.
         pagination: "remote",
@@ -216,7 +237,10 @@ export const init = async (tabulatorelementid) => {
         ajaxResponse: ajaxResponseProcessor,
         columns: formatterFilterTransform(columns),
         layout: "fitColumns",
-        placeholder: placeHolderMessage
+        placeholder: placeHolderMessage,
+        rowClick: (e, row) => {
+            $(document).trigger('tabulator-row-click', [row, tableelement.data('tableUniqueid')]);
+        }
     });
 
 };

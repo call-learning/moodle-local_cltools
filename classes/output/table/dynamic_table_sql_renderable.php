@@ -101,7 +101,7 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
     public function export_for_template(renderer_base $output) {
         $context = new stdClass();
         $context->tableuniqueid = $this->dynamictable->uniqueid;
-        $context->filtersetjson = '';
+        $context->filtersetjson = json_encode($this->dynamictable->get_filter_set());
         $context->sortdatajson = '';
         $context->pagesize = $this->perpage;
         $context->handler = get_class($this->dynamictable);

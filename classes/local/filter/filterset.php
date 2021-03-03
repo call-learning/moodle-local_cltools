@@ -296,4 +296,29 @@ abstract class filterset implements JsonSerializable {
             'filters' => $this->get_filters(),
         ];
     }
+
+    /**
+     * Get the sql where / params used for filtering
+     *
+     * @param $tableprefix
+     * @return array
+     */
+    public function get_sql_for_filter($tableprefix = null) {
+
+        $join = 'AND';
+        if ($this->get_join_type() === filterset::JOINTYPE_ANY) {
+            $join = 'OR';
+        }
+        $filtesetwheres = [];
+        $filtesetparams = [];
+
+        foreach ($this->get_filters() as $filter) {
+            list($wheres, $params) = $filter->get_sql_for_filter($tableprefix);
+            if ($wheres) {
+                $filtesetparams += $params;
+                $filtesetwheres[] = $wheres;
+            }
+        }
+        return array(join(" $join ", $filtesetwheres), $filtesetparams);
+    }
 }

@@ -32,12 +32,18 @@ namespace local_cltools\local\filter;
  */
 class basic_filterset extends filterset {
     public function __construct($filtertypes) {
-        $this->optionalfilters = $filtertypes;
+        foreach($filtertypes as $fieldname => $fdef) {
+            if (!empty($fdef->required)) {
+                $this->requiredfilters[$fieldname] = $fdef->filterclass;
+            } else {
+                $this->optionalfilters[$fieldname] = $fdef->filterclass;
+            }
+        }
     }
     /**
      * @var array
      */
-    public $optionalfilters;
+    public $optionalfilters = [];
 
     /**
      * Get the optional filters.
@@ -52,7 +58,28 @@ class basic_filterset extends filterset {
      *
      * @return array
      */
-    public function get_optional_filters(): array {
+    protected function get_optional_filters(): array {
         return $this->optionalfilters;
+    }
+    /**
+     * @var array
+     */
+    public $requiredfilters = [];
+
+    /**
+     * Get the optional filters.
+     *
+     * These are:
+     * - accesssince;
+     * - enrolments;
+     * - groups;
+     * - keywords;
+     * - roles; and
+     * - status.
+     *
+     * @return array
+     */
+    protected function get_required_filters(): array {
+        return $this->requiredfilters;
     }
 }

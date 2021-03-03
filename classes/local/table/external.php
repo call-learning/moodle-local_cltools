@@ -77,6 +77,7 @@ class external extends \external_api {
                     'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
                     'name' => new external_value(PARAM_ALPHANUM, 'Name of the field', VALUE_REQUIRED),
                     'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
+                    'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL),
                     'values' => new external_multiple_structure(
                         new external_value(PARAM_RAW, 'Filter value'),
                         'The value to filter on',
@@ -195,10 +196,12 @@ class external extends \external_api {
         if (!class_exists($filtersetclass)) {
             $filtertypedef =  [];
             foreach ($filters as $rawfilter) {
-                $filtertypedef[$rawfilter['name']] = 'local_cltools\\local\filter\\'. $rawfilter['type'];
+                $filtertypedef[$rawfilter['name']] = (object) [
+                    'filterclass' => 'local_cltools\\local\filter\\'. $rawfilter['type'],
+                    'required' =>  !empty($rawfilter['required'])
+                ];
             }
             $filterset = new basic_filterset($filtertypedef);
-
         } else {
             $filterset = new $filtersetclass();
         }
@@ -327,7 +330,7 @@ class external extends \external_api {
         ]);
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
-        $columndefs = $instance->get_columns();
+        $columndefs = $instance->get_fields_definition();
 
         return $columndefs;
     }

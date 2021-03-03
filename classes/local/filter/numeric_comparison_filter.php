@@ -128,4 +128,31 @@ class numeric_comparison_filter extends filter {
 
         return $this;
     }
+
+    /**
+     * Get a specific filter for an element
+     *
+     * @param $fieldval
+     * @param string $joinsql
+     * @param null $tableprefix
+     * @return array
+     */
+    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
+        static $paramcount = 0;
+        $directiontosql = [
+            '=' => '=',
+            '==' => '=',
+            '===' => '=',
+            '>' => '>',
+            '=>' => '>=',
+            '<' => '<',
+            '<=' => '<=',
+        ];
+
+        $paramname = "numericp_". ($paramcount++);
+        $params = [];
+        $where = " {$this->get_name()}  {$directiontosql[$fieldval->direction]}  :$paramname ";
+        $params[$paramname] = $fieldval->value;
+        return array($where, $params);
+    }
 }

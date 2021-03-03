@@ -30,6 +30,7 @@ global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
 use context;
+use local_cltools\local\crud\entity_utils;
 use local_cltools\local\field\text;
 use local_cltools\local\filter\filterset;
 use table_sql;
@@ -48,14 +49,29 @@ abstract class dynamic_table_sql extends table_sql {
 
     protected $fields = [];
 
+    protected $actionsdefs = [];
+
     /**
-     * Get the context for the table.
+     * Sets up the page_table parameters.
      *
-     * This is used by the API to validate the fact that the user can execute the query.
-     *
-     * @return context
+     * @param string $uniqueid unique id of form.
+     * @throws \coding_exception
+     * @see page_list::get_filter_definition() for filter definition
      */
-    public abstract function get_context();
+    public function __construct($uniqueid,
+        $actionsdefs = null
+    ) {
+        parent::__construct($uniqueid);
+        $this->actionsdefs = $actionsdefs;
+        list($cols, $headers) = $this->get_table_columns_definitions();
+        $this->define_columns($cols);
+        $this->define_headers($headers);
+        $this->collapsible(false);
+        $this->sortable(true);
+        $this->pageable(true);
+        $this->set_attribute('class', 'generaltable generalbox table-sm');
+        $this->set_entity_sql();
+    }
 
     /**
      * Set the filterset in the table class.
@@ -94,6 +110,7 @@ abstract class dynamic_table_sql extends table_sql {
     public function retrieve_raw_data($pagesize) {
         $this->setup();
         $this->query_db($pagesize, false);
+        $rows = [];
         foreach ($this->rawdata as $row) {
             $formattedrow = $this->format_row($row);
             $rows[] = (object) $formattedrow;
@@ -114,7 +131,55 @@ abstract class dynamic_table_sql extends table_sql {
         $this->currpage = $currpage ? $currpage : $this->currpage;
     }
 
-    public function get_columns() {
+    /**
+     * Table columns
+     *
+     * @return array[]
+     * @throws \coding_exception
+     */
+    protected function get_table_columns_definitions() {
+        // Create the related persistent filter form.
+        $cols = [];
+        $headers = [];
+
+        $this->setup_fields();
+        foreach ($this->fields as $name => $field) {
+            $cols[] = $name;
+            $headers[] = $field->get_display_name();
+        }
+        if (!in_array('id', $cols)) {
+            $cols[] = 'id';
+        }
+        $headers[] = get_string('id', 'local_cltools');
+        return [$cols, $headers];
+    }
+
+
+    /**
+     * Setup the fields for this table
+     */
+    abstract protected function setup_fields();
+
+    public function get_filter_set() {
+        return $this->filterset;
+    }
+
+    /**
+     * @throws \coding_exception
+     */
+    protected function setup_other_fields() {
+        if ($this->actionsdefs) {
+            $this->fields['actions'] = base::get_instance_from_def('html', [
+                'fullname' => get_string('actions', 'local_cltools'),
+                'fieldname' => 'actions',
+                'rawtype' => PARAM_RAW,
+            ]);
+        }
+    }
+    /**
+     * @return array
+     */
+    public function get_fields_definition() {
         $columnsdef = [];
         $this->setup();
         foreach ($this->columns as $fieldid => $index) {
@@ -219,48 +284,29 @@ abstract class dynamic_table_sql extends table_sql {
         return userdate($time, $dateformat);
     }
 
+    /**
+     * Main method to create the underlying query (SQL)
+     *
+     * @param int $pagesize
+     * @param bool $useinitialsbar
+     */
     public function query_db($pagesize, $useinitialsbar = true) {
-        $directiontosql = [
-            '=' => '=',
-            '==' => '=',
-            '===' => '=',
-            '>' => '>',
-            '=>' => '>=',
-            '<' => '<',
-            '<=' => '<=',
-        ];
-        // Make sure we first check the filters.
-        $additionalwhere = '';
-        if (!empty($filters = $this->filterset->get_filters())) {
-            $paramcount = 0;
-            foreach ($filters as $filter) {
-                $filtervalues = $filter->get_filter_values();
-                $join ='AND';
-                switch($filter->get_join_type()) {
-                    case filterset::JOINTYPE_ALL:
-                        $join = 'AND';
-                        break;
-                    case filterset::JOINTYPE_ANY:
-                        $join = 'OR';
-                        break;
-                }
-
-                foreach($filtervalues as $fval) {
-                    $paramname = "param_{$paramcount}";
-                    if (!empty($additionalwhere)) {
-                        $additionalwhere .= $join;
-                    }
-                    $additionalwhere .= " {$filter->get_name()}  {$directiontosql[$fval->direction]}  :$paramname ";
-                    $this->sql->params[$paramname] = $fval->value;
-                    $paramcount++;
-                }
-            }
-            $additionalwhere = "( $additionalwhere )";
-            if (!empty($this->sql->where)) {
-                $additionalwhere = " AND $additionalwhere";
-            }
+        list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
+        if ($additionalwhere) {
+            $this->sql->where .= " AND ($additionalwhere)";
+            $this->sql->params += $additionalparams;
         }
-        $this->sql->where .= $additionalwhere;
         parent::query_db($pagesize, $useinitialsbar);
     }
+
+    /**
+     * Get context
+     *
+     * @return \context|\context_system|null
+     * @throws \dml_exception
+     */
+    public function get_context() {
+        return \context_system::instance();
+    }
+
 }

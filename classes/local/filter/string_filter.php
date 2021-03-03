@@ -60,4 +60,26 @@ class string_filter extends filter {
 
         return $this;
     }
+
+    /**
+     * Get a specific filter for an element
+     *
+     * @param $fieldval
+     * @param string $joinsql
+     * @param null $tableprefix
+     * @return array
+     */
+    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
+        global $DB;
+        static $paramcount = 0;
+
+        $paramname = "stringp_". ($paramcount++);
+        $params = [];
+
+        $where = " ".
+            $DB->sql_like($this->get_name(),":$paramname", false, false)
+            . " ";
+        $params[$paramname] = '%' . $DB->sql_like_escape($fieldval) . '%';
+        return array($where, $params);
+    }
 }
