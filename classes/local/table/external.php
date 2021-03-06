@@ -214,7 +214,7 @@ class external extends \external_api {
             );
         }
 
-        $instance->set_filterset($filterset);
+        $instance->set_extended_filterset($filterset);
         if ($pagenumber !== null) {
             $instance->set_page_number($pagenumber);
         }
@@ -373,7 +373,7 @@ class external extends \external_api {
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
         $instance = new $handler($uniqueid);
-        self::validate_context($instance->get_context());
+        self::validate_context($instance->get_dynamic_table_context());
         return $instance;
     }
 

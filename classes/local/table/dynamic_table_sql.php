@@ -78,8 +78,18 @@ abstract class dynamic_table_sql extends table_sql {
      *
      * @param filterset $filterset The filterset object to get filters and table parameters from
      */
-    public function set_filterset(filterset $filterset): void {
+    public function set_extended_filterset(filterset $filterset): void {
         $this->filterset = $filterset;
+    }
+
+    /**
+     * Get context
+     *
+     * @return \context|\context_system|null
+     * @throws \dml_exception
+     */
+    public function get_dynamic_table_context():context {
+        return \context_system::instance();
     }
 
     /**
@@ -295,16 +305,6 @@ abstract class dynamic_table_sql extends table_sql {
             $this->sql->params += $additionalparams;
         }
         parent::query_db($pagesize, $useinitialsbar);
-    }
-
-    /**
-     * Get context
-     *
-     * @return \context|\context_system|null
-     * @throws \dml_exception
-     */
-    public function get_context():context {
-        return \context_system::instance();
     }
 
 }
