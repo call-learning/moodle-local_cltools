@@ -30,8 +30,6 @@ global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
 use context;
-use local_cltools\local\crud\entity_utils;
-use local_cltools\local\field\text;
 use local_cltools\local\filter\filterset;
 use table_sql;
 
@@ -305,7 +303,7 @@ abstract class dynamic_table_sql extends table_sql {
      * @return \context|\context_system|null
      * @throws \dml_exception
      */
-    public function get_context() {
+    public function get_context():context {
         return \context_system::instance();
     }
 

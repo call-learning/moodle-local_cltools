@@ -129,8 +129,4 @@ class entity_table extends dynamic_table_sql {
         }
         return $imageshtml;
     }
-
-    public function get_context() {
-        return \context_system::instance();
-    }
 }
