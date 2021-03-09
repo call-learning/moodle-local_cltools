@@ -38,14 +38,15 @@ class select_choice extends base {
         }
         $this->choices = empty($fielddef->choices) ? []: $fielddef->choices;
     }
+
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('select', $name, $fullname, $this->choices);
+    public function internal_add_form_element(&$mform) {
+        $mform->addElement('select', $this->fieldname, $this->fullname, $this->choices);
     }
     /**
      * Get the additional information related to the way we need to format this

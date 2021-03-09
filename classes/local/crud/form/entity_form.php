@@ -24,14 +24,15 @@
 
 namespace local_cltools\local\crud\form;
 defined('MOODLE_INTERNAL') || die();
+
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\field\base;
 use stdClass;
+
 // Custom form element types
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
-
 
 /**
  * Entity form abstract class.
@@ -89,17 +90,22 @@ abstract class entity_form extends \core\form\persistent {
      *
      * @return array|array[]
      */
-    protected static function define_properties() {
+    protected static function get_fields_definition() {
         return array();
     }
 
     /**
-     * Additional definitions for the form
-     *
-     * @return array|array[]
+     * @param \MoodleQuickForm $mform
+     * Additional definitions for the form (after we add the fields)
      */
-    protected function additional_definitions(&$mform) {
-        return array();
+    protected function post_field_definitions(&$mform) {
+    }
+
+    /**
+     * @param \MoodleQuickForm $mform
+     * Additional definitions for the form (before we add the fields)
+     */
+    protected function pre_field_definitions(&$mform) {
     }
 
     /**
@@ -154,42 +160,36 @@ abstract class entity_form extends \core\form\persistent {
      */
     protected function build_fields_info() {
         $persistentprops = (static::$persistentclass)::properties_definition();
-        $formproperties = $this->define_properties();
+        $formproperties = $this->get_fields_definition();
         // Merge array recursively so to get the values from the
         // Form definition last.
-        $persistentprops = array_map(
+        $allproperties = array_merge($persistentprops, $formproperties);
+        $allproperties = array_map(
             function($prop) {
-                $prop['rawtype'] =$prop['type'];
-                $format = empty($prop['format'])? $prop['format']: [];
-                return array_merge($prop, $format); // We make sure that the raw type is the
-                // PARAM_XXX
+                $prop['rawtype'] = empty($prop['type']) ? PARAM_RAW : $prop['type'];
+                unset($prop['type']); // Type will be guessed if not set in the format.
+                $format = !empty($prop['format']) ? $prop['format'] : [];
+                $prop = array_merge($prop, $format); // We make sure that the raw type is the
+                return $prop;
             },
-            $persistentprops
+            $allproperties
         );
-        $allproperties = array_merge_recursive($persistentprops, $formproperties);
+
         foreach ($allproperties as $name => $format) {
 
-            $fieldinfo = (object) array_merge(
+            if (strpos($name, 'format') > 0 ) {
+                continue; // Skip fields with description in their name.
+            }
+            $fieldinfo = array_merge(
                 [
-                    'type'=> 'hidden',
                     'rawtype' => PARAM_RAW,
-                    'fullname' => entity_utils::get_string_for_entity(static::$persistentclass, $name),
                     'fieldname' => $name
                 ],
-                !empty($allproperties[$name])? $allproperties[$name]: []
+                !empty($allproperties[$name]) ? $allproperties[$name] : []
             );
-
-            $this->fullname = empty($fielddef->fullname) ? PARAM_RAW : $fielddef->fullname;
-            $this->fieldname = empty($fielddef->fieldname) ? PARAM_RAW : $fielddef->fieldname;
-
-                switch ($fieldinfo->type) {
-                    case 'file_manager':
-                        $fieldinfo['filemanageroptions'] = $this->filemanager_get_default_options($fieldinfo);
-                        break;
-                    case 'editor':
-                        $fieldinfo['filemanageroptions'] = $this->editor_get_option($fieldinfo);
-                }
-
+            if (in_array($name.'format', array_keys($allproperties))) {
+                $fieldinfo['type'] = 'editor';
+            }
             $possibledefault = '';
             $field = null;
             if (entity_utils::is_reserved_property($name)) {
@@ -210,10 +210,19 @@ abstract class entity_form extends \core\form\persistent {
                 $fieldinfo['type'] = 'hidden';
                 $fieldinfo['default'] = $possibledefault;
             }
-
-            $field = base::get_instance_from_def($fieldinfo->type,
-                $fieldinfo
-            );
+            if (!empty($fieldinfo['type'])) {
+                switch ($fieldinfo['type']) {
+                    case 'file_manager':
+                        $fieldinfo['filemanageroptions'] = $this->filemanager_get_default_options($fieldinfo);
+                        break;
+                    case 'editor':
+                        $fieldinfo['editoroptions'] = $this->editor_get_option($fieldinfo);
+                }
+                if (empty($fieldinfo['fullname'])) {
+                    $fieldinfo['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
+                }
+            }
+            $field = base::get_instance_from_def($name, $fieldinfo);
             $this->fields[$name] = $field; // Update it.
         }
     }
@@ -223,10 +232,11 @@ abstract class entity_form extends \core\form\persistent {
      */
     public function definition() {
         $mform = $this->_form;
+        $this->pre_field_definitions($mform);
         foreach ($this->fields as $name => $field) {
             $field->add_form_element($mform);
         }
-        $this->additional_definitions($mform);
+        $this->post_field_definitions($mform);
         $this->add_action_buttons(true, get_string('save'));
     }
 

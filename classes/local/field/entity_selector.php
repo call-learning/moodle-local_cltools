@@ -66,26 +66,29 @@ class entity_selector extends base {
         if (is_array($fielddef)) {
             $fielddef = (object) $fielddef;
         }
-        $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
-        $this->displayfield = empty($fielddef->displayfield) ? null : $fielddef->displayfield;
+        $this->entityclass = empty($fielddef->format['entityclass']) ? null : $fielddef->format['entityclass'];
+        $this->displayfield = empty($fielddef->format['displayfield']) ? 'id' : $fielddef->format['displayfield'];
     }
 
     /**
      * Add element onto the form
      *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      * @throws \dml_exception
      */
-    public function internal_add_form_element(&$mform, $name, $fullname) {
+    public function internal_add_form_element(&$mform) {
         $choices = $this->get_entities();
-        $mform->addElement('searchableselector', $name, $fullname, $choices);
+        $mform->addElement('searchableselector', $this->fieldname, $this->fullname, $choices);
     }
 
     protected function get_entities() {
         global $DB;
         $entitytype = $this->entityclass;
-        return $DB->get_records_menu($entitytype::TABLE, null, $fields = 'id,' . $this->displayfield);
+        if ($entitytype) {
+            return $DB->get_records_menu($entitytype::TABLE, null, $fields = 'id,' . $this->displayfield);
+        } else {
+            return [];
+        }
     }
 }

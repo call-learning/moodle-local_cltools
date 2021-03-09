@@ -29,14 +29,14 @@ import {call as ajaxCall} from 'core/ajax';
 import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 import {formatterFilterTransform} from './tabulator-converters';
-import {MOODLE_FILTER_CONVERTER, JOINTYPE_ANY, JOINTYPE_ALL} from './moodle-filter-converters';
-
+import {MOODLE_FILTER_CONVERTER, JOINTYPE_ALL} from './moodle-filter-converters';
+import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 
 const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
     let filters = (typeof params.filters === "undefined") ? [] : params.filters.map(
         (e) => {
             let filter = {
-                'name': e.field, 'type': e.type, 'jointype': JOINTYPE_ANY, 'values': e.value
+                'name': e.field, 'type': e.type, 'jointype': JOINTYPE_ALL, 'values': e.value
             };
             if (e.type in MOODLE_FILTER_CONVERTER) {
                 const converter = MOODLE_FILTER_CONVERTER[e.type];
@@ -48,8 +48,10 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters)
             return filter;
         }
     );
+    const joinType = initialFilters ? initialFilters.jointype : JOINTYPE_ALL;
     if (initialFilters) {
-        filters.concat(initialFilters);
+        // Add initial filters to filters.
+        Array.prototype.push.apply(filters, Object.values(initialFilters.filters));
     }
     const args = {
         handler: tableHandler,
@@ -60,7 +62,7 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters)
             }
         ),
         filters: filters,
-        jointype: JOINTYPE_ALL,
+        jointype: joinType,
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
@@ -85,31 +87,52 @@ const ajaxResponseProcessor = function (url, params, response) {
     return response;
 };
 
-export const init = async (tabulatorelementid, requiredFilters) => {
+export const init = async (tabulatorelementid) => {
+    const tableelement = $("#" + tabulatorelementid);
+    const rowClickCallback = (e, row) => {
+        $(document).trigger('tabulator-row-click', [row, tableelement.data('tableUniqueid')]);
+    };
+    tableInit("#" + tabulatorelementid,
+        tableelement.data('tableHandler'),
+        tableelement.data('tableUniqueid'),
+        tableelement.data('table-pagesize'),
+        tableelement.data('tableFilters'),
+        rowClickCallback);
+};
+
+export const tableInit = async (
+    tableElement,
+    tableHandler,
+    tableUniqueId,
+    tablePageSize,
+    tableFilters,
+    rowClickCallback,
+    otherOptions
+) => {
+    // Make sure momentjs is defined.
     if (typeof window.moment == "undefined") {
         window.moment = moment;
     }
-    const tableelement = $("#" + tabulatorelementid);
-
     const placeHolderMessage = await getString('table:nodata', 'local_cltools');
     const columns = await Promise.race(ajaxCall(
         [{
             methodname: 'cltools_dynamic_table_get_columns',
             args: {
-                handler: tableelement.data('tableHandler'),
-                uniqueid: tableelement.data('tableUniqueid'),
+                handler: tableHandler,
+                uniqueid: tableUniqueId
             }
         }])).catch(Notification.exception);
-    new Tabulator("#" + tabulatorelementid, {
+
+    Tabulator.prototype.extendModule("format", "formatters", TABULATOR_FORMATTERS);
+
+    let options = {
         ajaxRequestFunc: function (url, config, params) {
-            const tableHandler = tableelement.data('tableHandler');
-            const tableUniqueid = tableelement.data('tableUniqueid');
             const pageSize = this.table.getPageSize();
-            return rowQuery(tableHandler, tableUniqueid, pageSize, params, requiredFilters);
+            return rowQuery(tableHandler, tableUniqueId, pageSize, params, tableFilters);
         },
         ajaxURL: true, // If not set the RequestFunct will never be called.
         pagination: "remote",
-        paginationSize: tableelement.data('table-pagesize'),
+        paginationSize: tablePageSize,
         ajaxFiltering: true,
         ajaxSorting: true,
         paginationDataReceived: {
@@ -119,9 +142,10 @@ export const init = async (tabulatorelementid, requiredFilters) => {
         columns: formatterFilterTransform(columns),
         layout: "fitColumns",
         placeholder: placeHolderMessage,
-        rowClick: (e, row) => {
-            $(document).trigger('tabulator-row-click', [row, tableelement.data('tableUniqueid')]);
-        }
-    });
-
+        rowClick: rowClickCallback ? rowClickCallback : () => null
+    };
+    if (otherOptions) {
+        Object.assign(options, otherOptions);
+    }
+    new Tabulator(tableElement, options);
 };

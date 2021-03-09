@@ -41,7 +41,7 @@ class datetime  extends base  {
      */
     public function get_formatter_parameters() {
         return [
-            'inputformat' => get_string('strftimedate', 'core_langconfig'),
+            'outputformat' => get_string('momentjsdatetimeformat', 'local_cltools'),
             'timezone' => usertimezone()
         ];
     }
@@ -56,18 +56,18 @@ class datetime  extends base  {
      */
     public function get_filter_parameters() {
         return [
-            'inputformat' => get_string('strftimedate', 'core_langconfig'),
+            'outpuformat' => get_string('momentjsdatetimeformat', 'local_cltools'),
             'timezone' => usertimezone()
         ];
     }
 
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('text', $name, $fullname);
+    public function internal_add_form_element(&$mform) {
+        $mform->addElement('datetimeselector', $this->fieldname, $this->fullname);
     }
 }

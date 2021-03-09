@@ -47,18 +47,90 @@ abstract class base {
         $this->required = empty($fielddef->required) ? false: $fielddef->required;
         $this->default = empty($fielddef->default) ? '' : $fielddef->default;
         $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
-        $this->fullname = empty($fielddef->fullname) ? PARAM_RAW : $fielddef->fullname;
-        $this->fieldname = empty($fielddef->fieldname) ? PARAM_RAW : $fielddef->fieldname;
+        $this->fieldname = $fielddef->fieldname;
+        $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
     }
+
     /**
-     * @param array $arguments
+     * Matches PARAM_XXX to field type
+     */
+    const MOODLE_PARAM_RAW_TO_TYPE = [
+        PARAM_INT => 'number',
+        PARAM_BOOL => 'boolean',
+        PARAM_TEXT => 'text',
+        PARAM_ALPHA => 'text',
+        PARAM_ALPHANUMEXT => 'text',
+        PARAM_ALPHANUM => 'text',
+        PARAM_STRINGID => 'text',
+        PARAM_EMAIL => 'text',
+        PARAM_URL => 'text'
+    ];
+    /**
+     *
+     * Same as @static::get_instance_from_def
+     *
+     * @param array $fielddef associative array with information on how to build / setup the field
+     * Mandatory fields are:
+     * * rawtype: the raw type as PARAM_XXX
+     * * required: (boolean) if this field is required or not
+     * * default: default value
+     * * fullname: full name (display name) of the field
+     * * fieldname: field name as a shortname/id number
+     * Optionally:
+     * * type the desired type, if not it is inferred from rawtype
+     * * choices: if a set of choices is given we setup a select_choice field
+     *
+     *
+     *
      * @return static
      */
-    public static function get_instance_from_def($type = "text", $fielddef = null) {
+    public static function get_instance_from_persistent_def($name, $fielddef = []) {
+        if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']])) {
+            $fielddef['rawtype'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']];
+        } else {
+            $fielddef['rawtype'] = 'text';
+        }
+        if (!empty($fielddef['format']) && !empty($fielddef['format']['type'])) {
+            $fielddef['type']  = $fielddef['format']['type'];
+        } else {
+            unset($fielddef['type']);
+        }
+        return static::get_instance_from_def($name, $fielddef);
+    }
+    /**
+     * @param array $fielddef associative array with information on how to build / setup the field
+     * Mandatory fields are:
+     * * rawtype: the raw type as PARAM_XXX
+     * * required: (boolean) if this field is required or not
+     * * default: default value
+     * * fullname: full name (display name) of the field
+     * * fieldname: field name as a shortname/id number
+     * Optionally:
+     * * type the desired type, if not it is inferred from rawtype
+     * * choices: if a set of choices is given we setup a select_choice field
+     *
+     *
+     *
+     * @return static
+     */
+    public static function get_instance_from_def($name, $fielddef = []) {
+        // PARAM_XXX
+        if (empty($fielddef['type'])) {
+            if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['rawtype']])) {
+                $fielddef['type'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['rawtype']];
+            } else {
+                $fielddef['type'] = 'text';
+            }
+        }
+        $type = $fielddef['type'];
+        if ($type != 'hidden' && !empty($fielddef['choices'])) {
+            $type = "select_choices";
+        }
         $classname = __NAMESPACE__.'\\'. $type;
         if (!class_exists($classname)) {
             $type = 'local_cltools\\local\\field\\text';
         }
+        $fielddef['fieldname'] = $name;
         return new $classname($fielddef);
     }
     /**
@@ -97,6 +169,7 @@ abstract class base {
     public function get_display_name() {
         return $this->fullname;
     }
+
     /**
      * Get the additional information related to the way we need to format this
      * information
@@ -108,6 +181,25 @@ abstract class base {
     abstract public function get_formatter_parameters();
 
     /**
+     * Get the matching filter type to be used for display
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_filter_type() {
+        return $this->get_type();
+    }
+    /**
+     * Get the matching formatter type to be used for display
+     *
+     * @return string|null return the type (and null if no formatter)
+     *
+     */
+    public function get_formatter_type() {
+        return $this->get_type();
+    }
+
+    /**
      * Get the additional information related to the way we need to filter this
      * information
      *
@@ -117,6 +209,15 @@ abstract class base {
      */
     abstract public function get_filter_parameters();
 
+    /**
+     * Check if the field is visible or not
+     *
+     * @return boolean visibility
+     *
+     */
+    public function is_visible() {
+        return true;
+    }
 
     /**
      * Add element onto the form
@@ -124,16 +225,41 @@ abstract class base {
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function add_form_element(&$mform, $name, $fullname, $options = null) {
-        $this->internal_add_form_element($mform, $this->fieldname, $this->fullname);
-        $mform->setType($name, $this->get_raw_param_type());
+    public function add_form_element(&$mform) {
+        $this->internal_add_form_element($mform);
+        $mform->setType($this->fieldname, $this->get_raw_param_type());
         if ($this->required) {
-            $mform->addRule($name, get_string('required'), 'required');
+            $mform->addRule($this->fieldname, get_string('required'), 'required');
         }
         if ($this->default) {
-            $mform->setDefault($name, $this->default);
+            $mform->setDefault($this->fieldname, $this->default);
         }
     }
 
-    abstract protected function internal_add_form_element(&$mform, $name, $fullnamel);
+
+    /**
+     * Call
+     */
+
+    /**
+     * Callback for this field, so data can be converted before form submission
+     * @param $data
+     */
+    public function prepare_data(&$data) {
+    }
+
+    /**
+     * Callback for this field, so data can be saved after form submission
+     * @param $data
+     */
+    public function post_save_data(&$data) {
+    }
+
+    /**
+     * Callback to actually add the form element to the form itself
+     *
+     * @param $mform
+     * @return mixed
+     */
+    abstract protected function internal_add_form_element(&$mform);
 }

@@ -97,7 +97,7 @@ class entity_utils {
         } else if ($stringmanager->string_exists($stringname, $component, $args)) {
             $label = get_string($stringname, $component, $args);
         } else {
-            $label = get_string($stringname, static::DEFAULT_PLUGIN_COMPONENT_NAME, $args);
+            $label = $stringname;
         }
         return $label;
     }

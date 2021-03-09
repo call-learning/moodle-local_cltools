@@ -69,16 +69,16 @@ class entity_table extends dynamic_table_sql {
         $this->fields = [];
         foreach (static::$persistentclass::properties_definition() as $name => $prop) {
             if (entity_utils::is_reserved_property($name) || !(empty($existingproperties[$name]))) {
-                continue;
+                $prop['fullname'] = $name;
+                $prop['fieldname'] = $name;
+                $prop['format'] = [
+                    'type' => 'hidden'
+                ];
+            } else {
+                $prop['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
+                $prop['fieldname'] = $name;
             }
-            $prop['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
-            $prop['fieldname'] = $name;
-            $prop['rawtype'] = $prop['type'];
-
-            $formattype = empty($prop['format']['type']) ? 'text' : $prop['format']['type'];
-            $this->fields[$name] = base::get_instance_from_def($formattype,
-                array_merge($prop, empty($prop['format']) ? [] : $prop['format'])
-            );
+            $this->fields[$name] = base::get_instance_from_persistent_def($name, $prop);
         }
         $this->setup_other_fields();
     }

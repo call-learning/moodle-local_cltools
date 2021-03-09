@@ -38,17 +38,21 @@ require_once($CFG->libdir . '/formslib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class form extends entity_form {
+
     /**
      * Form property in order to display the right widget for the form.
      *
      * @return array|array[]
      * @throws \coding_exception
      */
-    protected static function define_properties() {
+    protected static function get_fields_definition() {
         global $DB;
         return array(
             'files' => [
-                'type' => 'file_manager'
+                'type' => PARAM_INT,
+                'format' => [
+                    'type' => 'file_manager'
+                    ]
             ]
         );
 

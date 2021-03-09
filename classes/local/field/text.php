@@ -31,12 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 class text extends base  {
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    protected function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('text', $name, $fullname);
+    protected function internal_add_form_element(&$mform) {
+        $mform->addElement('text', $this->fieldname, $this->fullname);
     }
     /**
      * Get the additional information related to the way we need to format this

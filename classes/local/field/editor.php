@@ -24,11 +24,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class number  extends base  {
+class editor extends base {
+
     /**
      * Add element onto the form
      *
@@ -36,7 +36,9 @@ class number  extends base  {
      * @return mixed
      */
     public function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
+        $editoroptions = $this->editoroptions;
+        $mform->addElement('editor', $this->fieldname . '_editor',
+            $this->fullname, null, $editoroptions);
     }
 
     /**
@@ -51,6 +53,17 @@ class number  extends base  {
     public function get_formatter_parameters() {
         return null;
     }
+
+    /**
+     * Check if the field is visible or not
+     *
+     * @return boolean visibility
+     *
+     */
+    public function is_visible() {
+        return false;
+    }
+
     /**
      * Get the additional information related to the way we need to format this
      * information
@@ -60,6 +73,6 @@ class number  extends base  {
      *
      */
     public function get_filter_parameters() {
-        return null;
+        return [];
     }
 }

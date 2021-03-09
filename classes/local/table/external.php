@@ -75,7 +75,7 @@ class external extends \external_api {
             'filters' => new external_multiple_structure(
                 new external_single_structure([
                     'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
-                    'name' => new external_value(PARAM_ALPHANUM, 'Name of the field', VALUE_REQUIRED),
+                    'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
                     'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
                     'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL),
                     'values' => new external_multiple_structure(
@@ -100,18 +100,6 @@ class external extends \external_api {
                 VALUE_REQUIRED,
                 null
             ),
-            'pagenumber' => new external_value(
-                PARAM_INT,
-                'The page number',
-                VALUE_REQUIRED,
-                null
-            ),
-            'pagesize' => new external_value(
-                PARAM_INT,
-                'The number of records per page',
-                VALUE_REQUIRED,
-                null
-            ),
             'hiddencolumns' => new external_multiple_structure(
                 new external_value(
                     PARAM_ALPHANUMEXT,
@@ -125,6 +113,18 @@ class external extends \external_api {
                 'Whether the table preferences should be reset',
                 VALUE_REQUIRED,
                 null
+            ),
+            'pagenumber' => new external_value(
+                PARAM_INT,
+                'The page number',
+                VALUE_OPTIONAL,
+                -1
+            ),
+            'pagesize' => new external_value(
+                PARAM_INT,
+                'The number of records per page',
+                VALUE_OPTIONAL,
+                0
             ),
         ]);
     }
@@ -155,10 +155,10 @@ class external extends \external_api {
         ?string $jointype = null,
         ?string $firstinitial = null,
         ?string $lastinitial = null,
-        ?int $pagenumber = null,
-        ?int $pagesize = null,
         ?array $hiddencolumns = null,
-        ?bool $resetpreferences = null
+        ?bool $resetpreferences = null,
+        ?int $pagenumber = null,
+        ?int $pagesize = null
     ) {
         global $PAGE, $CFG;
 
@@ -190,16 +190,16 @@ class external extends \external_api {
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
 
-
         $instanceclass= get_class($instance);
         $filtersetclass = "{$instanceclass}_filterset";
         if (!class_exists($filtersetclass)) {
             $filtertypedef =  [];
             foreach ($filters as $rawfilter) {
-                $filtertypedef[$rawfilter['name']] = (object) [
+                $ftdef = (object) [
                     'filterclass' => 'local_cltools\\local\filter\\'. $rawfilter['type'],
-                    'required' =>  !empty($rawfilter['required'])
+                    'required' =>  !empty($rawfilter['required']),
                 ];
+                $filtertypedef[$rawfilter['name']] = $ftdef;
             }
             $filterset = new basic_filterset($filtertypedef);
         } else {
@@ -215,14 +215,6 @@ class external extends \external_api {
         }
 
         $instance->set_extended_filterset($filterset);
-        if ($pagenumber !== null) {
-            $instance->set_page_number($pagenumber);
-        }
-
-        if ($pagesize === null) {
-            $pagesize = 20;
-        }
-
         if ($resetpreferences === true) {
             $instance->mark_table_to_reset();
         }
@@ -230,8 +222,13 @@ class external extends \external_api {
         $PAGE->set_url($instance->baseurl);
 
         /* @var dynamic_table_sql $instance */
-        $instance->pageable(true);
-        $instance->set_page_number($pagenumber);
+        // TODO : correct this, we should be able to rely on the default value.
+        if ($pagesize === 0 || $pagenumber < 0 || empty($pagenumber)) {
+            $instance->pageable(false);
+        } else {
+            $instance->pageable(true);
+            $instance->set_page_number($pagenumber);
+        }
         // Convert from an array of sort definition to column => sortorder
         if (!empty($sortdata)) {
             $sortdef = [];
@@ -242,23 +239,25 @@ class external extends \external_api {
             $instance->set_sort_data($sortdef);
         }
 
-        $instance->build_table();
+        $instance->validate_access();
 
         $rows = $instance->retrieve_raw_data($pagesize);
         if (!empty($rows) && empty($rows[0]->id)) {
             throw new \UnexpectedValueException("The table handler class {$handler} must be return an id column 
             that will then be hidden but keep reference to the row unique identifier.");
         }
-
-        return [
-            'pagescount' => floor($instance->totalrows / $instance->pagesize),
-            "data" => array_map(
-                function($r) {
-                    return json_encode($r);
-                },
-                $rows
-            )
+        $returnval = [
+            'data' =>  array_map(
+            function($r) {
+                return json_encode($r);
+            },
+            $rows
+        )
         ];
+        if($instance->use_pages) {
+            $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
+        }
+        return $returnval;
     }
 
     /**
@@ -269,7 +268,7 @@ class external extends \external_api {
      */
     public static function get_rows_returns(): external_single_structure {
         return new external_single_structure([
-            'pagescount' => new external_value(PARAM_INT, 'Maximum page count.'),
+            'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
             'data' => new external_multiple_structure(
                 new external_value(PARAM_RAW, 'JSON encoded values in return.')
             )
@@ -330,6 +329,7 @@ class external extends \external_api {
         ]);
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
+        $instance->validate_access();
         $columndefs = $instance->get_fields_definition();
 
         return $columndefs;
@@ -356,6 +356,16 @@ class external extends \external_api {
             );
     }
 
+    /**
+     * Get table handler instance
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws \invalid_parameter_exception
+     * @throws \restricted_context_exception
+     */
     public static function get_table_handler_instance($handler, $uniqueid) {
         global $CFG;
 
@@ -373,7 +383,6 @@ class external extends \external_api {
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
         $instance = new $handler($uniqueid);
-        self::validate_context($instance->get_dynamic_table_context());
         return $instance;
     }
 

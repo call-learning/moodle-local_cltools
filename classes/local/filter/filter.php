@@ -40,13 +40,7 @@ use Iterator;
  * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class filter implements Countable, Iterator, JsonSerializable {
-
-    /** @var in The default filter type (ANY) */
-    const JOINTYPE_DEFAULT = 1;
-
-    /** @var int None of the following match */
-    const JOINTYPE_NONE = 0;
+abstract class filter implements Countable, JsonSerializable {
 
     /** @var int Any of the following match */
     const JOINTYPE_ANY = 1;
@@ -57,21 +51,19 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
     /** @var string The name of this filter */
     protected $name = null;
 
+    /** @var string The sql alias of this filter */
+    protected $alias = null;
+
     /** @var int The join type currently in use */
-    protected $jointype = self::JOINTYPE_DEFAULT;
+    protected $jointype = self::JOINTYPE_ALL;
 
     /** @var array The list of active filter values */
     protected $filtervalues = [];
 
-    /** @var int[] valid join types */
-    protected $jointypes = [
-        self::JOINTYPE_NONE,
+    const JOIN_TYPES = [
         self::JOINTYPE_ANY,
-        self::JOINTYPE_ALL,
+        self::JOINTYPE_ALL
     ];
-
-    /** @var int The current iterator position */
-    protected $iteratorposition = null;
 
     /**
      * Constructor for the generic filter class.
@@ -80,10 +72,16 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
      * @param int $jointype The join to use when combining the filters.
      *                      See the JOINTYPE_ constants for further information on the field.
      * @param mixed[] $values An array of filter objects to be applied.
+     * @param string $alias An alias for the column, which can be used directly in the related
+     * sql query.
      */
-    public function __construct(string $name, ?int $jointype = null, ?array $values = null) {
+    public function __construct(string $name,
+        ?int $jointype = null,
+        ?array $values = null,
+        ?string $alias = null
+    ) {
         $this->name = $name;
-
+        $this->alias = $alias;
         if ($jointype !== null) {
             $this->set_join_type($jointype);
         }
@@ -96,71 +94,7 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
     }
 
     /**
-     * Reset the iterator position.
-     */
-    public function reset_iterator(): void {
-        $this->iteratorposition = null;
-    }
-
-    /**
-     * Return the current filter value.
-     */
-    public function current() {
-        if ($this->iteratorposition === null) {
-            $this->rewind();
-        }
-
-        if ($this->iteratorposition === null) {
-            return null;
-        }
-
-        return $this->filtervalues[$this->iteratorposition];
-    }
-
-    /**
-     * Returns the current position of the iterator.
-     *
-     * @return int
-     */
-    public function key() {
-        if ($this->iteratorposition === null) {
-            $this->rewind();
-        }
-
-        return $this->iteratorposition;
-    }
-
-    /**
-     * Rewind the Iterator position to the start.
-     */
-    public function rewind(): void {
-        if ($this->iteratorposition === null) {
-            $this->sort_filter_values();
-        }
-
-        if (count($this->filtervalues)) {
-            $this->iteratorposition = 0;
-        }
-    }
-
-    /**
-     * Move to the next value in the list.
-     */
-    public function next(): void {
-        ++$this->iteratorposition;
-    }
-
-    /**
-     * Check if the current position is valid.
-     *
-     * @return bool
-     */
-    public function valid(): bool {
-        return isset($this->filtervalues[$this->iteratorposition]);
-    }
-
-    /**
-     * Return the number of contexts.
+     * Return the number of values.
      *
      * @return int
      */
@@ -178,13 +112,31 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
     }
 
     /**
+     * Set filter alias
+     */
+    public function set_alias($alias) {
+        $this->alias = $alias;
+    }
+    /**
+     * Return the alias of the filter, mainly for sql queries
+     *
+     * @return string either the set alias or the name of the column.
+     */
+    public function get_alias(): string {
+        if (empty($this->alias)) {
+            return $this->name;
+        }
+        return $this->alias;
+    }
+
+    /**
      * Specify the type of join to employ for the filter.
      *
      * @param int $jointype The join type to use using one of the supplied constants
      * @return self
      */
     public function set_join_type(int $jointype): self {
-        if (array_search($jointype, $this->jointypes) === false) {
+        if (array_search($jointype,static::JOIN_TYPES) === false) {
             throw new InvalidArgumentException('Invalid join type specified');
         }
 
@@ -226,9 +178,6 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
 
         $this->filtervalues[] = $value;
 
-        // Reset the iterator position.
-        $this->reset_iterator();
-
         return $this;
     }
 
@@ -240,8 +189,6 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
         // Note: This is not a locale-aware sort, but we don't need this.
         // It's primarily for consistency, not for actual sorting.
         sort($this->filtervalues);
-
-        $this->reset_iterator();
     }
 
     /**
@@ -260,32 +207,40 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
      * @return mixed|object
      */
     public function jsonSerialize() {
-        return (object) [
+        $currentclass = explode("\\", static::class);
+        $serialised = (object) [
             'name' => $this->get_name(),
             'jointype' => $this->get_join_type(),
-            'values' => $this->get_filter_values(),
+            'values' => array_map(function($val) { return json_encode($val);}, $this->get_filter_values()),
+            'type' => end($currentclass)
         ];
+        return $serialised;
     }
-
+    /**
+     * Map join types to corresponding SQL values
+     *
+     */
+    const JOIN_TYPE_TO_SQL = [
+        filter::JOINTYPE_ALL => 'AND',
+        filter::JOINTYPE_ANY => 'OR',
+    ];
     /**
      * Get the sql where / params used for filtering
+     *
      * @param $tableprefix
      * @return array
      */
-    public function get_sql_for_filter($tableprefix=null) {
+    public function get_sql_for_filter($tableprefix = null) {
         $filtervalues = $this->get_filter_values();
-        $join ='AND';
-        if($this->get_join_type() === filterset::JOINTYPE_ANY) {
-            $join = 'OR';
-        }
+        $joinsql = filter::JOIN_TYPE_TO_SQL[$this->get_join_type()];
         $filterwheres = [];
         $filterparams = [];
-        foreach($filtervalues as $fieldval) {
-           list($wheres, $params) = $this->get_sql_filter_element($fieldval, $tableprefix);
-           $filterwheres[]= $wheres;
-           $filterparams += $params;
+        foreach ($filtervalues as $fieldval) {
+            list($wheres, $params) = $this->get_sql_filter_element($fieldval, $tableprefix);
+            $filterwheres[] = $wheres;
+            $filterparams += $params;
         }
-        return array(join(" $join ", $filterwheres), $filterparams);
+        return array(join(" $joinsql ", $filterwheres), $filterparams);
     }
 
     /**
@@ -296,5 +251,5 @@ abstract class filter implements Countable, Iterator, JsonSerializable {
      * @param null $tableprefix
      * @return array
      */
-    abstract protected function get_sql_filter_element($fieldval, $tableprefix=null);
+    abstract protected function get_sql_filter_element($fieldval, $tableprefix = null);
 }

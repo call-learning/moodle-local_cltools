@@ -37,14 +37,15 @@ class file_manager  extends base  {
         }
         $this->filemanageroptions = empty($fielddef->filemanageroptions) ? [] : $fielddef->filemanageroptions;
     }
+
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    protected function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('filemanager', $name, $fullname, $this->filemanageroptions);
+    protected function internal_add_form_element(&$mform) {
+        $mform->addElement('filemanager', $this->fieldname, $this->fullname, $this->filemanageroptions);
     }
 
     public function get_formatter_parameters() {

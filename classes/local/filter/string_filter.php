@@ -77,7 +77,7 @@ class string_filter extends filter {
         $params = [];
 
         $where = " ".
-            $DB->sql_like($this->get_name(),":$paramname", false, false)
+            $DB->sql_like($this->get_alias(),":$paramname", false, false)
             . " ";
         $params[$paramname] = '%' . $DB->sql_like_escape($fieldval) . '%';
         return array($where, $params);

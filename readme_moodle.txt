@@ -18,6 +18,6 @@ Instructions to import Tabulator into CLTools:
 1. Download the latest release from https://github.com/olifolkerd/tabulator
 2. copy 'dist/tabulator-lazy.js' into 'amd/src/table/tabulator-lazy.js'
    Add /* eslint-disable */ in the beginning
-3. copy 'tabulator.css' into 'styles.css'
+3. copy 'css/bootstrap/tabulator_bootstrap4.css' into 'styles.css'
    Add /* stylelint-disable */ in the beginning.
 

@@ -31,12 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 class boolean extends base  {
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('advcheckbox', $name, $fullname);
+    public function internal_add_form_element(&$mform) {
+        $mform->addElement('advcheckbox', $this->fieldname, $this->fullname);
     }
 
     /**
@@ -62,4 +62,5 @@ class boolean extends base  {
     public function get_filter_parameters() {
         return null;
     }
+
 }

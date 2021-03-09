@@ -31,13 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 class hidden extends base  {
     /**
      * Add element onto the form
+     *
      * @param $mform
-     * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_add_form_element(&$mform, $name, $fullname) {
-        $mform->addElement('hidden', $name);
-        $mform->setType($name, $this->get_param_type());
+    public function internal_add_form_element(&$mform) {
+        $mform->addElement('hidden', $this->fieldname);
     }
 
     /**
@@ -50,7 +49,17 @@ class hidden extends base  {
      * @throws \coding_exception
      */
     public function get_formatter_parameters() {
-        return [];
+        return null;
+    }
+
+    /**
+     * Check if the field is visible or not
+     *
+     * @return boolean visibility
+     *
+     */
+    public function is_visible() {
+        return false;
     }
 
     /**
@@ -62,6 +71,25 @@ class hidden extends base  {
      *
      */
     public function get_filter_parameters() {
-        return [];
+        return null;
+    }
+
+    /**
+     * Get the matching filter type to be used for display
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_filter_type() {
+        return null; // No type.
+    }
+    /**
+     * Get the matching formatter type to be used for display
+     *
+     * @return string|null return the type (and null if no formatter)
+     *
+     */
+    public function get_formatter_type() {
+        return null; // No type.
     }
 }

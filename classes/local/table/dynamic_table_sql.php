@@ -30,6 +30,7 @@ global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
 use context;
+use local_cltools\local\field\hidden;
 use local_cltools\local\filter\filterset;
 use table_sql;
 
@@ -45,9 +46,20 @@ abstract class dynamic_table_sql extends table_sql {
      */
     protected $filterset = null;
 
+    /**
+     * @var array field defintions
+     */
     protected $fields = [];
 
+    /**
+     * @var array|mixed|null defined actions
+     */
     protected $actionsdefs = [];
+
+    /**
+     * @var array $filteraliases an associative array that will set the right sql alias for this table if needed
+     */
+    protected $filteraliases = null;
 
     /**
      * Sets up the page_table parameters.
@@ -75,21 +87,30 @@ abstract class dynamic_table_sql extends table_sql {
      * Set the filterset in the table class.
      *
      * The use of filtersets is a requirement for dynamic tables, but can be used by other tables too if desired.
-     *
+     * This also sets the filter aliases if not set for each filters, depending on what is set in the
+     * local $filteralias array.
      * @param filterset $filterset The filterset object to get filters and table parameters from
      */
     public function set_extended_filterset(filterset $filterset): void {
+        foreach($this->filteraliases as $filtername => $sqlalias) {
+            if ($filterset->has_filter($filtername)) {
+                $filter = $filterset->get_filter($filtername);
+                $filter->set_alias($sqlalias);
+            }
+        }
         $this->filterset = $filterset;
     }
 
     /**
-     * Get context
+     * Validate current user has access to the table instance
      *
-     * @return \context|\context_system|null
+     * Note: this can involve a more complicated check if needed and requires filters and all
+     * setup to be done in order to make sure we validated against the right information
+     * (such as for example a filter needs to be set in order not to return data a user should not see).
      * @throws \dml_exception
      */
-    public function get_dynamic_table_context():context {
-        return \context_system::instance();
+    public function validate_access() {
+        external::validate_context(\context_system::instance());
     }
 
     /**
@@ -134,11 +155,30 @@ abstract class dynamic_table_sql extends table_sql {
      * @return type?
      */
     function setup() {
-        $currpage = $this->currpage;
+        if ($this->use_pages) {
+            $currpage = $this->currpage;
+        }
         parent::setup();
-        $this->currpage = $currpage ? $currpage : $this->currpage;
+        if ($this->use_pages) {
+            $this->currpage = $currpage ? $currpage : $this->currpage;
+        }
     }
 
+
+    /**
+     * Sets the pagesize variable to the given integer, the totalrows variable
+     * to the given integer, and the use_pages variable to true.
+     * @param int $perpage
+     * @param int $total
+     * @return void
+     */
+    function pagesize($perpage, $total) {
+        if($this->use_pages) {
+            $this->pagesize = $perpage;
+            $this->totalrows = $total;
+            $this->use_pages = true;
+        }
+    }
     /**
      * Table columns
      *
@@ -162,7 +202,6 @@ abstract class dynamic_table_sql extends table_sql {
         return [$cols, $headers];
     }
 
-
     /**
      * Setup the fields for this table
      */
@@ -184,6 +223,7 @@ abstract class dynamic_table_sql extends table_sql {
             ]);
         }
     }
+
     /**
      * @return array
      */
@@ -191,24 +231,37 @@ abstract class dynamic_table_sql extends table_sql {
         $columnsdef = [];
         $this->setup();
         foreach ($this->columns as $fieldid => $index) {
+            $field = $this->fields[$fieldid];
             $column = (object) [
                 'title' => $this->headers[$index],
                 'field' => $fieldid,
-                'visible' => $fieldid == 'id' ? false : true,
+                'visible' => $field->is_visible(),
             ];
-            if (!empty($this->fields[$fieldid])) {
-                $field = $this->fields[$fieldid];
-                $column->formatter = $field->get_type();
+
+            if ($field->get_formatter_type()) {
+                $column->formatter = $field->get_formatter_type();
                 if ($field->get_formatter_parameters()) {
                     $column->formatterparams = json_encode($field->get_formatter_parameters());
                 }
-                $column->filter = $field->get_type();
+            }
+            if ($field->get_filter_type()) {
+                $column->filter = $field->get_filter_type();
                 if ($field->get_filter_parameters()) {
                     $column->filterparams = json_encode($field->get_filter_parameters());
                 }
             }
+            $colmethodname = 'col_'.$fieldid;
+            // Disable sorting and formatting for all formatted rows.
+            if (method_exists($this, $colmethodname)) {
+                unset($column->filter);
+                unset($column->filterparams);
+                $column->formatter = 'html';
+                unset($column->formatterparams);
+            }
+
             $columnsdef[] = $column;
         }
+
         return $columnsdef;
     }
 
@@ -217,7 +270,6 @@ abstract class dynamic_table_sql extends table_sql {
      *
      */
     public function set_sort_data($sortdef) {
-
         global $SESSION;
 
         // Load any existing user preferences.
@@ -301,8 +353,18 @@ abstract class dynamic_table_sql extends table_sql {
     public function query_db($pagesize, $useinitialsbar = true) {
         list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
         if ($additionalwhere) {
-            $this->sql->where .= " AND ($additionalwhere)";
+            if (!empty($this->sql->where)) {
+                $this->sql->where .= " AND ($additionalwhere)";
+            } else {
+                $this->sql->where = "$additionalwhere";
+            }
             $this->sql->params += $additionalparams;
+        }
+        $this->sql->fields =  "DISTINCT ".$this->sql->fields;
+        if ($this->countsql === NULL) {
+            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}) 
+            squery";
+            $this->countparams = $this->sql->params;
         }
         parent::query_db($pagesize, $useinitialsbar);
     }

@@ -38,34 +38,14 @@ use moodle_exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class filterset implements JsonSerializable {
-    /** @var in The default filter type (ANY) */
-    const JOINTYPE_DEFAULT = 1;
-
-    /** @var int None of the following match */
-    const JOINTYPE_NONE = 0;
-
-    /** @var int Any of the following match */
-    const JOINTYPE_ANY = 1;
-
-    /** @var int All of the following match */
-    const JOINTYPE_ALL = 2;
-
     /** @var int The join type currently in use */
-    protected $jointype = self::JOINTYPE_DEFAULT;
+    protected $jointype = filter::JOINTYPE_ANY;
 
     /** @var array The list of combined filter types */
     protected $filtertypes = null;
 
     /** @var array The list of active filters */
     protected $filters = [];
-
-    /** @var int[] valid join types */
-    protected $jointypes = [
-        self::JOINTYPE_NONE,
-        self::JOINTYPE_ANY,
-        self::JOINTYPE_ALL,
-    ];
-
     /**
      * Specify the type of join to employ for the filter.
      *
@@ -73,7 +53,7 @@ abstract class filterset implements JsonSerializable {
      * @return self
      */
     public function set_join_type(int $jointype): self {
-        if (array_search($jointype, $this->jointypes) === false) {
+        if (array_search($jointype, filter::JOIN_TYPES) === false) {
             throw new InvalidArgumentException('Invalid join type specified');
         }
 
@@ -305,10 +285,8 @@ abstract class filterset implements JsonSerializable {
      */
     public function get_sql_for_filter($tableprefix = null) {
 
-        $join = 'AND';
-        if ($this->get_join_type() === filterset::JOINTYPE_ANY) {
-            $join = 'OR';
-        }
+
+        $joinsql = filter::JOIN_TYPE_TO_SQL[$this->get_join_type()];
         $filtesetwheres = [];
         $filtesetparams = [];
 
@@ -319,6 +297,6 @@ abstract class filterset implements JsonSerializable {
                 $filtesetwheres[] = $wheres;
             }
         }
-        return array(join(" $join ", $filtesetwheres), $filtesetparams);
+        return array(join(" $joinsql ", $filtesetwheres), $filtesetparams);
     }
 }

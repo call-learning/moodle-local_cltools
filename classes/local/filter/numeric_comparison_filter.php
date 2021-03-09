@@ -151,8 +151,8 @@ class numeric_comparison_filter extends filter {
 
         $paramname = "numericp_". ($paramcount++);
         $params = [];
-        $where = " {$this->get_name()}  {$directiontosql[$fieldval->direction]}  :$paramname ";
-        $params[$paramname] = $fieldval->value;
+        $where = " COALESCE({$this->get_alias()},0)  {$directiontosql[$fieldval->direction]}  :$paramname ";
+        $params[$paramname] = intval($fieldval->value);
         return array($where, $params);
     }
 }

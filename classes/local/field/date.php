@@ -28,16 +28,7 @@
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class number  extends base  {
-    /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
-     */
-    public function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
-    }
+class date  extends base  {
 
     /**
      * Get the additional information related to the way we need to format this
@@ -49,8 +40,12 @@ class number  extends base  {
      * @throws \coding_exception
      */
     public function get_formatter_parameters() {
-        return null;
+        return [
+            'outputformat' => get_string('momentjsdateformat', 'local_cltools'),
+            'timezone' => usertimezone()
+        ];
     }
+
     /**
      * Get the additional information related to the way we need to format this
      * information
@@ -60,6 +55,19 @@ class number  extends base  {
      *
      */
     public function get_filter_parameters() {
-        return null;
+        return [
+            'outpuformat' => get_string('momentjsdateformat', 'local_cltools'),
+            'timezone' => usertimezone()
+        ];
+    }
+
+    /**
+     * Add element onto the form
+     *
+     * @param $mform
+     * @return mixed
+     */
+    public function internal_add_form_element(&$mform) {
+        $mform->addElement('datetimeselector', $this->fieldname, $this->fullname);
     }
 }

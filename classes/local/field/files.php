@@ -28,7 +28,8 @@
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class number  extends base  {
+class files extends base  {
+
     /**
      * Add element onto the form
      *
@@ -36,7 +37,8 @@ class number  extends base  {
      * @return mixed
      */
     public function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
+        $editoroptions = $this->editoroptions;
+        $mform->addElement('filemanager',  $this->fieldname, $this->fullname, null, $editoroptions);
     }
 
     /**
@@ -49,8 +51,19 @@ class number  extends base  {
      * @throws \coding_exception
      */
     public function get_formatter_parameters() {
-        return null;
+        return [];
     }
+
+    /**
+     * Check if the field is visible or not
+     *
+     * @return boolean visibility
+     *
+     */
+    public function is_visible() {
+        return false;
+    }
+
     /**
      * Get the additional information related to the way we need to format this
      * information

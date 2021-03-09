@@ -74,8 +74,8 @@ class integer_filter extends filter {
 
         $paramname = "intergerp_". ($paramcount++);
         $params = [];
-        $where = " {$this->get_name()}  =  :$paramname ";
-        $params[$paramname] = $fieldval->value;
+        $where = " {$this->get_alias()}  =  :$paramname ";
+        $params[$paramname] = intval($fieldval->value);
         return array($where, $params);
     }
 }

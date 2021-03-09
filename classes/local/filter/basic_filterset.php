@@ -48,13 +48,6 @@ class basic_filterset extends filterset {
     /**
      * Get the optional filters.
      *
-     * These are:
-     * - accesssince;
-     * - enrolments;
-     * - groups;
-     * - keywords;
-     * - roles; and
-     * - status.
      *
      * @return array
      */
@@ -69,13 +62,6 @@ class basic_filterset extends filterset {
     /**
      * Get the optional filters.
      *
-     * These are:
-     * - accesssince;
-     * - enrolments;
-     * - groups;
-     * - keywords;
-     * - roles; and
-     * - status.
      *
      * @return array
      */

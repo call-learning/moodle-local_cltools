@@ -76,7 +76,7 @@ const TABULATOR_FILTER_CONVERTER = {
         to: 'datetime',
         transformer: (args) => {
             return {
-                'outputFormat': args.inputformat,
+                'outputFormat': args.outputformat,
                 'inputFormat': args.inputformat,
                 'timezone': args.timezone
             };
@@ -85,6 +85,12 @@ const TABULATOR_FILTER_CONVERTER = {
     }
 };
 const TABULATOR_FORMATTER_CONVERTER = {
+    'text': {
+        to: 'plaintext',
+    },
+    'number': {
+        to: 'plaintext',
+    },
     'select_choice': {
         to: 'lookup',
         transformer: (args) => args.choices
@@ -94,11 +100,19 @@ const TABULATOR_FORMATTER_CONVERTER = {
         transformer: (args) => args.choices
     },
     'datetime': {
-        to: 'datetime',
+        to: 'datetimets',
         transformer: (args) => {
             return {
-                'outputFormat': args.inputformat,
-                'inputFormat': args.inputformat,
+                'outputFormat': args.outputformat,
+                'timezone': args.timezone
+            };
+        }
+    },
+    'date': {
+        to: 'datets',
+        transformer: (args) => {
+            return {
+                'outputFormat': args.outputformat,
                 'timezone': args.timezone
             };
         }
@@ -110,12 +124,6 @@ export const formatterFilterTransform = (columndefs) => {
         (columndef) => {
             const formatterParams = ('formatterparams' in columndef) ? JSON.parse(columndef.formatterparams) : null;
             const filterParams = ('filterparams' in columndef) ? JSON.parse(columndef.filterparams) : null;
-            if (!formatterParams) {
-                delete columndef.formatterparams;
-            }
-            if (!filterParams) {
-                delete columndef.filterparams;
-            }
             if (('formatter' in columndef) && (columndef.formatter in TABULATOR_FORMATTER_CONVERTER)) {
                 const converter = TABULATOR_FORMATTER_CONVERTER[columndef.formatter];
                 if (formatterParams) {
@@ -123,18 +131,28 @@ export const formatterFilterTransform = (columndefs) => {
                 }
                 columndef.formatter = converter.to;
             }
-            if (('filter' in columndef) && (columndef.filter in TABULATOR_FILTER_CONVERTER)) {
-                const converter = TABULATOR_FILTER_CONVERTER[columndef.filter];
-                if (filterParams) {
-                    columndef.headerFilterParams = converter.transformer(filterParams);
+            if (('filter' in columndef)) {
+                columndef.headerFilter = columndef.filter;
+                if (columndef.filter in TABULATOR_FILTER_CONVERTER) {
+                    const converter = TABULATOR_FILTER_CONVERTER[columndef.filter];
+                    if (filterParams) {
+                        columndef.headerFilterParams = converter.transformer(filterParams);
+                    }
+                    columndef.headerFilter = converter.to;
+                    if ('editor' in converter) {
+                        columndef.editor = converter.editor;
+                    }
+                    if ('headerFilterFunc' in converter) {
+                        columndef.headerFilterFunc = converter.headerFilterFunc;
+                    }
                 }
-                columndef.headerFilter = converter.to;
-                if ('editor' in converter) {
-                    columndef.editor = converter.editor;
-                }
-                if ('headerFilterFunc' in converter) {
-                    columndef.headerFilterFunc = converter.headerFilterFunc;
-                }
+                delete columndef.filter;
+            }
+            if ('formatterparams' in columndef) {
+                delete columndef.formatterparams;
+            }
+            if ('filterparams' in columndef) {
+                delete columndef.filterparams;
             }
             return columndef;
         }
