@@ -119,12 +119,11 @@ abstract class entity_form extends \core\form\persistent {
      */
     protected function filter_data_for_persistent($data) {
         $filtereddata = parent::filter_data_for_persistent($data);
-        $fields = $this->get_file_fields_info();
-        foreach ($this->_form->_elements as $e) {
-            $ename = $e->getName();
-            if ($e->getType() == 'editor' && key_exists($ename, $fields)) {
-                unset($filtereddata->$ename);
-            }
+        foreach($this->fields as $field) {
+            $field->filter_data_for_persistent($filtereddata);
+        }
+        if($filtereddata->submitbutton) {
+            unset($filtereddata->submitbutton);
         }
         return $filtereddata;
     }
@@ -210,14 +209,10 @@ abstract class entity_form extends \core\form\persistent {
                 $fieldinfo['type'] = 'hidden';
                 $fieldinfo['default'] = $possibledefault;
             }
+            $fieldinfo['filemanageroptions'] = $this->filemanager_get_default_options($fieldinfo);
+            $fieldinfo['editoroptions'] = $this->editor_get_option($fieldinfo);
+
             if (!empty($fieldinfo['type'])) {
-                switch ($fieldinfo['type']) {
-                    case 'file_manager':
-                        $fieldinfo['filemanageroptions'] = $this->filemanager_get_default_options($fieldinfo);
-                        break;
-                    case 'editor':
-                        $fieldinfo['editoroptions'] = $this->editor_get_option($fieldinfo);
-                }
                 if (empty($fieldinfo['fullname'])) {
                     $fieldinfo['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
                 }
@@ -253,9 +248,10 @@ abstract class entity_form extends \core\form\persistent {
             [
                 'maxfiles' => EDITOR_UNLIMITED_FILES,
                 'maxbytes' => $CFG->maxbytes,
-                'trusttext' => false,
                 'noclean' => true,
-                'context' => \context_system::instance()
+                'context' => \context_system::instance(),
+                'enable_filemanagement' => true,
+                'changeformat' => true
             ];
         $formoptions =
             empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
@@ -332,7 +328,6 @@ abstract class entity_form extends \core\form\persistent {
      * @throws \dml_exception
      */
     public function prepare_for_files() {
-        $fields = $this->get_file_fields_info();
         $context = \context_system::instance();
         $component = entity_utils::get_component(static::$persistentclass);
         $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
@@ -340,31 +335,9 @@ abstract class entity_form extends \core\form\persistent {
         $itemdata = $item->to_record();
         $itemid = $itemdata ? $itemdata->id : 0;
 
-        foreach ($fields as $fieldname => $field) {
+        foreach ($this->fields as $fieldname => $field) {
             $filearea = $filearearoot . '_' . $fieldname;
-            if ($field->get_type() == 'file_manager') {
-                $filemanagerformelt = $fieldname;
-                $draftitemid = file_get_submitted_draft_itemid($filemanagerformelt);
-                file_prepare_draft_area($draftitemid,
-                    $context->id,
-                    $component,
-                    $filearea,
-                    $itemid,
-                    $field->get_formatter_parameters()['filemanageroptions']);
-                $itemdata->{$filemanagerformelt} = $draftitemid;
-            }
-            if ($field->get_type() == 'editor') {
-                $itemid = $item->get('id');
-                file_prepare_standard_editor($itemdata,
-                    $fieldname,
-                    $field->get_formatter_parameters()['editoroptions'],
-                    $context,
-                    'local_cltools',
-                    $filearea,
-                    $itemid
-                );
-
-            }
+            $field->prepare_files($itemdata, $context, $component, $filearea, $itemid);
         }
         $this->set_data($itemdata);
     }
@@ -375,41 +348,29 @@ abstract class entity_form extends \core\form\persistent {
      * @throws \ReflectionException
      * @throws \dml_exception
      */
-    public function save_submitted_files(&$originaldata) {
+    protected function save_submitted_files() {
         $data = \moodleform::get_data();
-
-        $formatters = $this->get_file_fields_info();
         $context = \context_system::instance();
         $component = entity_utils::get_component(static::$persistentclass);
         $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
         $itemid = $this->get_persistent()->get('id');
-        foreach ($formatters as $fieldname => $field) {
+        foreach ($this->fields as $fieldname => $field) {
             $filearea = $filearearoot . '_' . $fieldname;
-            if ($field->get_type() == 'file_manager') {
-                file_save_draft_area_files($data->{$fieldname},
-                    $context->id,
-                    $component,
-                    $filearea,
-                    $itemid,
-                    $field->get_formatter_parameters()['filemanageroptions']);
-            } else if ($field->get_type() == 'editor') {
-                $data = file_postupdate_standard_editor($data, $fieldname,
-                    $field->get_formatter_parameters()['editoroptions'],
-                    $context,
-                    $component,
-                    $filearea,
-                    $itemid);
-                $originaldata->{$fieldname} = $data->{$fieldname};
-                $originaldata->{$fieldname . 'format'} = $data->{$fieldname . 'format'};
-            } else {
-                $this->save_stored_file($fieldname,
-                    $context->id,
-                    $component,
-                    $filearea,
-                    $itemid,
-                    $this->filemanager_get_default_options());
-            }
-
+            $field->save_files($data, $context, $component, $filearea, $itemid);
         }
+        return $data;
+    }
+
+    /**
+     * Save current data in persitent
+     * @param $data
+     * @throws \coding_exception
+     */
+    public function save_data(){
+        $data = $this->save_submitted_files();
+        $persistentdata = $this->filter_data_for_persistent($data);
+        $persistent = $this->get_persistent();
+        $persistent->from_record((object) $persistentdata);
+        $persistent->save();
     }
 }

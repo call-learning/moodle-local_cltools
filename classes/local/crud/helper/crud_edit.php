@@ -92,9 +92,7 @@ class crud_edit extends base {
             redirect($this->persistentnavigation->get_list_url());
         } else if ($data = $mform->get_data()) {
             try {
-                $mform->save_submitted_files($data);
-                $entity = $this->refpersistentclass->newInstance($data->id, $data);
-                $entity->update();
+                $mform->save_data();
                 if ($postprocesscb && is_callable($postprocesscb)) {
                     $postprocesscb($entity, $data);
                 }

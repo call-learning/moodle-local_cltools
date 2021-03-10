@@ -30,6 +30,17 @@ defined('MOODLE_INTERNAL') || die();
 
 class files extends base  {
 
+    protected $filemanageroptions  = [];
+
+    public function __construct($fielddef)  {
+        parent::__construct($fielddef);
+        if (is_array($fielddef)) {
+            $fielddef = (object) $fielddef;
+        }
+        if (!empty($fielddef->filemanageroptions)) {
+            $this->filemanageroptions = $fielddef->filemanageroptions;
+        }
+    }
     /**
      * Add element onto the form
      *
@@ -37,8 +48,8 @@ class files extends base  {
      * @return mixed
      */
     public function internal_add_form_element(&$mform) {
-        $editoroptions = $this->editoroptions;
-        $mform->addElement('filemanager',  $this->fieldname, $this->fullname, null, $editoroptions);
+        $options = $this->filemanageroptions;
+        $mform->addElement('filemanager',  $this->fieldname, $this->fullname, null, $options);
     }
 
     /**
@@ -75,4 +86,39 @@ class files extends base  {
     public function get_filter_parameters() {
         return null;
     }
+
+    /**
+     * Callback for this field, so data can be converted before form submission
+     *
+     * @param $itemdata
+     * @throws \coding_exception
+     */
+    public function prepare_files(&$itemdata, ...$args) {
+        list($context, $component, $filearea, $itemid) =  $args;
+        $draftitemid = file_get_submitted_draft_itemid($this->fieldname);
+        file_prepare_draft_area($draftitemid,
+            $context->id,
+            $component,
+            $filearea,
+            $itemid,
+            $this->filemanageroptions);
+        $itemdata->{$filemanagerformelt} = $draftitemid;
+    }
+
+    /**
+     * Callback for this field, so data can be saved after form submission
+     *
+     * @param $itemdata
+     * @throws \coding_exception
+     */
+    public function save_files(&$itemdata, ...$args) {
+        list($context, $component, $filearea, $itemid) =  $args;
+        file_save_draft_area_files($itemdata->{$this->fieldname},
+            $context->id,
+            $component,
+            $filearea,
+            $itemid,
+            $this->filemanageroptions);
+    }
+
 }

@@ -242,17 +242,24 @@ abstract class base {
      */
 
     /**
+     * Callback for this field, so data can be converted before sending it to a persistent
+     * @param $data
+     */
+    public function filter_data_for_persistent(&$itemdata, ...$args) {
+
+    }
+    /**
      * Callback for this field, so data can be converted before form submission
      * @param $data
      */
-    public function prepare_data(&$data) {
+    public function prepare_files(&$itemdata, ...$args) {
     }
 
     /**
      * Callback for this field, so data can be saved after form submission
      * @param $data
      */
-    public function post_save_data(&$data) {
+    public function save_files(&$itemdata, ...$args) {
     }
 
     /**

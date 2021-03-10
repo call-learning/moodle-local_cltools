@@ -29,6 +29,17 @@ defined('MOODLE_INTERNAL') || die();
 
 class editor extends base {
 
+    protected $editoroptions  = [];
+
+    public function __construct($fielddef)  {
+        parent::__construct($fielddef);
+        if (is_array($fielddef)) {
+            $fielddef = (object) $fielddef;
+        }
+        if (!empty($fielddef->editoroptions)) {
+            $this->editoroptions = $fielddef->editoroptions;
+        }
+    }
     /**
      * Add element onto the form
      *
@@ -38,9 +49,19 @@ class editor extends base {
     public function internal_add_form_element(&$mform) {
         $editoroptions = $this->editoroptions;
         $mform->addElement('editor', $this->fieldname . '_editor',
-            $this->fullname, null, $editoroptions);
+            $this->fullname, $editoroptions);
     }
 
+    /**
+     * Add element onto the form
+     * @param $mform
+     * @param mixed ...$additionalargs
+     * @return mixed
+     */
+    public function add_form_element(&$mform) {
+        parent::add_form_element($mform);
+        $mform->setType($this->fieldname, PARAM_RAW);
+    }
     /**
      * Get the additional information related to the way we need to format this
      * information
@@ -75,4 +96,53 @@ class editor extends base {
     public function get_filter_parameters() {
         return [];
     }
+
+    /**
+     * Callback for this field, so data can be converted before form submission
+     *
+     * @param $itemdata
+     * @throws \coding_exception
+     */
+    public function prepare_files(&$itemdata, ...$args) {
+        list($context, $component, $filearea, $itemid) = $args;
+        file_prepare_standard_editor($itemdata,
+            $this->fieldname,
+            $this->editoroptions,
+            $context,
+            $component,
+            $filearea,
+            $itemid
+        );
+    }
+
+    /**
+     * Callback for this field, so data can be saved after form submission
+     *
+     * @param $itemdata
+     * @throws \coding_exception
+     */
+    public function save_files(&$itemdata, ...$args) {
+        list($context, $component, $filearea, $itemid) = $args;
+        $data = file_postupdate_standard_editor($itemdata, $this->fieldname,
+            $this->editoroptions,
+            $context,
+            $component,
+            $filearea,
+            $itemid);
+        $itemdata->{$this->fieldname} = $data->{$this->fieldname};
+        $itemdata->{$this->fieldname . 'format'} = $data->{$this->fieldname . 'format'};
+    }
+    /**
+     * Callback for this field, so data can be converted before sending it to a persistent
+     * @param $data
+     */
+    public function filter_data_for_persistent(&$itemdata, ...$args) {
+        if (!empty($itemdata->{$this->fieldname . '_editor'})) {
+            unset($itemdata->{$this->fieldname . '_editor'});
+        }
+        if (isset($itemdata->{$this->fieldname . 'trust'})) {
+            unset($itemdata->{$this->fieldname . 'trust'});
+        }
+    }
+
 }
