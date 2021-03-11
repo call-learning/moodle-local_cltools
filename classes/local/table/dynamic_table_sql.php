@@ -241,13 +241,13 @@ abstract class dynamic_table_sql extends table_sql {
             if ($field->get_formatter_type()) {
                 $column->formatter = $field->get_formatter_type();
                 if ($field->get_formatter_parameters()) {
-                    $column->formatterparams = json_encode($field->get_formatter_parameters());
+                    $column->formatterparams = json_encode($field->get_formatter_parameters(), JSON_FORCE_OBJECT);
                 }
             }
             if ($field->get_filter_type()) {
                 $column->filter = $field->get_filter_type();
                 if ($field->get_filter_parameters()) {
-                    $column->filterparams = json_encode($field->get_filter_parameters());
+                    $column->filterparams = json_encode($field->get_filter_parameters(), JSON_FORCE_OBJECT);
                 }
             }
             $colmethodname = 'col_'.$fieldid;

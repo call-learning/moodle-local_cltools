@@ -124,7 +124,7 @@ abstract class base {
         }
         $type = $fielddef['type'];
         if ($type != 'hidden' && !empty($fielddef['choices'])) {
-            $type = "select_choices";
+            $type = "select_choice";
         }
         $classname = __NAMESPACE__.'\\'. $type;
         if (!class_exists($classname)) {
