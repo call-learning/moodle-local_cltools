@@ -122,7 +122,7 @@ abstract class entity_form extends \core\form\persistent {
         foreach($this->fields as $field) {
             $field->filter_data_for_persistent($filtereddata);
         }
-        if($filtereddata->submitbutton) {
+        if(!empty($filtereddata->submitbutton)) {
             unset($filtereddata->submitbutton);
         }
         return $filtereddata;

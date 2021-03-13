@@ -40,6 +40,7 @@ $string['simple:path'] = 'Path';
 $string['simple:parentid'] = 'Path';
 $string['add'] = 'Add';
 $string['edit'] = 'Edit';
+$string['hasgrade'] = 'Graded?';
 $string['view'] = 'View';
 $string['delete'] = 'Delete';
 $string['list'] = 'List';

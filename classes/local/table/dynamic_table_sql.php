@@ -251,10 +251,13 @@ abstract class dynamic_table_sql extends table_sql {
                 }
             }
             $colmethodname = 'col_'.$fieldid;
-            // Disable sorting and formatting for all formatted rows.
+            // Disable sorting and formatting for all formatted rows
+            // Except for row which are html formatted (in which case we just disable the sorting).
             if (method_exists($this, $colmethodname)) {
-                unset($column->filter);
-                unset($column->filterparams);
+                if (empty($this->fields[$fieldid.'format'])) {
+                    unset($column->filter);
+                    unset($column->filterparams);
+                }
                 $column->formatter = 'html';
                 unset($column->formatterparams);
             }

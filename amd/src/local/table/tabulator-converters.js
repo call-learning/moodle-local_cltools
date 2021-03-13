@@ -37,7 +37,7 @@ const dateEditor = (cell, onRendered, success) => {
     editor.value = moment(cell.getValue(), "DD/MM/YYYY").format("YYYY-MM-DD");
 
     // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM)
-    onRendered(function() {
+    onRendered(function () {
         editor.focus();
         editor.style.css = "100%";
     });
@@ -57,6 +57,15 @@ const dateEditor = (cell, onRendered, success) => {
 const TABULATOR_FILTER_CONVERTER = {
     'text': {
         to: 'input'
+    },
+    'boolean': {
+        to: 'tick',
+        transformer: () => {
+            return {
+                tristate: true,
+                indeterminateValue: "n/a"
+            };
+        },
     },
     'select_choice': {
         to: 'select',
@@ -87,6 +96,15 @@ const TABULATOR_FILTER_CONVERTER = {
 const TABULATOR_FORMATTER_CONVERTER = {
     'text': {
         to: 'plaintext',
+    },
+    'boolean': {
+        to: 'tickCross',
+        transformer: () => {
+            return {
+                allowEmpty: true,
+                allowTruthy: true,
+            };
+        }
     },
     'number': {
         to: 'plaintext',
@@ -135,7 +153,7 @@ export const formatterFilterTransform = (columndefs) => {
                 columndef.headerFilter = columndef.filter;
                 if (columndef.filter in TABULATOR_FILTER_CONVERTER) {
                     const converter = TABULATOR_FILTER_CONVERTER[columndef.filter];
-                    if (filterParams) {
+                    if (converter.transformer) {
                         columndef.headerFilterParams = converter.transformer(filterParams);
                     }
                     columndef.headerFilter = converter.to;
