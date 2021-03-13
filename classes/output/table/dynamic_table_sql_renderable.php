@@ -42,8 +42,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dynamic_table_sql_renderable implements renderable, templatable  {
-    /** @var int page number */
-    public $page;
 
     /** @var int perpage records to show */
     public $perpage;
@@ -57,6 +55,9 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
     /** @var dynamic_table_sql table */
     public $dynamictable;
 
+    /** @var object */
+    public $otheroptions;
+
     /**
      * Constructor
      *
@@ -69,24 +70,18 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
      */
     public function __construct(
         $dynamictable,
-        $url = "",
-        $page = 0,
+        $otheroptions = null,
         $perpage = 30
     ) {
         global $PAGE;
-        // Use page url if empty.
-        if (empty($url)) {
-            $url = new moodle_url($PAGE->url);
-        } else {
-            $url = new moodle_url($url);
-        }
+        $url = new moodle_url($PAGE->url);
         $this->dynamictable = $dynamictable;
-        $this->page = $page;
         $this->perpage = $perpage;
         $this->url = $url;
-        $this->dynamictable->define_baseurl($this->url);
+        $this->dynamictable->define_baseurl($url);
         $this->dynamictable->is_downloadable(true);
         $this->dynamictable->show_download_buttons_at(array(TABLE_P_BOTTOM));
+        $this->otheroptions =  $otheroptions;
     }
 
     /**
@@ -105,6 +100,10 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
         $context->sortdatajson = '';
         $context->pagesize = $this->perpage;
         $context->handler = get_class($this->dynamictable);
+        $context->otheroptions = "";
+        if ($this->otheroptions) {
+            $context->otheroptions = json_encode($this->otheroptions);
+        }
         return $context;
     }
 }

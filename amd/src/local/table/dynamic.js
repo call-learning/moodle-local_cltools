@@ -32,7 +32,16 @@ import {formatterFilterTransform} from './tabulator-converters';
 import {MOODLE_FILTER_CONVERTER, JOINTYPE_ALL} from './moodle-filter-converters';
 import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 
+const convertInitialFilter = (initialFilters, existingFilters) => {
+    const joinType = initialFilters ? initialFilters.jointype : JOINTYPE_ALL;
+    if (initialFilters) {
+        // Add initial filters to filters.
+        Array.prototype.push.apply(existingFilters, Object.values(initialFilters.filters));
+    }
+    return [joinType, existingFilters];
+};
 const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
+    let joinType;
     let filters = (typeof params.filters === "undefined") ? [] : params.filters.map(
         (e) => {
             let filter = {
@@ -48,11 +57,7 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters)
             return filter;
         }
     );
-    const joinType = initialFilters ? initialFilters.jointype : JOINTYPE_ALL;
-    if (initialFilters) {
-        // Add initial filters to filters.
-        Array.prototype.push.apply(filters, Object.values(initialFilters.filters));
-    }
+    [joinType, filters] = convertInitialFilter(initialFilters, filters);
     const args = {
         handler: tableHandler,
         uniqueid: tableUniqueid,
@@ -95,9 +100,11 @@ export const init = async (tabulatorelementid) => {
     tableInit("#" + tabulatorelementid,
         tableelement.data('tableHandler'),
         tableelement.data('tableUniqueid'),
-        tableelement.data('table-pagesize'),
+        tableelement.data('tablePagesize'),
         tableelement.data('tableFilters'),
-        rowClickCallback);
+        rowClickCallback,
+        tableelement.data('tableOtheroptions'),
+    );
 };
 
 export const tableInit = async (
@@ -109,17 +116,21 @@ export const tableInit = async (
     rowClickCallback,
     otherOptions
 ) => {
+    let joinType, filters;
     // Make sure momentjs is defined.
     if (typeof window.moment == "undefined") {
         window.moment = moment;
     }
     const placeHolderMessage = await getString('table:nodata', 'local_cltools');
+    [joinType, filters] = convertInitialFilter(tableFilters, []);
     const columns = await Promise.race(ajaxCall(
         [{
             methodname: 'cltools_dynamic_table_get_columns',
             args: {
                 handler: tableHandler,
-                uniqueid: tableUniqueId
+                uniqueid: tableUniqueId,
+                filters: filters,
+                jointype: joinType
             }
         }])).catch(Notification.exception);
 
@@ -144,7 +155,7 @@ export const tableInit = async (
         placeholder: placeHolderMessage,
         rowClick: rowClickCallback ? rowClickCallback : () => null
     };
-    if (otherOptions) {
+    if (typeof otherOptions === 'object' && otherOptions !== null) {
         Object.assign(options, otherOptions);
     }
     new Tabulator(tableElement, options);

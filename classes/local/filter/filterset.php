@@ -283,7 +283,7 @@ abstract class filterset implements JsonSerializable {
      * @param $tableprefix
      * @return array
      */
-    public function get_sql_for_filter($tableprefix = null) {
+    public function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null) {
 
 
         $joinsql = filter::JOIN_TYPE_TO_SQL[$this->get_join_type()];
@@ -291,6 +291,9 @@ abstract class filterset implements JsonSerializable {
         $filtesetparams = [];
 
         foreach ($this->get_filters() as $filter) {
+            if (!empty($excludedfiltersname) && in_array($filter->get_name(), $excludedfiltersname)) {
+                continue;
+            }
             list($wheres, $params) = $filter->get_sql_for_filter($tableprefix);
             if ($wheres) {
                 $filtesetparams += $params;

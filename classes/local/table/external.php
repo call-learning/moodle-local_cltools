@@ -35,14 +35,17 @@ use external_warnings;
 use local_cltools\local\filter\basic_filterset;
 
 class external extends \external_api {
+
     /**
-     * Describes the parameters for fetching the table html.
+     * Basic parameters for any query related to the table
+     *
+     * Note that we include filters as they can somewhat have an influcence on columns
+     * selected too.
      *
      * @return external_function_parameters
-     * @since Moodle 3.9
      */
-    public static function get_rows_parameters(): external_function_parameters {
-        return new external_function_parameters ([
+    protected static function get_table_query_basic_parameters(): array {
+        return [
             'handler' => new external_value(
             // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
             // For now we will have to check manually.
@@ -88,45 +91,87 @@ class external extends \external_api {
                 VALUE_OPTIONAL
             ),
             'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
-            'firstinitial' => new external_value(
-                PARAM_RAW,
-                'The first initial to sort filter on',
-                VALUE_REQUIRED,
-                null
-            ),
-            'lastinitial' => new external_value(
-                PARAM_RAW,
-                'The last initial to sort filter on',
-                VALUE_REQUIRED,
-                null
-            ),
-            'hiddencolumns' => new external_multiple_structure(
-                new external_value(
-                    PARAM_ALPHANUMEXT,
-                    'Name of column',
+        ];
+    }
+
+
+    protected static function setup_filters(&$instance, $filters, $jointype) {
+        $instanceclass = get_class($instance);
+        $filtersetclass = "{$instanceclass}_filterset";
+        if (!class_exists($filtersetclass)) {
+            $filtertypedef = [];
+            foreach ($filters as $rawfilter) {
+                $ftdef = (object) [
+                    'filterclass' => 'local_cltools\\local\filter\\' . $rawfilter['type'],
+                    'required' => !empty($rawfilter['required']),
+                ];
+                $filtertypedef[$rawfilter['name']] = $ftdef;
+            }
+            $filterset = new basic_filterset($filtertypedef);
+        } else {
+            $filterset = new $filtersetclass();
+        }
+        $filterset->set_join_type($jointype);
+        foreach ($filters as $rawfilter) {
+            $filterset->add_filter_from_params(
+                $rawfilter['name'], // Field name.
+                $rawfilter['jointype'],
+                $rawfilter['values']
+            );
+        }
+
+        $instance->set_extended_filterset($filterset);
+    }
+    /**
+     * Describes the parameters for fetching the table html.
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.9
+     */
+    public static function get_rows_parameters(): external_function_parameters {
+        return new external_function_parameters(
+            array_merge(
+                static::get_table_query_basic_parameters(), [
+                'firstinitial' => new external_value(
+                    PARAM_RAW,
+                    'The first initial to sort filter on',
                     VALUE_REQUIRED,
                     null
-                )
-            ),
-            'resetpreferences' => new external_value(
-                PARAM_BOOL,
-                'Whether the table preferences should be reset',
-                VALUE_REQUIRED,
-                null
-            ),
-            'pagenumber' => new external_value(
-                PARAM_INT,
-                'The page number',
-                VALUE_OPTIONAL,
-                -1
-            ),
-            'pagesize' => new external_value(
-                PARAM_INT,
-                'The number of records per page',
-                VALUE_OPTIONAL,
-                0
-            ),
-        ]);
+                ),
+                'lastinitial' => new external_value(
+                    PARAM_RAW,
+                    'The last initial to sort filter on',
+                    VALUE_REQUIRED,
+                    null
+                ),
+                'hiddencolumns' => new external_multiple_structure(
+                    new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'Name of column',
+                        VALUE_REQUIRED,
+                        null
+                    )
+                ),
+                'resetpreferences' => new external_value(
+                    PARAM_BOOL,
+                    'Whether the table preferences should be reset',
+                    VALUE_REQUIRED,
+                    null
+                ),
+                'pagenumber' => new external_value(
+                    PARAM_INT,
+                    'The page number',
+                    VALUE_OPTIONAL,
+                    -1
+                ),
+                'pagesize' => new external_value(
+                    PARAM_INT,
+                    'The number of records per page',
+                    VALUE_OPTIONAL,
+                    0
+                ),
+            ])
+        );
     }
 
     /**
@@ -190,31 +235,7 @@ class external extends \external_api {
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
 
-        $instanceclass= get_class($instance);
-        $filtersetclass = "{$instanceclass}_filterset";
-        if (!class_exists($filtersetclass)) {
-            $filtertypedef =  [];
-            foreach ($filters as $rawfilter) {
-                $ftdef = (object) [
-                    'filterclass' => 'local_cltools\\local\filter\\'. $rawfilter['type'],
-                    'required' =>  !empty($rawfilter['required']),
-                ];
-                $filtertypedef[$rawfilter['name']] = $ftdef;
-            }
-            $filterset = new basic_filterset($filtertypedef);
-        } else {
-            $filterset = new $filtersetclass();
-        }
-        $filterset->set_join_type($jointype);
-        foreach ($filters as $rawfilter) {
-            $filterset->add_filter_from_params(
-                $rawfilter['name'], // Field name.
-                $rawfilter['jointype'],
-                $rawfilter['values']
-            );
-        }
-
-        $instance->set_extended_filterset($filterset);
+        self::setup_filters($instance, $filters, $jointype);
         if ($resetpreferences === true) {
             $instance->mark_table_to_reset();
         }
@@ -247,14 +268,14 @@ class external extends \external_api {
             that will then be hidden but keep reference to the row unique identifier.");
         }
         $returnval = [
-            'data' =>  array_map(
-            function($r) {
-                return json_encode($r);
-            },
-            $rows
-        )
+            'data' => array_map(
+                function($r) {
+                    return json_encode($r);
+                },
+                $rows
+            )
         ];
-        if($instance->use_pages) {
+        if ($instance->use_pages) {
             $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
         }
         return $returnval;
@@ -282,20 +303,9 @@ class external extends \external_api {
      * @since Moodle 3.9
      */
     public static function get_columns_parameters(): external_function_parameters {
-        return new external_function_parameters ([
-            'handler' => new external_value(
-            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-            // For now we will have to check manually.
-                PARAM_RAW,
-                'Handler',
-                VALUE_REQUIRED
-            ),
-            'uniqueid' => new external_value(
-                PARAM_ALPHANUMEXT,
-                'Unique ID for the container',
-                VALUE_REQUIRED
-            ),
-        ]);
+        return new external_function_parameters(
+                static::get_table_query_basic_parameters()
+        );
     }
 
     /**
@@ -318,18 +328,25 @@ class external extends \external_api {
      */
     public static function get_columns(
         string $handler,
-        string $uniqueid
+        string $uniqueid,
+        ?array $filters = null,
+        ?string $jointype = null
     ) {
         [
             'handler' => $handler,
             'uniqueid' => $uniqueid,
+            'filters' => $filters,
+            'jointype' => $jointype,
         ] = self::validate_parameters(self::get_columns_parameters(), [
             'handler' => $handler,
             'uniqueid' => $uniqueid,
+            'filters' => $filters,
+            'jointype' => $jointype,
         ]);
 
         $instance = self::get_table_handler_instance($handler, $uniqueid);
         $instance->validate_access();
+        self::setup_filters($instance, $filters, $jointype);
         $columndefs = $instance->get_fields_definition();
 
         return $columndefs;
