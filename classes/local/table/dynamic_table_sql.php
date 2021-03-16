@@ -88,6 +88,12 @@ abstract class dynamic_table_sql extends table_sql {
         $this->sortable(true);
         $this->pageable(true);
         $this->set_attribute('class', 'generaltable generalbox table-sm');
+        $this->sql = (object) [
+            'where' => '',
+            'from' => '',
+            'params' => [],
+            'sort' => ''
+        ];
         $this->set_initial_sql();
     }
 

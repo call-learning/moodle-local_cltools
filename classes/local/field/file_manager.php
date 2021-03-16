@@ -47,26 +47,4 @@ class file_manager  extends base  {
     protected function internal_add_form_element(&$mform) {
         $mform->addElement('filemanager', $this->fieldname, $this->fullname, $this->filemanageroptions);
     }
-
-    public function get_formatter_parameters() {
-        return [
-            'filemanageroptions' => $this->filemanageroptions
-        ];
-    }
-
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
-     *
-     */
-    public function get_filter_parameters() {
-        return [
-            'filemanageroptions' => $this->filemanageroptions
-        ];
-    }
-
-
 }

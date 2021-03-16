@@ -38,4 +38,16 @@ class html extends base  {
     protected function internal_add_form_element(&$mform) {
         $mform->addElement('text', $this->fieldname, $this->fullname);
     }
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
+     *
+     */
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => 'html'
+        ];
+    }
 }

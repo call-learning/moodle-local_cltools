@@ -57,7 +57,14 @@ const dateEditor = (cell, onRendered, success) => {
 
 export const formatterFilterTransform = (columndefs, tableHandler, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
-        'formatter': {},
+        'formatter': {
+            'date': {
+                to: 'datets'
+            },
+            'datetime': {
+                to: 'datetimets'
+            }
+        },
         'filter': {
             'date': {
                 to: dateEditor

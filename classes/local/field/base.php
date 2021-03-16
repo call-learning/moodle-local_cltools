@@ -92,7 +92,8 @@ abstract class base {
                 $fielddef['rawtype'] = $fielddef['type'];
                 $fielddef['type'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']];
             } else {
-                $fielddef['rawtype'] = 'text';
+                $fielddef['rawtype'] = 'raw';
+                $fielddef['type'] = 'text';
             }
         }
         return static::get_instance_from_def($name, $fielddef);
