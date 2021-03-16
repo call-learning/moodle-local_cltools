@@ -39,7 +39,7 @@ class date  extends base  {
      */
     public function get_column_formatter() {
         return (object) [
-            'formatter' => 'datetime',
+            'formatter' => 'datets',
             'formatterParams' => (object) [
                 'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
                 'timezone' => usertimezone()

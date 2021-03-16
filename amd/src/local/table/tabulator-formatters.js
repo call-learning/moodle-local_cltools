@@ -20,6 +20,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import moment from 'local_cltools/local/moment-lazy';
+import {entityLookup} from "./tabulator-entity-lookup";
 
 export const TABULATOR_FORMATTERS = {
     uppercase: function (cell) {
@@ -31,5 +32,10 @@ export const TABULATOR_FORMATTERS = {
     datetimets: function (cell, formatterParams) {
         const timestamp = Number.parseInt(cell.getValue());
         return moment.unix(timestamp).format(formatterParams.outputFormat); // From Unix TS to displayable date.
+    },
+    'entity_lookup': (cell, formatterParams) => {
+        const lookup = entityLookup(formatterParams.entityclass, formatterParams.displayfield);
+        const value = cell.getValue();
+        return lookup[value];
     }
 };

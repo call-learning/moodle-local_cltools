@@ -28,10 +28,11 @@ import $ from 'jquery';
 import {call as ajaxCall} from 'core/ajax';
 import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
-import {formatterFilterTransform} from './tabulator-converters';
+import {columnSetup} from './tabulator-converters';
 import {cellEdited} from './tabulator-edition';
 import {convertInitialFilter, convertFiltersToMoodle} from './moodle-filter-converters';
 import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
+import {TABULATOR_EDITORS} from "./tabulator-editors";
 
 
 const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
@@ -100,7 +101,7 @@ export const tableInit = async (
     }
     const placeHolderMessage = await getString('table:nodata', 'local_cltools');
     [joinType, filters] = convertInitialFilter(tableFilters, []);
-    const columns = await Promise.race(ajaxCall(
+    let columns = await Promise.race(ajaxCall(
         [{
             methodname: 'cltools_dynamic_table_get_columns',
             args: {
@@ -111,7 +112,11 @@ export const tableInit = async (
             }
         }])).catch(Notification.exception);
 
+
     Tabulator.prototype.extendModule("format", "formatters", TABULATOR_FORMATTERS);
+    Tabulator.prototype.extendModule("editor", "editor", TABULATOR_EDITORS);
+
+    columns = await columnSetup(columns, tableHandler, tableUniqueId);
 
     let options = {
         ajaxRequestFunc: function (url, config, params) {
@@ -136,8 +141,8 @@ export const tableInit = async (
         cellEdited: function (data) {
             cellEdited(tableHandler, tableUniqueId, data);
         },
-        validationMode:"highlight",
-        columns: formatterFilterTransform(columns, tableHandler, tableUniqueId),
+        validationMode: "highlight",
+        columns: columns,
         layout: "fitColumns",
         placeholder: placeHolderMessage,
         rowClick: rowClickCallback ? rowClickCallback : () => null

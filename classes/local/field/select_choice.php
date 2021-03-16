@@ -24,19 +24,18 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
 class select_choice extends base {
     protected $choices = [];
 
-    public function __construct($fielddef)  {
+    public function __construct($fielddef) {
         parent::__construct($fielddef);
         if (is_array($fielddef)) {
             $fielddef = (object) $fielddef;
         }
-        $this->choices = empty($fielddef->choices) ? []: $fielddef->choices;
+        $this->choices = empty($fielddef->choices) ? [] : $fielddef->choices;
     }
 
     /**
@@ -59,9 +58,7 @@ class select_choice extends base {
     public function get_column_formatter() {
         return (object) [
             'formatter' => 'lookup',
-            'formatterParams'  => (object) [
-                'values' => (object) $this->choices
-            ],
+            'formatterParams' => (object) $this->choices
         ];
     }
 
@@ -90,7 +87,7 @@ class select_choice extends base {
      */
     public function get_column_validator() {
         return (object) [
-            'validator' => "in:".explode(',', (array)$this->choices)
+            'validator' => "in:" . explode(',', (array) $this->choices)
         ];
     }
 }

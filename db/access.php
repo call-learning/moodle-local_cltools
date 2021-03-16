@@ -15,44 +15,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Base field
+ * Access for different parts of Cltools
  *
- * For input and output
+ *
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
-namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class datetime  extends base  {
-    /**
-     * Get the matching formatter type to be used for display
-     *
-     * @return string|null return the type (and null if no formatter)
-     *
-     * @throws \coding_exception
-     */
-    public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'datetimets',
-            'formatterParams' => (object) [
-                'outputFormat' => get_string('momentjsdatetimeformat', 'local_cltools'),
-                'timezone' => usertimezone()
-            ]
-        ];
-    }
-
-    /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
-     */
-    public function internal_add_form_element(&$mform) {
-        $mform->addElement('datetimeselector', $this->fieldname, $this->fullname);
-    }
-}
+$capabilities = array(
+    'local/cltools:dynamictableread' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'local/cltools:dynamictablewrite' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'local/cltools:entitylookup' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    )
+);

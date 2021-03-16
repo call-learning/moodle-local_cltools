@@ -22,7 +22,7 @@
  */
 
 
-import {call as ajaxCall} from "../../../../../../lib/amd/src/ajax";
+import {call as ajaxCall} from "core/ajax";
 import $ from 'jquery';
 
 /**
@@ -49,7 +49,7 @@ export const validateRemote = async (tableHandler, tableUniqueid, cell, value) =
         )
     ).catch(Notification.exception).then(
         (result) => {
-            if (result.warnings) {
+            if (result.warnings && result.warnings.length !== 0) {
                 Notification.addNotification(
                     {
                         message: result.warnings.reduce((a, w) => (a + ',' + w), '')
@@ -100,7 +100,8 @@ export const cellEdited = (tableHandler, tableUniqueid, data) => {
                         }
                     );
                 }
+                return false;
             }
-            return result;
+            return true;
         });
 };

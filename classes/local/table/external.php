@@ -32,6 +32,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use external_warnings;
+use local_cltools\local\field\entity_selector;
 use local_cltools\local\filter\basic_filterset;
 
 class external extends \external_api {
@@ -604,4 +605,82 @@ class external extends \external_api {
             )
         );
     }
+
+    /**
+     * Entity lookup value parameters
+     */
+    public static function entity_lookup_parameters() {
+        return new external_function_parameters (
+            [
+                'entityclass' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                    PARAM_RAW,
+                    'Handler',
+                    VALUE_REQUIRED
+                ),
+                'displayfield' => new external_value(
+                    PARAM_ALPHANUMEXT,
+                    'Name of the field used to display values',
+                    VALUE_OPTIONAL
+                )
+            ]
+        );
+
+    }
+
+    /**
+     * Entity lookup value
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
+     * @throws \ReflectionException
+     * @throws \invalid_parameter_exception
+     * @throws \restricted_context_exception
+     */
+    public static function entity_lookup($entityclass, $displayfield) {
+        [
+            'entityclass' => $entityclass,
+            'displayfield' => $displayfield,
+        ] = self::validate_parameters(self::entity_lookup_parameters(), [
+            'entityclass' => $entityclass,
+            'displayfield' => $displayfield,
+        ]);
+        $values = [];
+        $warnings = [];
+        try {
+            $values =  entity_selector::entity_lookup($entityclass, $displayfield);
+        } catch (\moodle_exception $e) {
+            $warnings[] = (object) [
+                'entityclass' => $entityclass,
+                'displayfield' => $displayfield,
+                'warningcode' => 'lookuperror',
+                'message' => "For entity $entityclass: {$e->getMessage()}"
+            ];
+        }
+        return [
+            'values' => json_encode($values),
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Entity lookup value returns
+     *
+     * @return external_single_structure
+     */
+    public static function entity_lookup_returns() {
+        return new external_single_structure(
+            array(
+                'values' => new external_value(PARAM_RAW, 'Associative array as json.'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
 }

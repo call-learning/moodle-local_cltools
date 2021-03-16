@@ -19,59 +19,28 @@
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-import moment from 'local_cltools/local/moment-lazy';
 import {validateRemote} from './tabulator-edition';
+import {entityLookup} from "./tabulator-entity-lookup";
 
-const dateEditor = (cell, onRendered, success) => {
-    // Create and style editor.
-    var editor = document.createElement("input");
-
-    editor.setAttribute("type", "date");
-
-    // Create and style input
-    editor.style.padding = "3px";
-    editor.style.width = "100%";
-    editor.style.boxSizing = "border-box";
-
-    // Set value of editor to the current value of the cell.
-    editor.value = moment(cell.getValue(), "DD/MM/YYYY").format("YYYY-MM-DD");
-
-    // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM)
-    onRendered(function () {
-        editor.focus();
-        editor.style.css = "100%";
-    });
-
-    // When the value has been set, trigger the cell to update
-    function successFunc() {
-        success(moment(editor.value, "YYYY-MM-DD").format("DD/MM/YYYY"));
-    }
-
-    editor.addEventListener("change", successFunc);
-    editor.addEventListener("blur", successFunc);
-
-    // Return the editor element
-    return editor;
-};
-
-export const formatterFilterTransform = (columndefs, tableHandler, tableUniqueId) => {
+export const columnSetup = async (columndefs, tableHandler, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
-        'formatter': {
-            'date': {
-                to: 'datets'
-            },
-            'datetime': {
-                to: 'datetimets'
-            }
-        },
+        'formatter': {},
         'filter': {
-            'date': {
-                to: dateEditor
-            },
             'select': {
                 transformer: (coldef) => {
                     coldef['headerFilterFunc'] = '=';
+                    return coldef;
+                }
+            },
+            'entity_lookup': {
+                to: 'autocomplete',
+                transformer: (coldef) => {
+                    const entityClass = coldef.filterParams.entityclass;
+                    const displayField = coldef.filterParams.displayfield;
+                    coldef.filterParams = {values: entityLookup(entityClass, displayField)};
+                    coldef.headerFilterFunc = '=';
+                    coldef.showListOnEmpty = true;
+                    coldef.allowEmpty = true;
                     return coldef;
                 }
             }
@@ -82,32 +51,43 @@ export const formatterFilterTransform = (columndefs, tableHandler, tableUniqueId
                     validateRemote(cell, value, tableHandler, tableUniqueId)
             }
         },
-        'editor': {
-            'date': {
-                to: dateEditor
+        'editor': {}
+    };
+    // Prepare entity list (this can be huge).
+    for await (const columndef of columndefs) {
+        for (const colprop in columndef) {
+            if (colprop in TABULATOR_CONVERTER) {
+                if ((colprop + "Params") in columndef) {
+                    // Decode as it is JSON based encoded.
+                    columndef[colprop + "Params"] = JSON.parse(columndef[colprop + "Params"]);
+                }
+                if (columndef[colprop] === 'entity_lookup') {
+                    const params = columndef[colprop + "Params"];
+                    await entityLookup(params.entityclass, params.displayfield);
+                }
             }
         }
-    };
-    return columndefs.map(
+    }
+    columndefs =  columndefs.map(
         (columndef) => {
             for (const colprop in columndef) {
                 if (colprop in TABULATOR_CONVERTER) {
                     const tabconverter = TABULATOR_CONVERTER[colprop];
-                    if ((colprop + "Params") in columndef) {
-                        // Decode as it is JSON based encoded.
-                        columndef[colprop + "Params"] = JSON.parse(columndef[colprop + "Params"]);
-                    }
                     if (columndef[colprop] in tabconverter) {
                         const converter = tabconverter[columndef[colprop]];
-                        columndef[colprop] = converter.to;
+                        if (converter.to) {
+                            columndef[colprop] = converter.to;
+                        }
                         if (converter.transformer) {
                             columndef = converter.transformer(columndef);
                         }
                     }
                 }
             }
+
+            // Preload all values for entityselector
             // Make sure filters are in fact headfilters.
-            if (columndef.filter)  {
+            if (columndef.filter) {
                 columndef.headerFilter = columndef.filter;
             }
             if (columndef.filterParams) {
@@ -116,4 +96,5 @@ export const formatterFilterTransform = (columndefs, tableHandler, tableUniqueId
             return columndef;
         }
     );
+    return columndefs;
 };

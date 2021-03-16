@@ -53,11 +53,62 @@ class entity_selector extends base {
         $mform->addElement('searchableselector', $this->fieldname, $this->fullname, $choices);
     }
 
+    /**
+     * Get the matching formatter type to be used for display
+     *
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
+     *
+     */
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => 'entity_lookup',
+            'formatterParams'  => (object) [
+                'entityclass' => $this->entityclass,
+                'displayfield' => $this->displayfield
+            ],
+        ];
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
+     *
+     */
+    public function get_column_editor() {
+        return (object) [
+            'editor' => 'entity_lookup',
+            'editorParams' => (object) [
+                'entityclass' => $this->entityclass,
+                'displayfield' => $this->displayfield
+            ]
+        ];
+    }
+    /**
+     * @return array
+     * @throws \dml_exception
+     */
     protected function get_entities() {
+        static::entity_lookup($this->entityclass, $this->displayfield);
+    }
+
+    /**
+     * Generic entity lookup.
+     *
+     * Used in external API.
+     * @param $entityclass
+     * @param $displayfield
+     * @return array
+     * @throws \dml_exception
+     */
+    public static function entity_lookup($entityclass, $displayfield) {
         global $DB;
-        $entitytype = $this->entityclass;
-        if ($entitytype) {
-            return $DB->get_records_menu($entitytype::TABLE, null, $fields = 'id,' . $this->displayfield);
+        if ($entityclass && class_exists($entityclass)) {
+            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, $fields = 'id,' . $displayfield);
+            $allrecords[0] = get_string('notavailable', 'local_cltools');
+            return $allrecords;
         } else {
             return [];
         }
