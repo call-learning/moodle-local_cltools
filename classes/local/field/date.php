@@ -31,33 +31,19 @@ defined('MOODLE_INTERNAL') || die();
 class date  extends base  {
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching formatter type to be used for display
      *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
+     * @return string|null return the type (and null if no formatter)
      *
      * @throws \coding_exception
      */
-    public function get_formatter_parameters() {
-        return [
-            'outputformat' => get_string('momentjsdateformat', 'local_cltools'),
-            'timezone' => usertimezone()
-        ];
-    }
-
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
-     *
-     */
-    public function get_filter_parameters() {
-        return [
-            'outpuformat' => get_string('momentjsdateformat', 'local_cltools'),
-            'timezone' => usertimezone()
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => 'datetime',
+            'formatterParams' => (object) [
+                'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
+                'timezone' => usertimezone()
+            ]
         ];
     }
 

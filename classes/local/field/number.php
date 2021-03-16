@@ -40,26 +40,49 @@ class number  extends base  {
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching filter type to be used for display
      *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
+     * @return string|null return the type (and null if no filter)
      *
-     * @throws \coding_exception
      */
-    public function get_formatter_parameters() {
-        return null;
+    public function get_column_filter() {
+        return (object) [
+            'headerFilter' => $this->get_type()
+        ];
     }
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching formatter type to be used for display
      *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
+     * @return string|null return the type (and null if no formatter)
      *
      */
-    public function get_filter_parameters() {
-        return null;
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => $this->get_type(),
+        ];
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_column_editor() {
+        return (object) [
+            'editor' => $this->get_type(),
+        ];
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_column_validator() {
+        return (object) [
+            'validator' => 'numeric',
+        ];
     }
 }

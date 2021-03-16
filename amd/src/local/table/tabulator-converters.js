@@ -21,6 +21,7 @@
  */
 
 import moment from 'local_cltools/local/moment-lazy';
+import {validateRemote} from './tabulator-edition';
 
 const dateEditor = (cell, onRendered, success) => {
     // Create and style editor.
@@ -54,123 +55,56 @@ const dateEditor = (cell, onRendered, success) => {
     return editor;
 };
 
-const TABULATOR_FILTER_CONVERTER = {
-    'text': {
-        to: 'input'
-    },
-    'boolean': {
-        to: 'tick',
-        transformer: () => {
-            return {
-                tristate: true,
-                indeterminateValue: "n/a"
-            };
+export const formatterFilterTransform = (columndefs, tableHandler, tableUniqueId) => {
+    const TABULATOR_CONVERTER = {
+        'formatter': {},
+        'filter': {
+            'date': {
+                to: dateEditor
+            },
+            'select': {
+                transformer: (coldef) => {
+                    coldef['headerFilterFunc'] = '=';
+                    return coldef;
+                }
+            }
         },
-    },
-    'select_choice': {
-        to: 'select',
-        transformer: (args) => {
-            return {values: args.choices};
+        'validator': {
+            'remote': {
+                to: (cell, value) =>
+                    validateRemote(cell, value, tableHandler, tableUniqueId)
+            }
         },
-        headerFilterFunc: "="
-    },
-    'entity_selector': {
-        to: 'select',
-        transformer: (args) => {
-            return {values: args.choices};
-        },
-        headerFilterFunc: "="
-    },
-    'datetime': {
-        to: 'datetime',
-        transformer: (args) => {
-            return {
-                'outputFormat': args.outputformat,
-                'inputFormat': args.inputformat,
-                'timezone': args.timezone
-            };
-        },
-        editor: dateEditor
-    }
-};
-const TABULATOR_FORMATTER_CONVERTER = {
-    'text': {
-        to: 'plaintext',
-    },
-    'boolean': {
-        to: 'tickCross',
-        transformer: () => {
-            return {
-                allowEmpty: true,
-                allowTruthy: true,
-            };
+        'editor': {
+            'date': {
+                to: dateEditor
+            }
         }
-    },
-    'number': {
-        to: 'plaintext',
-    },
-    'select_choice': {
-        to: 'lookup',
-        transformer: (args) => args.choices
-    },
-    'entity_selector': {
-        to: 'lookup',
-        transformer: (args) => args.choices
-    },
-    'datetime': {
-        to: 'datetimets',
-        transformer: (args) => {
-            return {
-                'outputFormat': args.outputformat,
-                'timezone': args.timezone
-            };
-        }
-    },
-    'date': {
-        to: 'datets',
-        transformer: (args) => {
-            return {
-                'outputFormat': args.outputformat,
-                'timezone': args.timezone
-            };
-        }
-    }
-};
-
-export const formatterFilterTransform = (columndefs) => {
+    };
     return columndefs.map(
         (columndef) => {
-            const formatterParams = ('formatterparams' in columndef) ? JSON.parse(columndef.formatterparams) : null;
-            const filterParams = ('filterparams' in columndef) ? JSON.parse(columndef.filterparams) : null;
-            if (('formatter' in columndef) && (columndef.formatter in TABULATOR_FORMATTER_CONVERTER)) {
-                const converter = TABULATOR_FORMATTER_CONVERTER[columndef.formatter];
-                if (formatterParams) {
-                    columndef.formatterParams = converter.transformer(formatterParams);
+            for (const colprop in columndef) {
+                if (colprop in TABULATOR_CONVERTER) {
+                    const tabconverter = TABULATOR_CONVERTER[colprop];
+                    if ((colprop + "Params") in columndef) {
+                        // Decode as it is JSON based encoded.
+                        columndef[colprop + "Params"] = JSON.parse(columndef[colprop + "Params"]);
+                    }
+                    if (columndef[colprop] in tabconverter) {
+                        const converter = tabconverter[columndef[colprop]];
+                        columndef[colprop] = converter.to;
+                        if (converter.transformer) {
+                            columndef = converter.transformer(columndef);
+                        }
+                    }
                 }
-                columndef.formatter = converter.to;
             }
-            if (('filter' in columndef)) {
+            // Make sure filters are in fact headfilters.
+            if (columndef.filter)  {
                 columndef.headerFilter = columndef.filter;
-                if (columndef.filter in TABULATOR_FILTER_CONVERTER) {
-                    const converter = TABULATOR_FILTER_CONVERTER[columndef.filter];
-                    if (converter.transformer) {
-                        columndef.headerFilterParams = converter.transformer(filterParams);
-                    }
-                    columndef.headerFilter = converter.to;
-                    if ('editor' in converter) {
-                        columndef.editor = converter.editor;
-                    }
-                    if ('headerFilterFunc' in converter) {
-                        columndef.headerFilterFunc = converter.headerFilterFunc;
-                    }
-                }
-                delete columndef.filter;
             }
-            if ('formatterparams' in columndef) {
-                delete columndef.formatterparams;
-            }
-            if ('filterparams' in columndef) {
-                delete columndef.filterparams;
+            if (columndef.filterParams) {
+                columndef.headerFilterParams = columndef.filterParams;
             }
             return columndef;
         }

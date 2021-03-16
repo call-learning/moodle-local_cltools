@@ -29,34 +29,14 @@ import {call as ajaxCall} from 'core/ajax';
 import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 import {formatterFilterTransform} from './tabulator-converters';
-import {MOODLE_FILTER_CONVERTER, JOINTYPE_ALL} from './moodle-filter-converters';
+import {cellEdited} from './tabulator-edition';
+import {convertInitialFilter, convertFiltersToMoodle} from './moodle-filter-converters';
 import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 
-const convertInitialFilter = (initialFilters, existingFilters) => {
-    const joinType = initialFilters ? initialFilters.jointype : JOINTYPE_ALL;
-    if (initialFilters) {
-        // Add initial filters to filters.
-        Array.prototype.push.apply(existingFilters, Object.values(initialFilters.filters));
-    }
-    return [joinType, existingFilters];
-};
+
 const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
     let joinType;
-    let filters = (typeof params.filters === "undefined") ? [] : params.filters.map(
-        (e) => {
-            let filter = {
-                'name': e.field, 'type': e.type, 'jointype': JOINTYPE_ALL, 'values': e.value
-            };
-            if (e.type in MOODLE_FILTER_CONVERTER) {
-                const converter = MOODLE_FILTER_CONVERTER[e.type];
-                filter.type = converter.to;
-                if (typeof converter.transformer !== "undefined") {
-                    filter.values = converter.transformer(e.value);
-                }
-            }
-            return filter;
-        }
-    );
+    let filters = convertFiltersToMoodle(params.filters);
     [joinType, filters] = convertInitialFilter(initialFilters, filters);
     const args = {
         handler: tableHandler,
@@ -71,9 +51,7 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters)
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
-        resetpreferences: false,
-        firstinitial: "A",
-        lastinitial: "Z"
+        resetpreferences: false
     };
     return Promise.race(
         ajaxCall(
@@ -106,7 +84,6 @@ export const init = async (tabulatorelementid) => {
         tableelement.data('tableOtheroptions'),
     );
 };
-
 export const tableInit = async (
     tableElement,
     tableHandler,
@@ -146,11 +123,21 @@ export const tableInit = async (
         paginationSize: tablePageSize,
         ajaxFiltering: true,
         ajaxSorting: true,
+        dataFiltered: function () {
+            $(document).trigger('tabulator-filter-changed', [
+                    tableHandler, tableUniqueId, this.getFilters(true), tableFilters
+                ]
+            );
+        },
         paginationDataReceived: {
             "last_page": "pagescount", // Change last_page parameter name to "pagescount".
         },
         ajaxResponse: ajaxResponseProcessor,
-        columns: formatterFilterTransform(columns),
+        cellEdited: function (data) {
+            cellEdited(tableHandler, tableUniqueId, data);
+        },
+        validationMode:"highlight",
+        columns: formatterFilterTransform(columns, tableHandler, tableUniqueId),
         layout: "fitColumns",
         placeholder: placeHolderMessage,
         rowClick: rowClickCallback ? rowClickCallback : () => null

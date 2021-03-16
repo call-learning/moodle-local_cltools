@@ -37,4 +37,19 @@ $functions = array(
         'type' => 'read',
         'ajax' => true
     ],
+    'cltools_dynamic_table_set_value' => [
+        'classname' => 'local_cltools\\local\\table\\external',
+        'methodname' => 'set_value',
+        'description' => 'Set a specific row/column value',
+        'type' => 'write',
+        'ajax' => true
+    ],
+    'cltools_dynamic_table_is_value_valid' => [
+        'classname' => 'local_cltools\\local\\table\\external',
+        'methodname' => 'is_value_valid',
+        'description' => 'Set a specific row/column value',
+        'type' => 'read',
+        'ajax' => true
+    ]
+
 );

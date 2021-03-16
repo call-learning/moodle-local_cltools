@@ -38,27 +38,30 @@ class text extends base  {
     protected function internal_add_form_element(&$mform) {
         $mform->addElement('text', $this->fieldname, $this->fullname);
     }
+
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching editor type to be used in the table
      *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
-     *
-     * @throws \coding_exception
-     */
-    public function get_formatter_parameters() {
-        return null;
-    }
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_filter_parameters() {
-        return null;
+    public function get_column_editor() {
+        return (object) [
+            'editor' => 'input'
+        ];
     }
+
+    /**
+     * Get the matching validator type to be used in the table
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_column_validator() {
+        return (object)[
+            'validator' => 'string'
+        ];
+    }
+
 }

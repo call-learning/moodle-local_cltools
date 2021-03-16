@@ -45,13 +45,16 @@ class entity_table extends dynamic_table_sql {
 
     protected static $persistentclass = null;
 
+    public function __construct($uniqueid, $actionsdefs = null, $editable = false) {
+        parent::__construct($uniqueid, $actionsdefs, $editable);
+    }
 
     /**
      * Set SQL parameters (where, from,....) from the entity
      *
      * This can be overridden when we are looking at linked entities.
      */
-    protected function set_entity_sql() {
+    protected function set_initial_sql() {
         $sqlfields = forward_static_call([static::$persistentclass, 'get_sql_fields'], 'entity', '');
         $from = static::$persistentclass::TABLE;
         $this->set_sql($sqlfields, '{' . $from . '} entity', '1=1', []);

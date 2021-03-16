@@ -85,15 +85,15 @@ abstract class base {
      * @return static
      */
     public static function get_instance_from_persistent_def($name, $fielddef = []) {
-        if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']])) {
-            $fielddef['rawtype'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']];
-        } else {
-            $fielddef['rawtype'] = 'text';
-        }
         if (!empty($fielddef['format']) && !empty($fielddef['format']['type'])) {
             $fielddef['type']  = $fielddef['format']['type'];
         } else {
-            unset($fielddef['type']);
+            if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']])) {
+                $fielddef['rawtype'] = $fielddef['type'];
+                $fielddef['type'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']];
+            } else {
+                $fielddef['rawtype'] = 'text';
+            }
         }
         return static::get_instance_from_def($name, $fielddef);
     }
@@ -171,43 +171,55 @@ abstract class base {
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
-     *
-     */
-    abstract public function get_formatter_parameters();
-
-    /**
      * Get the matching filter type to be used for display
      *
-     * @return string|null return the type (and null if no filter)
+     *
+     * @link  http://tabulator.info/docs/4.9/filter
+     * @return object|null return the parameters (or null if no matching filter)
      *
      */
-    public function get_filter_type() {
-        return $this->get_type();
+    public function get_column_filter() {
+        $editor = $this->get_column_editor();
+        if ($editor) {
+            return (object) [
+                'filter' => $editor->editor,
+                'filterParams' => $editor->editorParams
+            ];
+        }
+        return null;
     }
     /**
      * Get the matching formatter type to be used for display
      *
-     * @return string|null return the type (and null if no formatter)
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_formatter_type() {
-        return $this->get_type();
+    public function get_column_formatter() {
+        return null;
     }
 
     /**
-     * Get the additional information related to the way we need to filter this
-     * information
+     * Get the matching editor type to be used in the table
      *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    abstract public function get_filter_parameters();
+    public function get_column_editor() {
+        return null;
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @link http://tabulator.info/docs/4.9/validate
+     * @return object|null return the parameters (or null if no matching validator)
+     *
+     */
+    public function get_column_validator() {
+        return null;
+    }
 
     /**
      * Check if the field is visible or not
@@ -216,6 +228,17 @@ abstract class base {
      *
      */
     public function is_visible() {
+        return true;
+    }
+
+    /**
+     * Check if the provided value is valid for this field.
+     *
+     * @param mixed $value
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function is_valid($any) {
         return true;
     }
 

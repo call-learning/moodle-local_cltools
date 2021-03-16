@@ -48,31 +48,49 @@ class select_choice extends base {
     public function internal_add_form_element(&$mform) {
         $mform->addElement('select', $this->fieldname, $this->fullname, $this->choices);
     }
+
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching formatter type to be used for display
      *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
      *
-     * @throws \coding_exception
      */
-    public function get_formatter_parameters() {
-        return [
-            'choices' => $this->choices
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => 'lookup',
+            'formatterParams'  => (object) [
+                'values' => (object) $this->choices
+            ],
         ];
     }
+
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching editor type to be used in the table
      *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_filter_parameters() {
-        return [
-            'choices' => $this->choices
+    public function get_column_editor() {
+        return (object) [
+            'editor' => 'select',
+            'editorParams' => (object) [
+                'values' => (object) $this->choices
+            ]
+        ];
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @link http://tabulator.info/docs/4.9/validate
+     * @return object|null return the parameters (or null if no matching validator)
+     *
+     */
+    public function get_column_validator() {
+        return (object) [
+            'validator' => "in:".explode(',', (array)$this->choices)
         ];
     }
 }

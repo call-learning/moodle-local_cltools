@@ -53,19 +53,6 @@ class files extends base  {
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
-     *
-     * @throws \coding_exception
-     */
-    public function get_formatter_parameters() {
-        return [];
-    }
-
-    /**
      * Check if the field is visible or not
      *
      * @return boolean visibility
@@ -73,18 +60,6 @@ class files extends base  {
      */
     public function is_visible() {
         return false;
-    }
-
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
-     *
-     */
-    public function get_filter_parameters() {
-        return null;
     }
 
     /**

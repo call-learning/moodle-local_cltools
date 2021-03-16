@@ -29,12 +29,17 @@ namespace local_cltools\local\table;
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
 
-use context;
-use local_cltools\local\field\hidden;
+use local_cltools\local\field\base;
 use local_cltools\local\filter\filterset;
 use table_sql;
 
 abstract class dynamic_table_sql extends table_sql {
+
+    /**
+     * @var bool $iseditable is table editable ?
+     */
+    protected $iseditable = false;
+
     /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
      * avoid hitting the DB too much
      */
@@ -57,9 +62,10 @@ abstract class dynamic_table_sql extends table_sql {
     protected $actionsdefs = [];
 
     /**
-     * @var array $filteraliases an associative array that will set the right sql alias for this table if needed
+     * @var array $fieldaliases an associative array that will set the right
+     *  sql alias for this table if needed
      */
-    protected $filteraliases = null;
+    protected $fieldaliases = null;
 
     /**
      * Sets up the page_table parameters.
@@ -69,10 +75,12 @@ abstract class dynamic_table_sql extends table_sql {
      * @see page_list::get_filter_definition() for filter definition
      */
     public function __construct($uniqueid,
-        $actionsdefs = null
+        $actionsdefs = null,
+        $editable = false
     ) {
         parent::__construct($uniqueid);
         $this->actionsdefs = $actionsdefs;
+        $this->iseditable = $editable;
         list($cols, $headers) = $this->get_table_columns_definitions();
         $this->define_columns($cols);
         $this->define_headers($headers);
@@ -80,7 +88,11 @@ abstract class dynamic_table_sql extends table_sql {
         $this->sortable(true);
         $this->pageable(true);
         $this->set_attribute('class', 'generaltable generalbox table-sm');
-        $this->set_entity_sql();
+        $this->set_initial_sql();
+    }
+
+    protected function set_initial_sql() {
+        // Empty in this class but used in subclasses.
     }
 
     /**
@@ -89,12 +101,13 @@ abstract class dynamic_table_sql extends table_sql {
      * The use of filtersets is a requirement for dynamic tables, but can be used by other tables too if desired.
      * This also sets the filter aliases if not set for each filters, depending on what is set in the
      * local $filteralias array.
+     *
      * @param filterset $filterset The filterset object to get filters and table parameters from
      */
     public function set_extended_filterset(filterset $filterset): void {
-        foreach($this->filteraliases as $filtername => $sqlalias) {
-            if ($filterset->has_filter($filtername)) {
-                $filter = $filterset->get_filter($filtername);
+        foreach ($this->fieldaliases as $fieldname => $sqlalias) {
+            if ($filterset->has_filter($fieldname)) {
+                $filter = $filterset->get_filter($fieldname);
                 $filter->set_alias($sqlalias);
             }
         }
@@ -107,6 +120,7 @@ abstract class dynamic_table_sql extends table_sql {
      * Note: this can involve a more complicated check if needed and requires filters and all
      * setup to be done in order to make sure we validated against the right information
      * (such as for example a filter needs to be set in order not to return data a user should not see).
+     *
      * @throws \dml_exception
      */
     public function validate_access() {
@@ -164,21 +178,22 @@ abstract class dynamic_table_sql extends table_sql {
         }
     }
 
-
     /**
      * Sets the pagesize variable to the given integer, the totalrows variable
      * to the given integer, and the use_pages variable to true.
+     *
      * @param int $perpage
      * @param int $total
      * @return void
      */
     function pagesize($perpage, $total) {
-        if($this->use_pages) {
+        if ($this->use_pages) {
             $this->pagesize = $perpage;
             $this->totalrows = $total;
             $this->use_pages = true;
         }
     }
+
     /**
      * Table columns
      *
@@ -237,31 +252,38 @@ abstract class dynamic_table_sql extends table_sql {
                 'field' => $fieldid,
                 'visible' => $field->is_visible(),
             ];
-
-            if ($field->get_formatter_type()) {
-                $column->formatter = $field->get_formatter_type();
-                if ($field->get_formatter_parameters()) {
-                    $column->formatterparams = json_encode($field->get_formatter_parameters(), JSON_FORCE_OBJECT);
+            // Add formatter, filter, editor...
+            /* @var base $field */
+            foreach (['formatter','filter', 'editor', 'validator'] as $modifier) {
+                $callback = "get_column_$modifier";
+                if (!$column->isvisible && $field->$callback()) {
+                    if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
+                        continue;
+                    }
+                    foreach((array)$field->$callback()  as $modifiername => $value) {
+                        if (!$column->isvisible && $field->$callback()) {
+                            if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
+                                continue;
+                            }
+                            if (is_object($value) || is_array($value)) {
+                                $value = json_encode($value);
+                            }
+                            $column->$modifiername = $value;
+                        }
+                    }
                 }
             }
-            if ($field->get_filter_type()) {
-                $column->filter = $field->get_filter_type();
-                if ($field->get_filter_parameters()) {
-                    $column->filterparams = json_encode($field->get_filter_parameters(), JSON_FORCE_OBJECT);
-                }
-            }
-            $colmethodname = 'col_'.$fieldid;
+            $colmethodname = 'col_' . $fieldid;
             // Disable sorting and formatting for all formatted rows
             // Except for row which are html formatted (in which case we just disable the sorting).
             if (method_exists($this, $colmethodname)) {
-                if (empty($this->fields[$fieldid.'format'])) {
+                if (empty($this->fields[$fieldid . 'format'])) {
                     unset($column->filter);
                     unset($column->filterparams);
                 }
                 $column->formatter = 'html';
                 unset($column->formatterparams);
             }
-
             $columnsdef[] = $column;
         }
 
@@ -363,13 +385,36 @@ abstract class dynamic_table_sql extends table_sql {
             }
             $this->sql->params += $additionalparams;
         }
-        $this->sql->fields =  "DISTINCT ".$this->sql->fields;
-        if ($this->countsql === NULL) {
-            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}) 
-            squery";
+        $this->sql->fields = "DISTINCT " . $this->sql->fields;
+        if ($this->countsql === null) {
+            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields}
+            FROM {$this->sql->from}
+            WHERE {$this->sql->where}) squery";
             $this->countparams = $this->sql->params;
         }
         parent::query_db($pagesize, $useinitialsbar);
     }
 
+    /**
+     * Set the value of a specific row.
+     *
+     * @param $rowid
+     * @param $fieldname
+     * @param $newvalue
+     * @param $oldvalue
+     */
+    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
+        return true;
+    }
+
+    /**
+     * Check if the value is valid for this row, column
+     *
+     * @param $rowid
+     * @param $newvalue
+     * @param $oldvalue
+     */
+    public function is_valid_value($rowid, $fieldname, $newvalue, $oldvalue) {
+        return true;
+    }
 }

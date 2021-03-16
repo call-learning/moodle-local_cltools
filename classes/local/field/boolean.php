@@ -38,29 +38,37 @@ class boolean extends base  {
     public function internal_add_form_element(&$mform) {
         $mform->addElement('advcheckbox', $this->fieldname, $this->fullname);
     }
-
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching formatter type to be used for display
      *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
+     * @return string|null return the type (and null if no formatter)
      *
      */
-    public function get_formatter_parameters() {
-        return null;
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' =>'tickCross',
+            'formatterParams' => (object) [
+                'allowEmpty' => true,
+                'allowTruthy' => true
+            ]
+        ];
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
+     * Get the matching editor type to be used in the table
      *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
+     * @return string|null return the type (and null if no filter)
      *
      */
-    public function get_filter_parameters() {
-        return null;
+    public function get_column_editor() {
+        return (object) [
+            'editor' => 'tickCross',
+            'editorParams' => (object) [
+                'indeterminateValue' => get_string('notavailable', 'local_cltools'),
+                'allowEmpty' => true,
+                'allowTruthy' => true,
+                'tristate'=> true
+            ]
+        ];
     }
-
 }

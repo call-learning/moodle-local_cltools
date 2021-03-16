@@ -40,19 +40,6 @@ class hidden extends base  {
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
-     *
-     * @throws \coding_exception
-     */
-    public function get_formatter_parameters() {
-        return null;
-    }
-
-    /**
      * Check if the field is visible or not
      *
      * @return boolean visibility
@@ -63,25 +50,13 @@ class hidden extends base  {
     }
 
     /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
-     *
-     */
-    public function get_filter_parameters() {
-        return null;
-    }
-
-    /**
      * Get the matching filter type to be used for display
      *
      * @return string|null return the type (and null if no filter)
      *
      */
-    public function get_filter_type() {
-        return null; // No type.
+    public function get_column_filter() {
+        return null;
     }
     /**
      * Get the matching formatter type to be used for display
@@ -89,7 +64,18 @@ class hidden extends base  {
      * @return string|null return the type (and null if no formatter)
      *
      */
-    public function get_formatter_type() {
-        return null; // No type.
+    public function get_column_formatter() {
+        return null;
     }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @return string|null return the type (and null if no filter)
+     *
+     */
+    public function get_column_editor() {
+        return null;
+    }
+
 }

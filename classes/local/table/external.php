@@ -44,7 +44,7 @@ class external extends \external_api {
      *
      * @return external_function_parameters
      */
-    protected static function get_table_query_basic_parameters(): array {
+    public static function get_table_query_basic_parameters(): array {
         return [
             'handler' => new external_value(
             // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
@@ -94,8 +94,37 @@ class external extends \external_api {
         ];
     }
 
+    /**
+     * Get table handler instance
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws \invalid_parameter_exception
+     * @throws \restricted_context_exception
+     */
+    public static function get_table_handler_instance($handler, $uniqueid) {
+        global $CFG;
 
-    protected static function setup_filters(&$instance, $filters, $jointype) {
+        if (!class_exists($handler)) {
+            throw new \UnexpectedValueException("Table handler class {$handler} not found. " .
+                "Please make sure that your handler is defined.");
+        }
+
+        if (!is_subclass_of($handler, dynamic_table_sql::class)) {
+            throw new \UnexpectedValueException("Table handler class {$handler} does not support dynamic updating.");
+        }
+        $classfilepath = (new \ReflectionClass($handler))->getFileName();
+        if (strpos($classfilepath, $CFG->dirroot) !== 0) {
+            throw new \UnexpectedValueException("Table handler class {$handler} must be defined in
+                         {$CFG->dirroot}, instead of {$classfilepath}.");
+        }
+        $instance = new $handler($uniqueid);
+        return $instance;
+    }
+
+    public static function setup_filters(&$instance, $filters, $jointype) {
         $instanceclass = get_class($instance);
         $filtersetclass = "{$instanceclass}_filterset";
         if (!class_exists($filtersetclass)) {
@@ -122,6 +151,7 @@ class external extends \external_api {
 
         $instance->set_extended_filterset($filterset);
     }
+
     /**
      * Describes the parameters for fetching the table html.
      *
@@ -132,18 +162,6 @@ class external extends \external_api {
         return new external_function_parameters(
             array_merge(
                 static::get_table_query_basic_parameters(), [
-                'firstinitial' => new external_value(
-                    PARAM_RAW,
-                    'The first initial to sort filter on',
-                    VALUE_REQUIRED,
-                    null
-                ),
-                'lastinitial' => new external_value(
-                    PARAM_RAW,
-                    'The last initial to sort filter on',
-                    VALUE_REQUIRED,
-                    null
-                ),
                 'hiddencolumns' => new external_multiple_structure(
                     new external_value(
                         PARAM_ALPHANUMEXT,
@@ -177,20 +195,22 @@ class external extends \external_api {
     /**
      * External function to get the table view content.
      *
-     * @param string $component The component.
      * @param string $handler Dynamic table class name.
      * @param string $uniqueid Unique ID for the container.
      * @param array $sortdata The columns and order to sort by
-     * @param array $filters The filters that will be applied in the request.
-     * @param string $jointype The join type.
-     * @param string $firstinitial The first name initial to filter on
-     * @param string $lastinitial The last name initial to filter on
-     * @param int $pagenumber The page number.
-     * @param int $pagesize The number of records.
-     * @param string $jointype The join type.
+     * @param array|null $filters The filters that will be applied in the request.
+     * @param string|null $jointype The join type.
+     * @param array|null $hiddencolumns
      * @param bool $resetpreferences Whether it is resetting table preferences or not.
      *
+     * @param int|null $pagenumber The page number.
+     * @param int|null $pagesize The number of records.
      * @return array
+     * @throws \ReflectionException
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \invalid_parameter_exception
+     * @throws \restricted_context_exception
      */
     public static function get_rows(
         string $handler,
@@ -198,8 +218,6 @@ class external extends \external_api {
         array $sortdata,
         ?array $filters = null,
         ?string $jointype = null,
-        ?string $firstinitial = null,
-        ?string $lastinitial = null,
         ?array $hiddencolumns = null,
         ?bool $resetpreferences = null,
         ?int $pagenumber = null,
@@ -213,8 +231,6 @@ class external extends \external_api {
             'sortdata' => $sortdata,
             'filters' => $filters,
             'jointype' => $jointype,
-            'firstinitial' => $firstinitial,
-            'lastinitial' => $lastinitial,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
@@ -225,8 +241,6 @@ class external extends \external_api {
             'sortdata' => $sortdata,
             'filters' => $filters,
             'jointype' => $jointype,
-            'firstinitial' => $firstinitial,
-            'lastinitial' => $lastinitial,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
@@ -304,7 +318,7 @@ class external extends \external_api {
      */
     public static function get_columns_parameters(): external_function_parameters {
         return new external_function_parameters(
-                static::get_table_query_basic_parameters()
+            static::get_table_query_basic_parameters()
         );
     }
 
@@ -365,42 +379,229 @@ class external extends \external_api {
                     'title' => new external_value(PARAM_TEXT, 'Column title.'),
                     'field' => new external_value(PARAM_TEXT, 'Field name in reference to this title.'),
                     'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
-                    'filter' => new external_value(PARAM_ALPHANUMEXT, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
-                    'filterparams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
-                    'formatter' => new external_value(PARAM_ALPHANUMEXT, 'Formatter: image, html, datetime ....', VALUE_OPTIONAL),
-                    'formatterparams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....', VALUE_OPTIONAL),
+                    'filter' => new external_value(PARAM_RAW, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
+                    'filterParams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
+                    'formatter' => new external_value(PARAM_RAW, 'Formatter: image, html, datetime ....', VALUE_OPTIONAL),
+                    'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....', VALUE_OPTIONAL),
+                    'editor' => new external_value(PARAM_RAW, 'Editor: image, html, datetime ....', VALUE_OPTIONAL),
+                    'editorParams' => new external_value(PARAM_RAW, 'Editor: parameter as JSON, ....', VALUE_OPTIONAL),
+                    'validator' => new external_value(PARAM_RAW, 'Validator: image, html, datetime ....', VALUE_OPTIONAL),
+                    'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....', VALUE_OPTIONAL)
                 ])
             );
     }
 
     /**
-     * Get table handler instance
+     * Set value parameters
+     */
+    public static function set_value_parameters() {
+        return new external_function_parameters (
+            [
+                'handler' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                    PARAM_RAW,
+                    'Handler',
+                    VALUE_REQUIRED
+                ),
+                'uniqueid' => new external_value(
+                    PARAM_ALPHANUMEXT,
+                    'Unique ID for the container',
+                    VALUE_REQUIRED
+                ),
+                'id' => new external_value(
+                    PARAM_INT,
+                    'Data id',
+                    VALUE_REQUIRED
+                ),
+                'field' =>
+                    new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'Name of the field',
+                        VALUE_REQUIRED
+                    ),
+                'value' =>
+                    new external_value(
+                        PARAM_RAW,
+                        'New value',
+                        VALUE_REQUIRED
+                    ),
+                'oldvalue' =>
+                    new external_value(
+                        PARAM_RAW,
+                        'Old value',
+                        VALUE_REQUIRED
+                    ),
+            ]
+        );
+
+    }
+
+    /**
+     * Set a field value
      *
      * @param $handler
      * @param $uniqueid
-     * @return mixed
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
      * @throws \ReflectionException
      * @throws \invalid_parameter_exception
      * @throws \restricted_context_exception
      */
-    public static function get_table_handler_instance($handler, $uniqueid) {
-        global $CFG;
+    public static function set_value($handler, $uniqueid, $id, $field, $value, $oldvalue) {
+        [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+            'oldvalue' => $oldvalue,
+        ] = self::validate_parameters(self::set_value_parameters(), [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+            'oldvalue' => $oldvalue,
+        ]);
 
-        if (!class_exists($handler)) {
-            throw new \UnexpectedValueException("Table handler class {$handler} not found. " .
-                "Please make sure that your handler is defined.");
+        $instance = self::get_table_handler_instance($handler, $uniqueid);
+        $instance->validate_access();
+        $success = false;
+        $warnings = array();
+        try {
+            $success = $instance->set_value($id, $field, $value, $oldvalue);
+        } catch (\moodle_exception $e) {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => "For table $handler: {$e->getMessage()}"
+            ];
         }
-
-        if (!is_subclass_of($handler, dynamic_table_sql::class)) {
-            throw new \UnexpectedValueException("Table handler class {$handler} does not support dynamic updating.");
-        }
-        $classfilepath = (new \ReflectionClass($handler))->getFileName();
-        if (strpos($classfilepath, $CFG->dirroot) !== 0) {
-            throw new \UnexpectedValueException("Table handler class {$handler} must be defined in
-                         {$CFG->dirroot}, instead of {$classfilepath}.");
-        }
-        $instance = new $handler($uniqueid);
-        return $instance;
+        return [
+            'success' => $success,
+            'warnings' => $warnings
+        ];
     }
 
+    /**
+     * Set value returns
+     *
+     * @return external_single_structure
+     */
+    public static function set_value_returns() {
+        return new external_single_structure(
+            array(
+                'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Set value parameters
+     */
+    public static function is_value_valid_parameters() {
+        return new external_function_parameters (
+            [
+                'handler' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                    PARAM_RAW,
+                    'Handler',
+                    VALUE_REQUIRED
+                ),
+                'uniqueid' => new external_value(
+                    PARAM_ALPHANUMEXT,
+                    'Unique ID for the container',
+                    VALUE_REQUIRED
+                ),
+                'id' => new external_value(
+                    PARAM_INT,
+                    'Data id',
+                    VALUE_REQUIRED
+                ),
+                'field' =>
+                    new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'Name of the field',
+                        VALUE_REQUIRED
+                    ),
+                'value' =>
+                    new external_value(
+                        PARAM_RAW,
+                        'New value',
+                        VALUE_REQUIRED
+                    )
+            ]
+        );
+
+    }
+
+    /**
+     * Set a field value
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
+     * @throws \ReflectionException
+     * @throws \invalid_parameter_exception
+     * @throws \restricted_context_exception
+     */
+    public static function is_value_valid($handler, $uniqueid, $id, $field, $value) {
+        [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+        ] = self::validate_parameters(self::is_value_valid_parameters(), [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value
+        ]);
+
+        $instance = self::get_table_handler_instance($handler, $uniqueid);
+        $instance->validate_access();
+        $success = false;
+        $warnings = array();
+        try {
+            $success = $instance->set_validate($id, $field, $value);
+        } catch (\moodle_exception $e) {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => "For table $handler: {$e->getMessage()}"
+            ];
+        }
+        return [
+            'success' => $success,
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Set value returns
+     *
+     * @return external_single_structure
+     */
+    public static function is_value_valid_returns() {
+        return new external_single_structure(
+            array(
+                'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
 }

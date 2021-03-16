@@ -27,7 +27,7 @@ const toNumericEqual = (val) => JSON.stringify({
     value: val,
 });
 
-export const MOODLE_FILTER_CONVERTER = {
+const MOODLE_FILTER_CONVERTER = {
     'like': {
         to: 'string_filter',
         transformer: (args) => {
@@ -39,6 +39,8 @@ export const MOODLE_FILTER_CONVERTER = {
         transformer: (args) => {
             if (Array.isArray(args)) {
                 return args.map(toNumericEqual);
+            } else if (typeof args === 'boolean') {
+                return [toNumericEqual(args ? 1: 0)];
             } else {
                 return [toNumericEqual(args)];
             }
@@ -48,3 +50,30 @@ export const MOODLE_FILTER_CONVERTER = {
 
 export const JOINTYPE_ANY = 1;
 export const JOINTYPE_ALL = 2;
+
+export const convertInitialFilter = (initialFilters, existingFilters) => {
+    const joinType = initialFilters ? initialFilters.jointype : JOINTYPE_ALL;
+    if (initialFilters) {
+        // Add initial filters to filters.
+        Array.prototype.push.apply(existingFilters, Object.values(initialFilters.filters));
+    }
+    return [joinType, existingFilters];
+};
+
+export const convertFiltersToMoodle = (tabulatorFilters) => {
+    return (typeof tabulatorFilters === "undefined") ? [] : tabulatorFilters.map(
+        (e) => {
+            let filter = {
+                'name': e.field, 'type': e.type, 'jointype': JOINTYPE_ALL, 'values': e.value
+            };
+            if (e.type in MOODLE_FILTER_CONVERTER) {
+                const converter = MOODLE_FILTER_CONVERTER[e.type];
+                filter.type = converter.to;
+                if (typeof converter.transformer !== "undefined") {
+                    filter.values = converter.transformer(e.value);
+                }
+            }
+            return filter;
+        }
+    );
+};

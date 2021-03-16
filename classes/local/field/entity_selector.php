@@ -31,35 +31,6 @@ class entity_selector extends base {
     protected $entityclass = "";
     protected $displayfield = "";
 
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to format the data.
-     *
-     * @throws \coding_exception
-     */
-    public function get_formatter_parameters() {
-        return [
-            'choices' => $this->get_entities()
-        ];
-    }
-
-    /**
-     * Get the additional information related to the way we need to format this
-     * information
-     *
-     * @return array|null associatvie array with related information on the way
-     * to filter the data.
-     *
-     */
-    public function get_filter_parameters() {
-        return [
-            'choices' => $this->get_entities()
-        ];
-    }
-
 
     public function __construct($fielddef) {
         parent::__construct($fielddef);
