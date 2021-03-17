@@ -70,6 +70,13 @@ export const columnSetup = async (columndefs, tableHandler, tableUniqueId) => {
     }
     columndefs =  columndefs.map(
         (columndef) => {
+            if ("additionalParams" in columndef) {
+                const additionalProps = JSON.parse(columndef["additionalParams"]);
+                if (typeof additionalProps === 'object') {
+                    columndef = Object.assign(columndef, additionalProps);
+                    delete(columndef.additionalParameters);
+                }
+            }
             for (const colprop in columndef) {
                 if (colprop in TABULATOR_CONVERTER) {
                     const tabconverter = TABULATOR_CONVERTER[colprop];

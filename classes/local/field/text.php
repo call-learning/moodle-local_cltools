@@ -24,11 +24,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class text extends base  {
+class text extends base {
     /**
      * Add element onto the form
      *
@@ -53,13 +52,26 @@ class text extends base  {
     }
 
     /**
+     * Get the matching formatter type and parameters to be used for display
+     *
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
+     *
+     */
+    public function get_column_formatter() {
+        return (object) [
+            'formatter' => 'textarea'
+        ];
+    }
+
+    /**
      * Get the matching validator type to be used in the table
      *
      * @return string|null return the type (and null if no filter)
      *
      */
     public function get_column_validator() {
-        return (object)[
+        return (object) [
             'validator' => 'string'
         ];
     }

@@ -362,7 +362,8 @@ class external extends \external_api {
         $instance = self::get_table_handler_instance($handler, $uniqueid);
         $instance->validate_access();
         self::setup_filters($instance, $filters, $jointype);
-        $columndefs = $instance->get_fields_definition();
+        /* @var $instance dynamic_table_sql */
+        $columndefs = array_values($instance->get_fields_definition());
 
         return $columndefs;
     }
@@ -387,7 +388,9 @@ class external extends \external_api {
                     'editor' => new external_value(PARAM_RAW, 'Editor: image, html, datetime ....', VALUE_OPTIONAL),
                     'editorParams' => new external_value(PARAM_RAW, 'Editor: parameter as JSON, ....', VALUE_OPTIONAL),
                     'validator' => new external_value(PARAM_RAW, 'Validator: image, html, datetime ....', VALUE_OPTIONAL),
-                    'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....', VALUE_OPTIONAL)
+                    'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....', VALUE_OPTIONAL),
+                    'additionalParams' => new external_value(PARAM_RAW, 'Additional params in the form of a JSON object, 
+                    will be merged with column definition', VALUE_OPTIONAL),
                 ])
             );
     }

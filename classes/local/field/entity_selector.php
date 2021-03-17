@@ -25,6 +25,8 @@
  */
 
 namespace local_cltools\local\field;
+use local_cltools\local\crud\entity_utils;
+
 defined('MOODLE_INTERNAL') || die();
 
 class entity_selector extends base {
@@ -106,11 +108,51 @@ class entity_selector extends base {
     public static function entity_lookup($entityclass, $displayfield) {
         global $DB;
         if ($entityclass && class_exists($entityclass)) {
-            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, $fields = 'id,' . $displayfield);
+            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, "$displayfield ASC", 'id,' . $displayfield);
             $allrecords[0] = get_string('notavailable', 'local_cltools');
             return $allrecords;
         } else {
             return [];
         }
+    }
+
+    /**
+     * Get addional joins and fields
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     * @throws \ReflectionException
+     */
+    public function get_additional_sql($entityalias) {
+        $table =  ($this->entityclass)::TABLE;
+        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
+        return  [
+            "{$aliasname}.{$this->displayfield} AS {$aliasname}{$this->displayfield}",
+            "LEFT JOIN {".$table."} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
+            ];
+
+    }
+
+
+    /**
+     * Get addional additional invisible sort field
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     */
+    public function get_additional_util_field() {
+        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
+        $fieldname = $aliasname.$this->displayfield;
+        $field = base::get_instance_from_def($fieldname, [
+            "fullname" => $fieldname,
+            "rawtype" => PARAM_RAW,
+            "type" => "hidden"
+            ]
+        );
+        return $field;
     }
 }

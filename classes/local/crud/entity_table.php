@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 use context;
 use html_writer;
 use local_cltools\local\field\base;
+use local_cltools\local\field\entity_selector;
 use local_cltools\local\field\html;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
@@ -57,7 +58,18 @@ class entity_table extends dynamic_table_sql {
     protected function set_initial_sql() {
         $sqlfields = forward_static_call([static::$persistentclass, 'get_sql_fields'], 'entity', '');
         $from = static::$persistentclass::TABLE;
-        $this->set_sql($sqlfields, '{' . $from . '} entity', '1=1', []);
+        $from = '{' . $from . '} entity';
+        // Add joins
+        // Set sorts (additional column)
+        foreach($this->fields as $field) {
+            list($fields, $additionalfrom) = $field->get_additional_sql('entity');
+            $from .= " ".$additionalfrom;
+            if ($fields) {
+                $sqlfields .= (!empty($sqlfields) ? ', ' : '') . $fields;
+            }
+        }
+        $this->set_sql($sqlfields, $from, '1=1', []);
+
     }
 
     /**
@@ -70,22 +82,68 @@ class entity_table extends dynamic_table_sql {
      */
     protected function setup_fields() {
         $this->fields = [];
-        foreach (static::$persistentclass::properties_definition() as $name => $prop) {
-            if (entity_utils::is_reserved_property($name) || !(empty($existingproperties[$name]))) {
-                $prop['fullname'] = $name;
-                $prop['fieldname'] = $name;
+        $colorder = static::define_column_order();
+        $allprops = array_merge(static::$persistentclass::properties_definition(), static::define_properties());
+        if ($colorder) {
+            $allprops = array_replace(array_flip($colorder), $allprops);
+        }
+        foreach ($allprops as $name => $prop) {
+            $prop['fieldname'] = $name;
+            if (empty($prop['fullname'])) {
+                if (entity_utils::is_reserved_property($name)) {
+                    $prop['fullname'] = $name;
+                } else {
+                    $prop['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
+                }
+            }
+            if (entity_utils::is_reserved_property($name) && empty($prop['format'])) {
                 $prop['format'] = [
                     'type' => 'hidden'
                 ];
-            } else {
-                $prop['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
-                $prop['fieldname'] = $name;
             }
-            $this->fields[$name] = base::get_instance_from_persistent_def($name, $prop);
+            $field = base::get_instance_from_persistent_def($name, $prop);
+            $this->fields[$name] = $field;
         }
         $this->setup_other_fields();
     }
 
+
+    /**
+     * Add utility fields (for sorting for example)
+     *
+     * @throws \coding_exception
+     */
+    protected function setup_other_fields() {
+        parent::setup_other_fields();
+        // Add invisible sort field for entity selector fields
+        foreach($this->fields as $field) {
+            $newfield = $field->get_additional_util_field();
+            if ($newfield) {
+                // We sort by this field instead.
+                $sortfieldaliases[$field->get_field_name()] = $newfield->get_field_name();
+                $this->sortfieldaliases[$field->get_field_name()] = $newfield->get_field_name();
+            }
+            $this->fieldaliases[$field->get_field_name()] = "entity.".$field->get_field_name();
+        }
+    }
+    /**
+     * Define properties (additional properties)
+     *
+     * @return array
+     */
+    protected static function define_properties() {
+        return array();
+    }
+
+
+    /**
+     * Define properties (additional properties)
+     *
+     * @return array
+     */
+    protected static function define_column_order() {
+        return array();
+    }
     /**
      * Format the actions cell.
      *

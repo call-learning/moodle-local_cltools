@@ -130,7 +130,7 @@ export const tableInit = async (
         ajaxSorting: true,
         dataFiltered: function () {
             $(document).trigger('tabulator-filter-changed', [
-                    tableHandler, tableUniqueId, this.getFilters(true), tableFilters
+                    tableHandler, tableUniqueId, this.getFilters(true)
                 ]
             );
         },

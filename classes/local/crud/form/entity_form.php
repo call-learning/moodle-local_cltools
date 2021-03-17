@@ -137,7 +137,7 @@ abstract class entity_form extends \core\form\persistent {
      * @return stdClass The amended data set.
      */
     protected static function convert_fields(\stdClass $data) {
-        $properties = (static::$persistentclass)::get_formatted_properties();
+        $properties = (static::$persistentclass)::properties_definition();
         $expandeddata = clone $data;
         foreach ($data as $field => $value) {
             // Replace formatted properties.

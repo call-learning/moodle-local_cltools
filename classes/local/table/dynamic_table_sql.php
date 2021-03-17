@@ -62,10 +62,16 @@ abstract class dynamic_table_sql extends table_sql {
     protected $actionsdefs = [];
 
     /**
-     * @var array $fieldaliases an associative array that will set the right
-     *  sql alias for this table if needed
+     * @var array $sortfieldaliases an associative array that will set the right
+     *  sql alias for this table if needed (sorting)
      */
-    protected $fieldaliases = null;
+    protected $sortfieldaliases = [];
+
+    /**
+     * @var array $fieldaliases an associative array that will set the right
+     *  sql alias for this table if needed (filters)
+     */
+    protected $fieldaliases = [];
 
     /**
      * Sets up the page_table parameters.
@@ -290,7 +296,7 @@ abstract class dynamic_table_sql extends table_sql {
                 $column->formatter = 'html';
                 unset($column->formatterparams);
             }
-            $columnsdef[] = $column;
+            $columnsdef[$fieldid] = $column;
         }
 
         return $columnsdef;
@@ -411,6 +417,23 @@ abstract class dynamic_table_sql extends table_sql {
      */
     public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
         return true;
+    }
+
+
+    /**
+     * Change the sort if there was any alias changes.
+     *
+     * @return SQL fragment that can be used in an ORDER BY clause.
+     */
+    public function get_sort_columns() {
+        $sorts =  parent::get_sort_columns();
+        foreach($sorts as $colname => $sort) {
+            if (!empty($this->sortfieldaliases[$colname])) {
+                unset($sorts[$colname]);
+                $sorts[$this->sortfieldaliases[$colname]] = $sort;
+            }
+        }
+        return $sorts;
     }
 
     /**

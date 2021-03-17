@@ -85,8 +85,13 @@ abstract class base {
      * @return static
      */
     public static function get_instance_from_persistent_def($name, $fielddef = []) {
-        if (!empty($fielddef['format']) && !empty($fielddef['format']['type'])) {
-            $fielddef['type']  = $fielddef['format']['type'];
+        if (!empty($fielddef['format'])) {
+           if (!empty($fielddef['format']['type'])) {
+               $fielddef['type']  = $fielddef['format']['type'];
+           }
+            if (!empty($fielddef['format']['choices'])) {
+                $fielddef['choices']  = $fielddef['format']['choices']; // We use the associative array instead.
+            }
         } else {
             if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']])) {
                 $fielddef['rawtype'] = $fielddef['type'];
@@ -172,7 +177,7 @@ abstract class base {
     }
 
     /**
-     * Get the matching filter type to be used for display
+     * Get the matching filter type and parameters to be used for display
      *
      *
      * @link  http://tabulator.info/docs/4.9/filter
@@ -190,7 +195,7 @@ abstract class base {
         return null;
     }
     /**
-     * Get the matching formatter type to be used for display
+     * Get the matching formatter type and parameters to be used for display
      *
      * @link  http://tabulator.info/docs/4.9/format
      * @return object|null return the parameters (or null if no matching formatter)
@@ -201,7 +206,7 @@ abstract class base {
     }
 
     /**
-     * Get the matching editor type to be used in the table
+     * Get the matching editor type and parameters to be used in the table
      *
      * @link  http://tabulator.info/docs/4.9/editor
      * @return object|null return the parameters (or null if no matching editor)
@@ -241,6 +246,10 @@ abstract class base {
      */
     public function is_valid($any) {
         return true;
+    }
+
+    public function get_field_name() {
+        return $this->fieldname;
     }
 
     /**
@@ -293,4 +302,28 @@ abstract class base {
      * @return mixed
      */
     abstract protected function internal_add_form_element(&$mform);
+
+    /**
+     * Get addional joins
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     */
+    public function get_additional_sql($entityalias) {
+        return ["",""];
+    }
+
+    /**
+     * Get addional additional invisible sort field
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     */
+    public function get_additional_util_field() {
+        return null;
+    }
 }
