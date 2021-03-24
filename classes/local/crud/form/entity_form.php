@@ -141,11 +141,11 @@ abstract class entity_form extends \core\form\persistent {
         $expandeddata = clone $data;
         foreach ($data as $field => $value) {
             // Replace formatted properties.
-            $fieldname = static::remove_editor_suffix($field);
-            if (isset($properties[$fieldname])) {
-                $formatfield = $properties[$fieldname];
+            $rawfieldname = static::remove_editor_suffix($field);
+            if ($field != $rawfieldname  && isset($properties[$rawfieldname.'format'])) {
+                $formatfield = $rawfieldname.'format';
                 $expandeddata->$formatfield = $data->{$field}['format'];
-                $expandeddata->$fieldname = $data->{$field}['text'];
+                $expandeddata->$rawfieldname = $data->{$field}['text'];
                 unset($expandeddata->$field);
             }
         }

@@ -49,7 +49,7 @@ class boolean extends base  {
             'formatter' =>'tickCross',
             'formatterParams' => (object) [
                 'allowEmpty' => true,
-                'allowTruthy' => true
+                'allowTruthy' => false
             ]
         ];
     }
