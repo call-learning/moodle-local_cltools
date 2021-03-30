@@ -26,6 +26,7 @@ namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
 use context;
+use core\invalid_persistent_exception;
 use html_writer;
 use local_cltools\local\field\base;
 use local_cltools\local\field\entity_selector;
@@ -189,5 +190,27 @@ class entity_table extends dynamic_table_sql {
             $imageshtml .= \html_writer::img($src, $altmessage, array('class' => 'img-thumbnail'));
         }
         return $imageshtml;
+    }
+
+    /**
+     * Set the value of a specific row.
+     *
+     * @param $rowid
+     * @param $fieldname
+     * @param $newvalue
+     * @param $oldvalue
+     * @return bool
+     */
+    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
+        $entity = new static::$persistentclass($rowid);
+        /* @var $entity \core\persistent */
+        try {
+            $entity->set($fieldname, $newvalue);
+            $entity->update();
+            return true;
+        } catch(invalid_persistent_exception $e) {
+            return false;
+        }
+
     }
 }

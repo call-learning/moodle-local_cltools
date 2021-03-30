@@ -92,6 +92,7 @@ class external extends \external_api {
                 VALUE_OPTIONAL
             ),
             'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
+            'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_OPTIONAL, false),
         ];
     }
 
@@ -105,7 +106,7 @@ class external extends \external_api {
      * @throws \invalid_parameter_exception
      * @throws \restricted_context_exception
      */
-    public static function get_table_handler_instance($handler, $uniqueid) {
+    public static function get_table_handler_instance($handler, $uniqueid, $editable=false) {
         global $CFG;
 
         if (!class_exists($handler)) {
@@ -121,7 +122,7 @@ class external extends \external_api {
             throw new \UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
-        $instance = new $handler($uniqueid);
+        $instance = new $handler($uniqueid, null, $editable);
         return $instance;
     }
 
@@ -219,6 +220,7 @@ class external extends \external_api {
         array $sortdata,
         ?array $filters = null,
         ?string $jointype = null,
+        ?bool $editable = false,
         ?array $hiddencolumns = null,
         ?bool $resetpreferences = null,
         ?int $pagenumber = null,
@@ -232,6 +234,7 @@ class external extends \external_api {
             'sortdata' => $sortdata,
             'filters' => $filters,
             'jointype' => $jointype,
+            'editable' => $editable,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
@@ -242,6 +245,7 @@ class external extends \external_api {
             'sortdata' => $sortdata,
             'filters' => $filters,
             'jointype' => $jointype,
+            'editable' => $editable,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
@@ -345,21 +349,24 @@ class external extends \external_api {
         string $handler,
         string $uniqueid,
         ?array $filters = null,
-        ?string $jointype = null
+        ?string $jointype = null,
+        ?bool $editable = null
     ) {
         [
             'handler' => $handler,
             'uniqueid' => $uniqueid,
             'filters' => $filters,
             'jointype' => $jointype,
+            'editable' => $editable,
         ] = self::validate_parameters(self::get_columns_parameters(), [
             'handler' => $handler,
             'uniqueid' => $uniqueid,
             'filters' => $filters,
             'jointype' => $jointype,
+            'editable' => $editable,
         ]);
 
-        $instance = self::get_table_handler_instance($handler, $uniqueid);
+        $instance = self::get_table_handler_instance($handler, $uniqueid, $editable);
         $instance->validate_access();
         self::setup_filters($instance, $filters, $jointype);
         /* @var $instance dynamic_table_sql */
@@ -472,8 +479,8 @@ class external extends \external_api {
             'oldvalue' => $oldvalue,
         ]);
 
-        $instance = self::get_table_handler_instance($handler, $uniqueid);
-        $instance->validate_access();
+        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
+        $instance->validate_access(true);
         $success = false;
         $warnings = array();
         try {
@@ -575,12 +582,12 @@ class external extends \external_api {
             'value' => $value
         ]);
 
-        $instance = self::get_table_handler_instance($handler, $uniqueid);
+        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
         $instance->validate_access();
         $success = false;
         $warnings = array();
         try {
-            $success = $instance->set_validate($id, $field, $value);
+            $success = $instance->is_valid_value($id, $field, $value);
         } catch (\moodle_exception $e) {
             $warnings[] = (object) [
                 'item' => $field,

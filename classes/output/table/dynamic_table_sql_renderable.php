@@ -101,6 +101,7 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
         $context->pagesize = $this->perpage;
         $context->handler = get_class($this->dynamictable);
         $context->otheroptions = "";
+        $context->editable = $this->dynamictable->is_editable();
         if ($this->otheroptions) {
             $context->otheroptions = json_encode($this->otheroptions);
         }

@@ -23,7 +23,7 @@
 
 
 import {call as ajaxCall} from "core/ajax";
-import $ from 'jquery';
+import Notification from 'core/notification';
 
 /**
  * Send the value back to server and send an tabulator-cell-edited event
@@ -49,7 +49,7 @@ export const validateRemote = async (tableHandler, tableUniqueid, cell, value) =
         )
     ).catch(Notification.exception).then(
         (result) => {
-            if (result.warnings && result.warnings.length !== 0) {
+            if (Array.isArray(result.warnings) && result.warnings.length) {
                 Notification.addNotification(
                     {
                         message: result.warnings.reduce((a, w) => (a + ',' + w), '')
@@ -88,12 +88,9 @@ export const cellEdited = (tableHandler, tableUniqueid, data) => {
     ).catch(Notification.exception).then(
         (result) => {
             if (result && result.success) {
-                $(document).trigger('tabulator-cell-edited', [
-                        args
-                    ]
-                );
+                document.dispatchEvent(new CustomEvent('tabulator-cell-edited', args));
             } else {
-                if (result.warnings) {
+                if (Array.isArray(result.warnings) && result.warnings.length) {
                     Notification.addNotification(
                         {
                             message: result.warnings.reduce((a, w) => (a + ',' + w), '')

@@ -87,7 +87,7 @@ class select_choice extends base {
      */
     public function get_column_validator() {
         return (object) [
-            'validator' => "in:" . explode(',', (array) $this->choices)
+            'validator' => "in:" . join('|', (array) array_keys($this->choices))
         ];
     }
 }

@@ -86,7 +86,7 @@ abstract class dynamic_table_sql extends table_sql {
     ) {
         parent::__construct($uniqueid);
         $this->actionsdefs = $actionsdefs;
-        $this->iseditable = $editable;
+        $this->iseditable = (bool) $editable;
         list($cols, $headers) = $this->get_table_columns_definitions();
         $this->define_columns($cols);
         $this->define_headers($headers);
@@ -133,9 +133,10 @@ abstract class dynamic_table_sql extends table_sql {
      * setup to be done in order to make sure we validated against the right information
      * (such as for example a filter needs to be set in order not to return data a user should not see).
      *
+     *
      * @throws \dml_exception
      */
-    public function validate_access() {
+    public function validate_access($writeaccess=false) {
         external::validate_context(\context_system::instance());
     }
 
@@ -268,11 +269,12 @@ abstract class dynamic_table_sql extends table_sql {
             /* @var base $field */
             foreach (['formatter','filter', 'editor', 'validator'] as $modifier) {
                 $callback = "get_column_$modifier";
-                if (!$column->isvisible && $field->$callback()) {
+                $modifiervalues = (array)$field->$callback();
+                if (!$column->isvisible && $modifiervalues) {
                     if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
                         continue;
                     }
-                    foreach((array)$field->$callback()  as $modifiername => $value) {
+                    foreach($modifiervalues  as $modifiername => $value) {
                         if (!$column->isvisible && $field->$callback()) {
                             if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
                                 continue;
@@ -414,9 +416,10 @@ abstract class dynamic_table_sql extends table_sql {
      * @param $fieldname
      * @param $newvalue
      * @param $oldvalue
+     * @return bool
      */
     public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
-        return true;
+        return false;
     }
 
 
@@ -440,10 +443,26 @@ abstract class dynamic_table_sql extends table_sql {
      * Check if the value is valid for this row, column
      *
      * @param $rowid
-     * @param $newvalue
      * @param $oldvalue
      */
-    public function is_valid_value($rowid, $fieldname, $newvalue, $oldvalue) {
-        return true;
+
+    /**
+     * Check if the value is valid for this row, column
+     * @param $rowid
+     * @param $fieldname
+     * @param $newvalue
+     * @return bool
+     */
+    public function is_valid_value($rowid, $fieldname, $newvalue) {
+        return false;
+    }
+
+    /**
+     * Check if table editable
+     *
+     * @returns bool
+     */
+    public function is_editable() {
+        return $this->iseditable;
     }
 }

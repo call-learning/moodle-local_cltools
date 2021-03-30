@@ -35,7 +35,7 @@ import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 import {TABULATOR_EDITORS} from "./tabulator-editors";
 
 
-const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters) => {
+const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters, tableEditable) => {
     let joinType;
     let filters = convertFiltersToMoodle(params.filters);
     [joinType, filters] = convertInitialFilter(initialFilters, filters);
@@ -52,7 +52,8 @@ const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters)
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
-        resetpreferences: false
+        resetpreferences: false,
+        editable: tableEditable
     };
     return Promise.race(
         ajaxCall(
@@ -83,6 +84,7 @@ export const init = async (tabulatorelementid) => {
         tableelement.data('tableFilters'),
         rowClickCallback,
         tableelement.data('tableOtheroptions'),
+        tableelement.data('tableEditable'),
     );
 };
 export const tableInit = async (
@@ -92,7 +94,8 @@ export const tableInit = async (
     tablePageSize,
     tableFilters,
     rowClickCallback,
-    otherOptions
+    otherOptions,
+    tableEditable
 ) => {
     let joinType, filters;
     // Make sure momentjs is defined.
@@ -108,7 +111,8 @@ export const tableInit = async (
                 handler: tableHandler,
                 uniqueid: tableUniqueId,
                 filters: filters,
-                jointype: joinType
+                jointype: joinType,
+                editable: tableEditable
             }
         }])).catch(Notification.exception);
 
@@ -121,7 +125,7 @@ export const tableInit = async (
     let options = {
         ajaxRequestFunc: function (url, config, params) {
             const pageSize = this.table.getPageSize();
-            return rowQuery(tableHandler, tableUniqueId, pageSize, params, tableFilters);
+            return rowQuery(tableHandler, tableUniqueId, pageSize, params, tableFilters, tableEditable);
         },
         ajaxURL: true, // If not set the RequestFunct will never be called.
         pagination: "remote",
