@@ -6,7 +6,7 @@ https://github.com/moment/moment
 Instructions to import Moment into CLTools:
 
 1. Download the latest release from https://github.com/moment/moment
-2. copy 'moment.js' into 'amd/src/moment-lazy.js'
+2. copy 'https://github.com/moment/moment/blob/develop/min/moment-with-locales.js' into 'amd/src/moment-lazy.js'
    Add /* eslint-disable */ in the beginning
 
 Tabulator 4.9.3

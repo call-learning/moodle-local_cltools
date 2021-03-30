@@ -42,6 +42,7 @@ class date  extends base  {
             'formatter' => 'datets',
             'formatterParams' => (object) [
                 'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
+                'locale' => current_language(),
                 'timezone' => usertimezone()
             ]
         ];

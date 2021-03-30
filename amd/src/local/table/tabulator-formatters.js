@@ -27,10 +27,15 @@ export const TABULATOR_FORMATTERS = {
         return cell.getValue().toUpperCase();
     },
     datets: function (cell, formatterParams) {
-        return moment.unix(cell.getValue()).format(formatterParams.outputFormat); // From Unix TS to displayable date.
+        const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
+        moment.locale(currentLang);
+        return moment.unix(cell.getValue()).format(formatterParams.outputFormat);
+        // From Unix TS to displayable date.
     },
     datetimets: function (cell, formatterParams) {
+        const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
         const timestamp = Number.parseInt(cell.getValue());
+        moment.locale(currentLang);
         return moment.unix(timestamp).format(formatterParams.outputFormat); // From Unix TS to displayable date.
     },
     'entity_lookup': (cell, formatterParams) => {

@@ -41,6 +41,7 @@ class datetime  extends base  {
             'formatter' => 'datetimets',
             'formatterParams' => (object) [
                 'outputFormat' => get_string('momentjsdatetimeformat', 'local_cltools'),
+                'locale' => current_language(),
                 'timezone' => usertimezone()
             ]
         ];
