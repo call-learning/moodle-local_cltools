@@ -73,6 +73,7 @@ class string_filter extends filter {
         global $DB;
         static $paramcount = 0;
 
+        $fieldval = trim($fieldval, '"');// Remove double quote if any.
         $paramname = "stringp_". ($paramcount++);
         $params = [];
 
