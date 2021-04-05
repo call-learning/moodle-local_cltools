@@ -32,7 +32,7 @@ require_once($CFG->libdir . '/tablelib.php');
 use local_cltools\local\field\base;
 use local_cltools\local\filter\filterset;
 use table_sql;
-
+defined('MOODLE_INTERNAL') || die;
 abstract class dynamic_table_sql extends table_sql {
 
     /**

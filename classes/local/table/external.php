@@ -35,6 +35,7 @@ use external_warnings;
 use local_cltools\local\field\entity_selector;
 use local_cltools\local\filter\basic_filterset;
 
+defined('MOODLE_INTERNAL') || die;
 class external extends \external_api {
 
     /**

@@ -27,7 +27,7 @@
 declare(strict_types=1);
 
 namespace local_cltools\local\filter;
-
+defined('MOODLE_INTERNAL') || die;
 use Countable;
 use JsonSerializable;
 use InvalidArgumentException;

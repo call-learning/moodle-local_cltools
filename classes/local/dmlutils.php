@@ -23,6 +23,7 @@
  */
 
 namespace local_cltools\local;
+defined('MOODLE_INTERNAL') || die;
 
 class dmlutils {
     /*

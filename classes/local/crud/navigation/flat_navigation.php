@@ -23,7 +23,7 @@
  */
 
 namespace local_cltools\local\crud\navigation;
-
+defined('MOODLE_INTERNAL') || die;
 use local_cltools\local\crud\entity_utils;
 use moodle_url;
 

@@ -27,7 +27,7 @@ namespace local_cltools\local\forms;
 
 use coding_exception;
 use HTML_QuickForm_group;
-
+defined('MOODLE_INTERNAL') || die;
 trait form_element_accept {
     /**
      * Accepts a renderer, but tweak it to render the right local template

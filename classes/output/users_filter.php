@@ -28,7 +28,7 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
-
+defined('MOODLE_INTERNAL') || die;
 /**
  * Class for rendering user filters on the course participants page.
  *

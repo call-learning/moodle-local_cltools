@@ -22,7 +22,7 @@
  */
 
 namespace local_cltools\local\filter;
-
+defined('MOODLE_INTERNAL') || die;
 /**
  * Class representing a set of filters.
  *
