@@ -33,6 +33,15 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 class entity_utils {
+
+    /**
+     * Some kewords are forbidden in a query.
+     */
+    const SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE= [
+        'group' => 'grp',
+        'select' => 'slct',
+        'from' => 'frm',
+    ];
     /**
      * @param \ReflectionClass| string $persistentclass
      * @return string
@@ -41,7 +50,11 @@ class entity_utils {
     public static function get_persistent_prefix($persistentclass) {
         $namespace = static::get_persistent_namespace($persistentclass);
         $namespaceparts = explode('\\', $namespace);
-        return strtolower(end($namespaceparts));
+        $persistentprefix = strtolower(end($namespaceparts));
+        if (!empty(self::SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE[$persistentprefix])) {
+            $persistentprefix = self::SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE[$persistentprefix];
+        }
+        return $persistentprefix;
     }
 
     /**
