@@ -205,6 +205,7 @@ abstract class base {
      */
     public function setup_page(&$page) {
         $header = $this->get_page_header();
+        $page->set_pagelayout('standard');
         $page->set_context(\context_system::instance());
         $page->set_title($header);
         $page->set_heading($header);
