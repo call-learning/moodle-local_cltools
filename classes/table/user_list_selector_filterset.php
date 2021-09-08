@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace local_cltools\table;
 defined('MOODLE_INTERNAL') || die;
+
 use core_table\local\filter\boolean_filter;
 use core_table\local\filter\filterset;
 use core_table\local\filter\integer_filter;

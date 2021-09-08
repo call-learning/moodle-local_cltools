@@ -34,27 +34,35 @@ defined('MOODLE_INTERNAL') || die();
 interface  persistent_navigation {
     /***
      * Get URL for a list of entities
+     *
      * @return mixed
      */
     public function get_list_url();
 
     /**
      * Get the URL for adding a new entity
+     *
      * @return mixed
      */
     public function get_add_url();
+
     /**
      * Get the URL for deleting an entity
+     *
      * @return mixed
      */
     public function get_delete_url();
+
     /**
      * Get the URL for editing an entity
+     *
      * @return mixed
      */
     public function get_edit_url();
+
     /**
      * Get the URL for viewing an entity
+     *
      * @return mixed
      */
     public function get_view_url();

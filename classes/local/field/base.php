@@ -24,32 +24,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 
 defined('MOODLE_INTERNAL') || die();
+
 abstract class base {
-
-    protected $formatparameters = null;
-
-    protected $required = false;
-
-    protected $default = null;
-
-    protected $fullname = null;
-
-    protected $fieldname = null;
-
-    public function __construct($fielddef)  {
-        if (is_array($fielddef)) {
-            $fielddef = (object) $fielddef;
-        }
-        $this->required = empty($fielddef->required) ? false: $fielddef->required;
-        $this->default = empty($fielddef->default) ? '' : $fielddef->default;
-        $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
-        $this->fieldname = $fielddef->fieldname;
-        $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
-    }
 
     /**
      * Matches PARAM_XXX to field type
@@ -65,6 +44,23 @@ abstract class base {
         PARAM_EMAIL => 'text',
         PARAM_URL => 'text'
     ];
+    protected $formatparameters = null;
+    protected $required = false;
+    protected $default = null;
+    protected $fullname = null;
+    protected $fieldname = null;
+
+    public function __construct($fielddef) {
+        if (is_array($fielddef)) {
+            $fielddef = (object) $fielddef;
+        }
+        $this->required = empty($fielddef->required) ? false : $fielddef->required;
+        $this->default = empty($fielddef->default) ? '' : $fielddef->default;
+        $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
+        $this->fieldname = $fielddef->fieldname;
+        $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
+    }
+
     /**
      *
      * Same as @static::get_instance_from_def
@@ -86,11 +82,11 @@ abstract class base {
      */
     public static function get_instance_from_persistent_def($name, $fielddef = []) {
         if (!empty($fielddef['format'])) {
-           if (!empty($fielddef['format']['type'])) {
-               $fielddef['type']  = $fielddef['format']['type'];
-           }
+            if (!empty($fielddef['format']['type'])) {
+                $fielddef['type'] = $fielddef['format']['type'];
+            }
             if (!empty($fielddef['format']['choices'])) {
-                $fielddef['choices']  = $fielddef['format']['choices']; // We use the associative array instead.
+                $fielddef['choices'] = $fielddef['format']['choices']; // We use the associative array instead.
             }
         } else {
             if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['type']])) {
@@ -103,6 +99,7 @@ abstract class base {
         }
         return static::get_instance_from_def($name, $fielddef);
     }
+
     /**
      * @param array $fielddef associative array with information on how to build / setup the field
      * Mandatory fields are:
@@ -120,7 +117,7 @@ abstract class base {
      * @return static
      */
     public static function get_instance_from_def($name, $fielddef = []) {
-        // PARAM_XXX
+        // PARAM_XXX .
         if (empty($fielddef['type'])) {
             if (!empty(self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['rawtype']])) {
                 $fielddef['type'] = self::MOODLE_PARAM_RAW_TO_TYPE[$fielddef['rawtype']];
@@ -132,16 +129,19 @@ abstract class base {
         if ($type != 'hidden' && !empty($fielddef['choices'])) {
             $type = "select_choice";
         }
-        $classname = __NAMESPACE__.'\\'. $type;
+        $classname = __NAMESPACE__ . '\\' . $type;
         if (!class_exists($classname)) {
             $type = 'local_cltools\\local\\field\\text';
         }
         $fielddef['fieldname'] = $name;
         return new $classname($fielddef);
     }
+
     /**
      * Return a printable version of the current value
+     *
      * @param $value
+     * @param mixed $additionalcontext
      * @return mixed
      */
     public function format_string($value, $additionalcontext = null) {
@@ -156,15 +156,6 @@ abstract class base {
     public function get_type() {
         $tableclass = explode("\\", get_class($this));
         return end($tableclass);
-    }
-
-    /**
-     * Get the type of parameter (see PARAM_XXX) for this type
-     *
-     * @return mixed
-     */
-    public function get_raw_param_type() {
-        return $this->rawtype;
     }
 
     /**
@@ -194,16 +185,6 @@ abstract class base {
         }
         return null;
     }
-    /**
-     * Get the matching formatter type and parameters to be used for display
-     *
-     * @link  http://tabulator.info/docs/4.9/format
-     * @return object|null return the parameters (or null if no matching formatter)
-     *
-     */
-    public function get_column_formatter() {
-        return null;
-    }
 
     /**
      * Get the matching editor type and parameters to be used in the table
@@ -213,6 +194,17 @@ abstract class base {
      *
      */
     public function get_column_editor() {
+        return null;
+    }
+
+    /**
+     * Get the matching formatter type and parameters to be used for display
+     *
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
+     *
+     */
+    public function get_column_formatter() {
         return null;
     }
 
@@ -254,6 +246,7 @@ abstract class base {
 
     /**
      * Add element onto the form
+     *
      * @param $mform
      * @param mixed ...$additionalargs
      * @return mixed
@@ -269,32 +262,6 @@ abstract class base {
         }
     }
 
-
-    /**
-     * Call
-     */
-
-    /**
-     * Callback for this field, so data can be converted before sending it to a persistent
-     * @param $data
-     */
-    public function filter_data_for_persistent(&$itemdata, ...$args) {
-
-    }
-    /**
-     * Callback for this field, so data can be converted before form submission
-     * @param $data
-     */
-    public function prepare_files(&$itemdata, ...$args) {
-    }
-
-    /**
-     * Callback for this field, so data can be saved after form submission
-     * @param $data
-     */
-    public function save_files(&$itemdata, ...$args) {
-    }
-
     /**
      * Callback to actually add the form element to the form itself
      *
@@ -302,6 +269,45 @@ abstract class base {
      * @return mixed
      */
     abstract protected function internal_add_form_element(&$mform);
+
+
+    /**
+     * Call
+     */
+
+    /**
+     * Get the type of parameter (see PARAM_XXX) for this type
+     *
+     * @return mixed
+     */
+    public function get_raw_param_type() {
+        return $this->rawtype;
+    }
+
+    /**
+     * Callback for this field, so data can be converted before sending it to a persistent
+     *
+     * @param $data
+     */
+    public function filter_data_for_persistent(&$itemdata, ...$args) {
+
+    }
+
+    /**
+     * Callback for this field, so data can be converted before form submission
+     *
+     * @param $data
+     */
+    public function prepare_files(&$itemdata, ...$args) {
+    }
+
+    /**
+     * Callback for this field, so data can be saved after form submission
+     *
+     * @param $data
+     */
+    public function save_files(&$itemdata, ...$args) {
+    }
 
     /**
      * Get addional joins
@@ -312,7 +318,7 @@ abstract class base {
      * @return string
      */
     public function get_additional_sql($entityalias) {
-        return ["",""];
+        return ["", ""];
     }
 
     /**

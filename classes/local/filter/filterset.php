@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 use InvalidArgumentException;
 use JsonSerializable;
 use UnexpectedValueException;
@@ -46,29 +47,82 @@ abstract class filterset implements JsonSerializable {
 
     /** @var array The list of active filters */
     protected $filters = [];
+
     /**
-     * Specify the type of join to employ for the filter.
+     * Add the specified filter from the supplied params.
      *
-     * @param int $jointype The join type to use using one of the supplied constants
+     * @param string $filtername The name of the filter to create
+     * @param mixed[] ...$args Additional arguments used to create this filter type
      * @return self
      */
-    public function set_join_type(int $jointype): self {
-        if (array_search($jointype, filter::JOIN_TYPES) === false) {
-            throw new InvalidArgumentException('Invalid join type specified');
+    public function add_filter_from_params(string $filtername, ...$args): self {
+        // Fetch the list of valid filters by name.
+        $validtypes = $this->get_all_filtertypes();
+
+        if (!array_key_exists($filtername, $validtypes)) {
+            // Unknown filter.
+            throw new InvalidArgumentException(
+                "The filter '{$filtername}' was not recognised."
+            );
         }
 
-        $this->jointype = $jointype;
+        $filterclass = $validtypes[$filtername];
+
+        if (!class_exists($filterclass)) {
+            // Filter class cannot be class autoloaded.
+            throw new InvalidArgumentException(
+                "The filter class '{$filterclass}' for filter '{$filtername}' could not be found."
+            );
+        }
+
+        // Pass all supplied arguments to the constructor when adding a new filter.
+        // This allows for a wider definition of the the filter in child classes.
+        $this->add_filter(new $filterclass($filtername, ...$args));
 
         return $this;
     }
 
     /**
-     * Return the currently specified join type.
+     * Get all filter valid types in an array of filtername => filter class type.
      *
-     * @return int
+     * @return array
      */
-    public function get_join_type(): int {
-        return $this->jointype;
+    public function get_all_filtertypes(): array {
+        if ($this->filtertypes === null) {
+            $required = $this->get_required_filters();
+            $optional = $this->get_optional_filters();
+
+            $conflicts = array_keys(array_intersect_key($required, $optional));
+
+            if (!empty($conflicts)) {
+                throw new InvalidArgumentException(
+                    "Some filter types are both required, and optional: " . implode(', ', $conflicts)
+                );
+            }
+
+            $this->filtertypes = array_merge($required, $optional);
+            asort($this->filtertypes);
+        }
+
+        return $this->filtertypes;
+    }
+
+    /**
+     * Get the list of required filters in an array of filtername => filter class type.
+     *
+     * @return array
+     */
+    protected function get_required_filters(): array {
+        return [];
+    }
+
+    /**
+     * Get the list of optional filters in an array of filtername => filter class type.
+     *
+     * @return array
+     */
+    protected function get_optional_filters(): array {
+        return [];
     }
 
     /**
@@ -118,54 +172,6 @@ abstract class filterset implements JsonSerializable {
         $this->filters[$filtername] = $filter;
 
         return $this;
-    }
-
-    /**
-     * Add the specified filter from the supplied params.
-     *
-     * @param string $filtername The name of the filter to create
-     * @param mixed[] ...$args Additional arguments used to create this filter type
-     * @return self
-     */
-    public function add_filter_from_params(string $filtername, ...$args): self {
-        // Fetch the list of valid filters by name.
-        $validtypes = $this->get_all_filtertypes();
-
-        if (!array_key_exists($filtername, $validtypes)) {
-            // Unknown filter.
-            throw new InvalidArgumentException(
-                "The filter '{$filtername}' was not recognised."
-            );
-        }
-
-        $filterclass = $validtypes[$filtername];
-
-        if (!class_exists($filterclass)) {
-            // Filter class cannot be class autoloaded.
-            throw new InvalidArgumentException(
-                "The filter class '{$filterclass}' for filter '{$filtername}' could not be found."
-            );
-        }
-
-        // Pass all supplied arguments to the constructor when adding a new filter.
-        // This allows for a wider definition of the the filter in child classes.
-        $this->add_filter(new $filterclass($filtername, ...$args));
-
-        return $this;
-    }
-
-    /**
-     * Return the current set of filters.
-     *
-     * @return filter[]
-     */
-    public function get_filters(): array {
-        // Sort the filters by their name to ensure consistent output.
-        // Note: This is not a locale-aware sort, but we don't need this.
-        // It's primarily for consistency, not for actual sorting.
-        asort($this->filters);
-
-        return $this->filters;
     }
 
     /**
@@ -223,49 +229,6 @@ abstract class filterset implements JsonSerializable {
     }
 
     /**
-     * Get the list of required filters in an array of filtername => filter class type.
-     *
-     * @return array
-     */
-    protected function get_required_filters(): array {
-        return [];
-    }
-
-    /**
-     * Get the list of optional filters in an array of filtername => filter class type.
-     *
-     * @return array
-     */
-    protected function get_optional_filters(): array {
-        return [];
-    }
-
-    /**
-     * Get all filter valid types in an array of filtername => filter class type.
-     *
-     * @return array
-     */
-    public function get_all_filtertypes(): array {
-        if ($this->filtertypes === null) {
-            $required = $this->get_required_filters();
-            $optional = $this->get_optional_filters();
-
-            $conflicts = array_keys(array_intersect_key($required, $optional));
-
-            if (!empty($conflicts)) {
-                throw new InvalidArgumentException(
-                    "Some filter types are both required, and optional: " . implode(', ', $conflicts)
-                );
-            }
-
-            $this->filtertypes = array_merge($required, $optional);
-            asort($this->filtertypes);
-        }
-
-        return $this->filtertypes;
-    }
-
-    /**
      * Serialize filterset.
      *
      * @return mixed|object
@@ -278,13 +241,51 @@ abstract class filterset implements JsonSerializable {
     }
 
     /**
+     * Return the currently specified join type.
+     *
+     * @return int
+     */
+    public function get_join_type(): int {
+        return $this->jointype;
+    }
+
+    /**
+     * Specify the type of join to employ for the filter.
+     *
+     * @param int $jointype The join type to use using one of the supplied constants
+     * @return self
+     */
+    public function set_join_type(int $jointype): self {
+        if (array_search($jointype, filter::JOIN_TYPES) === false) {
+            throw new InvalidArgumentException('Invalid join type specified');
+        }
+
+        $this->jointype = $jointype;
+
+        return $this;
+    }
+
+    /**
+     * Return the current set of filters.
+     *
+     * @return filter[]
+     */
+    public function get_filters(): array {
+        // Sort the filters by their name to ensure consistent output.
+        // Note: This is not a locale-aware sort, but we don't need this.
+        // It's primarily for consistency, not for actual sorting.
+        asort($this->filters);
+
+        return $this->filters;
+    }
+
+    /**
      * Get the sql where / params used for filtering
      *
      * @param $tableprefix
      * @return array
      */
     public function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null) {
-
 
         $joinsql = filter::JOIN_TYPE_TO_SQL[$this->get_join_type()];
         $filtesetwheres = [];

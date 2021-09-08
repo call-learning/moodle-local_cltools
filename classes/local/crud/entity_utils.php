@@ -24,10 +24,19 @@
 
 namespace local_cltools\local\crud;
 
+use coding_exception;
+use context;
+use context_system;
+use core_component;
+use dml_exception;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+use lang_string;
+use moodle_url;
+use ReflectionClass;
+use ReflectionException;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -37,15 +46,46 @@ class entity_utils {
     /**
      * Some kewords are forbidden in a query.
      */
-    const SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE= [
+    const SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE = [
         'group' => 'grp',
         'select' => 'slct',
         'from' => 'frm',
     ];
+    const RESERVED_PROPERTIES = array('id', 'timecreated', 'timemodified', 'usermodified');
     /**
-     * @param \ReflectionClass| string $persistentclass
+     * Default plugin component name
+     */
+    const DEFAULT_PLUGIN_COMPONENT_NAME = 'local_cltools';
+
+    /**
+     * Get string for given entity
+     *
+     * @param $persistentclass
+     * @param $stringname
+     * @params $args
+     * @return lang_string|string
+     * @throws ReflectionException
+     * @throws coding_exception
+     */
+    public static function get_string_for_entity($persistentclass, $stringname, $args = null) {
+        $entityprefix = self::get_persistent_prefix($persistentclass);
+        $component = self::get_component($persistentclass);
+        $stringmanager = get_string_manager();
+        $label = '';
+        if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
+            $label = get_string($entityprefix . ':' . $stringname, $component, $args);
+        } else if ($stringmanager->string_exists($stringname, $component, $args)) {
+            $label = get_string($stringname, $component, $args);
+        } else {
+            $label = $stringname;
+        }
+        return $label;
+    }
+
+    /**
+     * @param ReflectionClass| string $persistentclass
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function get_persistent_prefix($persistentclass) {
         $namespace = static::get_persistent_namespace($persistentclass);
@@ -60,13 +100,13 @@ class entity_utils {
     /**
      * Get persistent namespace
      *
-     * @param \ReflectionClass| string $persistentclass
+     * @param ReflectionClass| string $persistentclass
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function get_persistent_namespace($persistentclass) {
         if (is_string($persistentclass)) {
-            $persistentclass = new \ReflectionClass($persistentclass);
+            $persistentclass = new ReflectionClass($persistentclass);
         }
         $namespace = $persistentclass->getNamespaceName();
         return $namespace;
@@ -76,46 +116,19 @@ class entity_utils {
      * Guess the component the persistent class belongs to (from its namespace)
      *
      * @param $persistentclass
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function get_component($persistentclass) {
         $namespace = static::get_persistent_namespace($persistentclass);
         $namespacecomp = explode('\\', $namespace);
         $component = self::DEFAULT_PLUGIN_COMPONENT_NAME;
         if ($namespacecomp && count($namespacecomp) > 0) {
-            if (\core_component::is_valid_plugin_name(null, $namespacecomp[0])) {
-                $component = \core_component::normalize_componentname($namespacecomp[0]);
+            if (core_component::is_valid_plugin_name(null, $namespacecomp[0])) {
+                $component = core_component::normalize_componentname($namespacecomp[0]);
             }
         }
         return $component;
     }
-
-    /**
-     * Get string for given entity
-     *
-     * @param $persistentclass
-     * @param $stringname
-     * @params $args
-     * @return \lang_string|string
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     */
-    public static function get_string_for_entity($persistentclass, $stringname, $args = null) {
-        $entityprefix = entity_utils::get_persistent_prefix($persistentclass);
-        $component = entity_utils::get_component($persistentclass);
-        $stringmanager = get_string_manager();
-        $label = '';
-        if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
-            $label = get_string($entityprefix . ':' . $stringname, $component, $args);
-        } else if ($stringmanager->string_exists($stringname, $component, $args)) {
-            $label = get_string($stringname, $component, $args);
-        } else {
-            $label = $stringname;
-        }
-        return $label;
-    }
-
-    const RESERVED_PROPERTIES = array('id', 'timecreated', 'timemodified', 'usermodified');
 
     /**
      * Is a reserved property
@@ -176,18 +189,18 @@ class entity_utils {
      * @param int $entityid
      * @param string $filearea
      * @param string $component
-     * @param \context $context
+     * @param context $context
      * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws dml_exception
      */
     public static function get_files_urls($entityid, $filearea, $component = null, $context = null) {
-        $context = empty($context) ? \context_system::instance()->id : $context;
+        $context = empty($context) ? context_system::instance()->id : $context;
         $files = static::get_files($entityid, $filearea, $component, $context);
         $imagesurls = [];
         foreach ($files as $image) {
             if ($image->is_valid_image()) {
-                $imagesurls[] = \moodle_url::make_pluginfile_url(
+                $imagesurls[] = moodle_url::make_pluginfile_url(
                     $context->id,
                     $component,
                     $filearea,
@@ -206,14 +219,14 @@ class entity_utils {
      * @param int $entityid
      * @param string $filearea
      * @param string $component
-     * @param \context $context
+     * @param context $context
      * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws dml_exception
      */
     public static function get_files($entityid, $filearea, $component = null, $context = null) {
-        $contextid = empty($context) ? \context_system::instance()->id : $context->id;
-        $component = $component ? $component : entity_utils::DEFAULT_PLUGIN_COMPONENT_NAME;
+        $contextid = empty($context) ? context_system::instance()->id : $context->id;
+        $component = $component ? $component : self::DEFAULT_PLUGIN_COMPONENT_NAME;
         $fs = get_file_storage();
         $files = $fs->get_area_files($contextid,
             $component,
@@ -221,11 +234,6 @@ class entity_utils {
             $entityid);
         return $files;
     }
-
-    /**
-     * Default plugin component name
-     */
-    const DEFAULT_PLUGIN_COMPONENT_NAME = 'local_cltools';
 
     /**
      * Check if the property is required

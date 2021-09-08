@@ -46,6 +46,7 @@ class behat_local_cltools extends behat_base {
      * Recognised page names are:
      * | Page            | Description                                                    |
      * | Simple Entity   | Simple entity add
+     *
      * @param string $page name of the page, with the component name removed e.g. 'Admin notification'.
      * @return moodle_url the corresponding URL.
      * @throws Exception with a meaningful error message if the specified page cannot be found.
@@ -62,9 +63,11 @@ class behat_local_cltools extends behat_base {
     public static function setup_simple_entity_table(\Behat\Behat\Hook\Scope\BeforeFeatureScope $scope) {
         global $CFG;
         var_dump($scope->getFeature());
-        //require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
-        //\local_cltools\local\simple\entity::create_table();
+        // Should do:
+        // require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
+        // \local_cltools\local\simple\entity::delete_table();
     }
+
 
     /**
      * Delete the simple entity / other entities tables for testing
@@ -73,8 +76,6 @@ class behat_local_cltools extends behat_base {
      */
     public static function drop_simple_entity_table(\Behat\Behat\Hook\Scope\AfterFeatureScope $scope) {
         global $CFG;
-        //require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
-        //\local_cltools\local\simple\entity::delete_table();
     }
 
 }

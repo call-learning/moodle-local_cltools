@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 use InvalidArgumentException;
 use TypeError;
 
@@ -36,31 +37,6 @@ use TypeError;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class numeric_comparison_filter extends filter {
-    /**
-     * Get the authoritative direction.
-     *
-     * @param string $direction The supplied direction
-     * @return string The authoritative direction
-     */
-    protected function get_direction(string $direction): string {
-        $validdirections = [
-            '=' => '==',
-            '==' => '==',
-            '===' => '===',
-
-            '>' => '>',
-            '=>' => '=>',
-            '<' => '<',
-            '<=' => '<=',
-        ];
-
-        if (!array_key_exists($direction, $validdirections)) {
-            throw new InvalidArgumentException("Invalid direction specified '{$direction}'.");
-        }
-
-        return $validdirections[$direction];
-    }
-
     /**
      * Add a value to the filter.
      *
@@ -130,6 +106,31 @@ class numeric_comparison_filter extends filter {
     }
 
     /**
+     * Get the authoritative direction.
+     *
+     * @param string $direction The supplied direction
+     * @return string The authoritative direction
+     */
+    protected function get_direction(string $direction): string {
+        $validdirections = [
+            '=' => '==',
+            '==' => '==',
+            '===' => '===',
+
+            '>' => '>',
+            '=>' => '=>',
+            '<' => '<',
+            '<=' => '<=',
+        ];
+
+        if (!array_key_exists($direction, $validdirections)) {
+            throw new InvalidArgumentException("Invalid direction specified '{$direction}'.");
+        }
+
+        return $validdirections[$direction];
+    }
+
+    /**
      * Get a specific filter for an element
      *
      * @param $fieldval
@@ -149,7 +150,7 @@ class numeric_comparison_filter extends filter {
             '<=' => '<=',
         ];
 
-        $paramname = "numericp_". ($paramcount++);
+        $paramname = "numericp_" . ($paramcount++);
         $params = [];
         $where = " COALESCE({$this->get_alias()},0)  {$directiontosql[$fieldval->direction]}  :$paramname ";
         $params[$paramname] = intval($fieldval->value);

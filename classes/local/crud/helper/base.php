@@ -25,12 +25,22 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use context_system;
 use core\persistent;
+use core_renderer;
+use dml_exception;
+use html_writer;
+use lang_string;
 use local_cltools\local\crud\form\entity_form;
 use local_cltools\local\crud\navigation\flat_navigation;
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
+use moodle_exception;
+use moodle_page;
 use moodle_url;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Base class for crud helper and factory
@@ -65,17 +75,46 @@ abstract class base {
 
     protected $entityprefix = null;
 
-    /** @var \core_renderer */
+    /** @var core_renderer */
     protected $renderer;
+
+    /**
+     * crud_helper constructor.
+     *
+     * @param string $entityclassname
+     * @param string $action
+     * @param core_renderer $renderer
+     * @throws ReflectionException
+     */
+    public function __construct(string $entityclassname,
+        $entityprefix = null,
+        $formclassname = null,
+        $listclassname = null,
+        $exporterclassname = null,
+        $persistentnavigation = null
+    ) {
+        $this->refpersistentclass = new ReflectionClass($entityclassname);
+        $entitynamespace = $this->refpersistentclass->getNamespaceName();
+        $namespaceparts = explode('\\', $entitynamespace);
+        $this->entityprefix = $entityprefix ? $entityprefix : strtolower(end($namespaceparts));
+        $this->refpersistentformclass = ($formclassname) ? new ReflectionClass($formclassname)
+            : new ReflectionClass($entitynamespace . "\\form");
+        $this->refpersistentlistclass = ($listclassname) ? new ReflectionClass($listclassname)
+            : new ReflectionClass($entitynamespace . "\\table");
+        $this->refpersistentexporterclass = ($exporterclassname) ? new ReflectionClass($exporterclassname)
+            : new ReflectionClass($entitynamespace . "\\exporter");
+        $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
+            new flat_navigation($entityclassname);
+    }
 
     /**
      * crud_helper factory.
      *
      * @param string $entityclassname
      * @param string $action
-     * @param \core_renderer $renderer
+     * @param core_renderer $renderer
      * @return mixed
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function create(string $entityclassname,
         $action = crud_add::ACTION,
@@ -96,35 +135,6 @@ abstract class base {
     }
 
     /**
-     * crud_helper constructor.
-     *
-     * @param string $entityclassname
-     * @param string $action
-     * @param \core_renderer $renderer
-     * @throws \ReflectionException
-     */
-    public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null
-    ) {
-        $this->refpersistentclass = new \ReflectionClass($entityclassname);
-        $entitynamespace = $this->refpersistentclass->getNamespaceName();
-        $namespaceparts = explode('\\', $entitynamespace);
-        $this->entityprefix = $entityprefix ? $entityprefix : strtolower(end($namespaceparts));
-        $this->refpersistentformclass = ($formclassname) ? new \ReflectionClass($formclassname)
-            : new \ReflectionClass($entitynamespace . "\\form");
-        $this->refpersistentlistclass = ($listclassname) ? new \ReflectionClass($listclassname)
-            : new \ReflectionClass($entitynamespace . "\\table");
-        $this->refpersistentexporterclass = ($exporterclassname) ? new \ReflectionClass($exporterclassname)
-            : new \ReflectionClass($entitynamespace . "\\exporter");
-        $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
-            new flat_navigation($entityclassname);
-    }
-
-    /**
      * Get prefix for persistent class
      *
      * @return string
@@ -138,7 +148,7 @@ abstract class base {
      *
      * @param $formparameters
      * @return entity_form|object
-     * @throws \ReflectionException*
+     * @throws ReflectionException*
      */
     public function instanciate_related_form(...$formparameters) {
         return $this->refpersistentformclass->newInstanceArgs($formparameters);
@@ -149,10 +159,10 @@ abstract class base {
      *
      * @param array $formparameters
      * @return entity_table|object
-     * @throws \ReflectionException*
+     * @throws ReflectionException*
      */
     public function instanciate_related_persistent_list() {
-        $uniqueid = \html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
+        $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
             'edit' => (object) [
                 'icon' => 't/edit',
@@ -173,40 +183,16 @@ abstract class base {
     }
 
     /**
-     * Get event class
-     *
-     * @return string
-     * @throws \ReflectionException
-     */
-    protected function get_action_event_class() {
-        return entity_utils::get_persistent_prefix($this->refpersistentclass) . static::ACTION_DONE;
-    }
-
-    /**
-     * Get event description as language string
-     *
-     * @return \lang_string|string
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     */
-    protected function get_action_event_description() {
-        $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
-
-        return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
-            'entity:' . static::ACTION_DONE, $entityname));
-    }
-
-    /**
      * Page setup
      *
-     * @param \moodle_page $page
-     * @throws \coding_exception
-     * @throws \moodle_exception
+     * @param moodle_page $page
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     public function setup_page(&$page) {
         $header = $this->get_page_header();
         $page->set_pagelayout('standard');
-        $page->set_context(\context_system::instance());
+        $page->set_context(context_system::instance());
         $page->set_title($header);
         $page->set_heading($header);
         $page->set_url($this->actionurl);
@@ -216,18 +202,57 @@ abstract class base {
     }
 
     /**
+     * Get current page header
+     *
+     * @return string
+     * @throws ReflectionException
+     * @throws coding_exception
+     */
+    protected function get_page_header() {
+        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
+        $action = get_string(static::ACTION, 'local_cltools');
+        return $action . ' ' . entity_utils::get_string_for_entity($this->refpersistentclass, $stringprefix . ':entity');
+    }
+
+    /**
+     * Process the action
+     *
+     * @param null $postprocesscb
+     * @return mixed
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     * @throws ReflectionException
+     */
+    abstract public function action_process($postprocesscb = null);
+
+    /**
+     * Get event description as language string
+     *
+     * @return lang_string|string
+     * @throws ReflectionException
+     * @throws coding_exception
+     */
+    protected function get_action_event_description() {
+        $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
+
+        return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
+            'entity:' . static::ACTION_DONE, $entityname));
+    }
+
+    /**
      * Setup extra page navigation
      *
      * @param $page
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     * @throws \moodle_exception
+     * @throws ReflectionException
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     protected function setup_page_navigation($page) {
         $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
-        $entities = entity_utils::get_string_for_entity( $this->refpersistentclass, $stringprefix . ':plural');
-        $header = $this->get_page_header();;
+        $entities = entity_utils::get_string_for_entity($this->refpersistentclass, $stringprefix . ':plural');
+        $header = $this->get_page_header();
         $listpageurl = $this->persistentnavigation->get_list_url();
         $page->navbar->add(
             $entities,
@@ -236,45 +261,30 @@ abstract class base {
     }
 
     /**
-     * Get current page header
-     *
-     * @return string
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     */
-    protected function get_page_header() {
-        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
-        $action = get_string(static::ACTION, 'local_cltools');
-        return $action . ' ' . entity_utils::get_string_for_entity( $this->refpersistentclass,$stringprefix.':entity');
-    }
-
-    /**
-     * Process the action
-     *
-     * @param null $postprocesscb
-     * @return mixed
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     * @throws \ReflectionException
-     */
-    public abstract function action_process($postprocesscb = null);
-
-    /**
      * Trigger related event
      *
      * @param persistent $entity
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws dml_exception
      */
     protected function trigger_event(persistent $entity) {
         $eventparams = array('objectid' => $entity->get('id'),
-            'context' => \context_system::instance());
+            'context' => context_system::instance());
         $eventclass = $this->get_action_event_class();
         if (class_exists($eventclass)) {
             $event = $eventclass::create($eventparams);
             $event->trigger();
         }
+    }
+
+    /**
+     * Get event class
+     *
+     * @return string
+     * @throws ReflectionException
+     */
+    protected function get_action_event_class() {
+        return entity_utils::get_persistent_prefix($this->refpersistentclass) . static::ACTION_DONE;
     }
 
 }

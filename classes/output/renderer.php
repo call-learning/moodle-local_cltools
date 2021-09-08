@@ -41,14 +41,11 @@ class renderer extends plugin_renderer_base {
     // This is used as a default renderer for the crud_helper.
 
     /**
+     * Renderer for table
+     *
      * @param entity_table_renderable $entitytable
      */
     public function render_entity_table(entity_table_renderable $entitytable) {
-//        ob_start();
-//        $entitytable->dynamictable->out($entitytable->perpage, true);
-//        $o = ob_get_contents();
-//        ob_end_clean();
-
         return $this->render_from_template('local_cltools/dynamic_table_sql',
             $entitytable->export_for_template($this));
     }

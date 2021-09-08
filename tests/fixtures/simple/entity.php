@@ -102,7 +102,6 @@ class entity extends \core\persistent {
         $dbman = $DB->get_manager();
         $table = new xmldb_table(static::TABLE);
 
-
         if ($dbman->table_exists($table)) {
             if ($dropexistingtable) {
                 $dbman->drop_table($table);
@@ -126,6 +125,7 @@ class entity extends \core\persistent {
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $dbman->create_table($table);
     }
+
     /**
      * This is specific to the test environment. We delete the table structure.
      */

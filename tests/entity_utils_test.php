@@ -21,9 +21,10 @@
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools;
-// https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
+
+defined('MOODLE_INTERNAL') || die();
+// See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
 require_once(__DIR__ . '/fixtures/simple/entity.php');
 
 use context_user;

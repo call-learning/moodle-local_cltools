@@ -24,11 +24,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class boolean extends base  {
+class boolean extends base {
     /**
      * Add element onto the form
      *
@@ -38,6 +37,7 @@ class boolean extends base  {
     public function internal_add_form_element(&$mform) {
         $mform->addElement('advcheckbox', $this->fieldname, $this->fullname);
     }
+
     /**
      * Get the matching formatter type to be used for display
      *
@@ -46,7 +46,7 @@ class boolean extends base  {
      */
     public function get_column_formatter() {
         return (object) [
-            'formatter' =>'tickCross',
+            'formatter' => 'tickCross',
             'formatterParams' => (object) [
                 'allowEmpty' => true,
                 'allowTruthy' => false
@@ -67,7 +67,7 @@ class boolean extends base  {
                 'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                 'allowEmpty' => true,
                 'allowTruthy' => true,
-                'tristate'=> true
+                'tristate' => true
             ]
         ];
     }

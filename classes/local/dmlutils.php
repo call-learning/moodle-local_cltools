@@ -23,6 +23,11 @@
  */
 
 namespace local_cltools\local;
+use mysqli_native_moodle_database;
+use oci_native_moodle_database;
+use pgsql_native_moodle_database;
+use sqlsrv_native_moodle_database;
+
 defined('MOODLE_INTERNAL') || die;
 
 class dmlutils {
@@ -45,19 +50,19 @@ class dmlutils {
         }
         // Yes, this is ugly, but as it will soon be deprecated as support shifts toward
         // 3.11 +, this is not worth really trying spend much time on it.
-        if (is_a($DB, \mysqli_native_moodle_database::class)) {
+        if (is_a($DB, mysqli_native_moodle_database::class)) {
             $fieldsort = $sort ? "ORDER BY {$sort}" : '';
             return "GROUP_CONCAT({$field} {$fieldsort} SEPARATOR '{$separator}')";
         }
-        if (is_a($DB,\oci_native_moodle_database::class)) {
+        if (is_a($DB, oci_native_moodle_database::class)) {
             $fieldsort = $sort ?: '1';
             return "LISTAGG({$field}, '{$separator}') WITHIN GROUP (ORDER BY {$fieldsort})";
         }
-        if (is_a($DB,\pgsql_native_moodle_database::class)) {
+        if (is_a($DB, pgsql_native_moodle_database::class)) {
             $fieldsort = $sort ? "ORDER BY {$sort}" : '';
             return "STRING_AGG(CAST({$field} AS VARCHAR), '{$separator}' {$fieldsort})";
         }
-        if (is_a($DB,\sqlsrv_native_moodle_database::class)) {
+        if (is_a($DB, sqlsrv_native_moodle_database::class)) {
             $fieldsort = $sort ? "WITHIN GROUP (ORDER BY {$sort})" : '';
             return "STRING_AGG({$field}, '{$separator}') {$fieldsort}";
         }

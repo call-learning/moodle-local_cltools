@@ -25,13 +25,15 @@
  */
 
 namespace local_cltools\local\field;
+use coding_exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 class editor extends base {
 
-    protected $editoroptions  = [];
+    protected $editoroptions = [];
 
-    public function __construct($fielddef)  {
+    public function __construct($fielddef) {
         parent::__construct($fielddef);
         if (is_array($fielddef)) {
             $fielddef = (object) $fielddef;
@@ -40,6 +42,7 @@ class editor extends base {
             $this->editoroptions = $fielddef->editoroptions;
         }
     }
+
     /**
      * Add element onto the form
      *
@@ -54,6 +57,7 @@ class editor extends base {
 
     /**
      * Add element onto the form
+     *
      * @param $mform
      * @param mixed ...$additionalargs
      * @return mixed
@@ -77,7 +81,7 @@ class editor extends base {
      * Callback for this field, so data can be converted before form submission
      *
      * @param $itemdata
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function prepare_files(&$itemdata, ...$args) {
         list($context, $component, $filearea, $itemid) = $args;
@@ -95,7 +99,7 @@ class editor extends base {
      * Callback for this field, so data can be saved after form submission
      *
      * @param $itemdata
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function save_files(&$itemdata, ...$args) {
         list($context, $component, $filearea, $itemid) = $args;
@@ -108,8 +112,10 @@ class editor extends base {
         $itemdata->{$this->fieldname} = $data->{$this->fieldname};
         $itemdata->{$this->fieldname . 'format'} = $data->{$this->fieldname . 'format'};
     }
+
     /**
      * Callback for this field, so data can be converted before sending it to a persistent
+     *
      * @param $data
      */
     public function filter_data_for_persistent(&$itemdata, ...$args) {

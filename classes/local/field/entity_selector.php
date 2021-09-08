@@ -25,14 +25,16 @@
  */
 
 namespace local_cltools\local\field;
+
+use dml_exception;
 use local_cltools\local\crud\entity_utils;
+use ReflectionException;
 
 defined('MOODLE_INTERNAL') || die();
 
 class entity_selector extends base {
     protected $entityclass = "";
     protected $displayfield = "";
-
 
     public function __construct($fielddef) {
         parent::__construct($fielddef);
@@ -48,11 +50,40 @@ class entity_selector extends base {
      *
      * @param $mform
      * @return mixed
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function internal_add_form_element(&$mform) {
         $choices = $this->get_entities();
         $mform->addElement('searchableselector', $this->fieldname, $this->fullname, $choices);
+    }
+
+    /**
+     * @return array
+     * @throws dml_exception
+     */
+    protected function get_entities() {
+        static::entity_lookup($this->entityclass, $this->displayfield);
+    }
+
+    /**
+     * Generic entity lookup.
+     *
+     * Used in external API.
+     *
+     * @param $entityclass
+     * @param $displayfield
+     * @return array
+     * @throws dml_exception
+     */
+    public static function entity_lookup($entityclass, $displayfield) {
+        global $DB;
+        if ($entityclass && class_exists($entityclass)) {
+            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, "$displayfield ASC", 'id,' . $displayfield);
+            $allrecords[0] = get_string('notavailable', 'local_cltools');
+            return $allrecords;
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -65,7 +96,7 @@ class entity_selector extends base {
     public function get_column_formatter() {
         return (object) [
             'formatter' => 'entity_lookup',
-            'formatterParams'  => (object) [
+            'formatterParams' => (object) [
                 'entityclass' => $this->entityclass,
                 'displayfield' => $this->displayfield
             ],
@@ -88,33 +119,6 @@ class entity_selector extends base {
             ]
         ];
     }
-    /**
-     * @return array
-     * @throws \dml_exception
-     */
-    protected function get_entities() {
-        static::entity_lookup($this->entityclass, $this->displayfield);
-    }
-
-    /**
-     * Generic entity lookup.
-     *
-     * Used in external API.
-     * @param $entityclass
-     * @param $displayfield
-     * @return array
-     * @throws \dml_exception
-     */
-    public static function entity_lookup($entityclass, $displayfield) {
-        global $DB;
-        if ($entityclass && class_exists($entityclass)) {
-            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, "$displayfield ASC", 'id,' . $displayfield);
-            $allrecords[0] = get_string('notavailable', 'local_cltools');
-            return $allrecords;
-        } else {
-            return [];
-        }
-    }
 
     /**
      * Get addional joins and fields
@@ -123,18 +127,17 @@ class entity_selector extends base {
      *
      * @param $entityalias
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_additional_sql($entityalias) {
-        $table =  ($this->entityclass)::TABLE;
+        $table = ($this->entityclass)::TABLE;
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        return  [
+        return [
             "{$aliasname}.{$this->displayfield} AS {$aliasname}{$this->displayfield}",
-            "LEFT JOIN {".$table."} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
-            ];
+            "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
+        ];
 
     }
-
 
     /**
      * Get addional additional invisible sort field
@@ -146,11 +149,11 @@ class entity_selector extends base {
      */
     public function get_additional_util_field() {
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        $fieldname = $aliasname.$this->displayfield;
+        $fieldname = $aliasname . $this->displayfield;
         $field = base::get_instance_from_def($fieldname, [
-            "fullname" => $fieldname,
-            "rawtype" => PARAM_RAW,
-            "type" => "hidden"
+                "fullname" => $fieldname,
+                "rawtype" => PARAM_RAW,
+                "type" => "hidden"
             ]
         );
         return $field;

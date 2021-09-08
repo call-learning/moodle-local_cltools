@@ -29,16 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 
 class text extends base {
     /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
-     */
-    protected function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
-    }
-
-    /**
      * Get the matching editor type to be used in the table
      *
      * @link  http://tabulator.info/docs/4.9/editor
@@ -74,6 +64,16 @@ class text extends base {
         return (object) [
             'validator' => 'string'
         ];
+    }
+
+    /**
+     * Add element onto the form
+     *
+     * @param $mform
+     * @return mixed
+     */
+    protected function internal_add_form_element(&$mform) {
+        $mform->addElement('text', $this->fieldname, $this->fullname);
     }
 
 }

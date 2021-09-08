@@ -24,20 +24,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class html extends base  {
-    /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
-     */
-    protected function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
-    }
+class html extends base {
     /**
      * Get the matching editor type to be used in the table
      *
@@ -49,5 +39,15 @@ class html extends base  {
         return (object) [
             'formatter' => 'html'
         ];
+    }
+
+    /**
+     * Add element onto the form
+     *
+     * @param $mform
+     * @return mixed
+     */
+    protected function internal_add_form_element(&$mform) {
+        $mform->addElement('text', $this->fieldname, $this->fullname);
     }
 }

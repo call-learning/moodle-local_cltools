@@ -21,21 +21,25 @@
  * @copyright  2020 Michael Hawkins <michaelh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_cltools\output;
 
 use context_course;
+use core_user\output\participants_filter;
 use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
+
 defined('MOODLE_INTERNAL') || die;
+
 /**
  * Class for rendering user filters on the course participants page.
  *
  * @copyright  2020 Michael Hawkins <michaelh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class users_filter extends \core_user\output\participants_filter {
+class users_filter extends participants_filter {
     /**
      * Participants filter constructor.
      *

@@ -26,6 +26,12 @@ namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
+use context_system;
+use core\external\persistent_exporter;
+use core\persistent;
+use dml_exception;
+use moodle_url;
+use ReflectionException;
 use renderer_base;
 
 /**
@@ -35,7 +41,7 @@ use renderer_base;
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity_exporter extends \core\external\persistent_exporter {
+class entity_exporter extends persistent_exporter {
 
     /**
      * Persistent component
@@ -52,18 +58,18 @@ class entity_exporter extends \core\external\persistent_exporter {
     /**
      * persistent_exporter constructor.
      *
-     * @param \core\persistent $persistent
+     * @param persistent $persistent
      * @param array $related
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
      */
-    public function __construct(\core\persistent $persistent, $related = array()) {
+    public function __construct(persistent $persistent, $related = array()) {
         $this->persistentcomponent = entity_utils::get_component(get_class($persistent));
         $this->instanceid = (int) $persistent->get('id');
         $related = array_merge($related,
             [
-                'context' => \context_system::instance(),
+                'context' => context_system::instance(),
                 'component' => $this->persistentcomponent,
                 'itemid' => (int) $persistent->get('id')
             ]
@@ -93,9 +99,9 @@ class entity_exporter extends \core\external\persistent_exporter {
      * @param $filearea
      * @param null $fileprefix
      * @param null $filetypegroup
-     * @return \moodle_url|null
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @return moodle_url|null
+     * @throws coding_exception
+     * @throws dml_exception
      */
     protected function export_file($filearea, $fileprefix = null, $filetypegroup = null) {
         // Retrieve the file from the Files API.
@@ -113,7 +119,7 @@ class entity_exporter extends \core\external\persistent_exporter {
         if (!$returnedfiled) {
             return null;
         }
-        return \moodle_url::make_pluginfile_url(
+        return moodle_url::make_pluginfile_url(
             $this->related['context']->id,
             $this->persistentcomponent,
             $filearea,

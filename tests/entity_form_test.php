@@ -21,7 +21,7 @@
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_cltools; // https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
+namespace local_cltools; // See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
 defined('MOODLE_INTERNAL') || die();
 use local_cltools\local\crud\helper as crud_helper;
 global $CFG;

@@ -25,7 +25,13 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use core\output\notification;
+use core_renderer;
+use dml_exception;
+use moodle_exception;
 use moodle_url;
+use ReflectionException;
 
 /**
  * Class crud_helper. Edit an entity.
@@ -53,8 +59,8 @@ class crud_edit extends base {
      *
      * @param string $entityclassname
      * @param string $action
-     * @param \core_renderer $renderer
-     * @throws \ReflectionException
+     * @param core_renderer $renderer
+     * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
         $entityprefix = null,
@@ -74,10 +80,10 @@ class crud_edit extends base {
      *
      * @param null $postprocesscb
      * @return mixed
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     * @throws \ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     * @throws ReflectionException
      */
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
@@ -101,8 +107,8 @@ class crud_edit extends base {
                     new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
                     $this->get_action_event_description(),
                     null,
-                    $messagetype = \core\output\notification::NOTIFY_SUCCESS);
-            } catch (\moodle_exception $e) {
+                    $messagetype = notification::NOTIFY_SUCCESS);
+            } catch (moodle_exception $e) {
                 $returnedtext .= $this->renderer->notification($e->getMessage(), 'notifyfailure');
             }
         }

@@ -37,10 +37,7 @@ require_once('HTML/QuickForm/input.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class MoodleQuickForm_sortable_list extends HTML_QuickForm_input implements templatable {
-
-    /**
-     * Include this in order to use the cltools templates
-     */
+    // Include this in order to use the cltools templates.
     use \local_cltools\local\forms\form_element_accept;
 
     /**
@@ -93,3 +90,4 @@ class MoodleQuickForm_sortable_list extends HTML_QuickForm_input implements temp
         return $context;
     }
 }
+

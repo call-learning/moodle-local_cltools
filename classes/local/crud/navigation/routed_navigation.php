@@ -24,12 +24,14 @@
 
 namespace local_cltools\local\crud\navigation;
 defined('MOODLE_INTERNAL') || die;
+
 use local_cltools\local\crud\helper\crud_add;
 use local_cltools\local\crud\helper\crud_delete;
 use local_cltools\local\crud\helper\crud_edit;
 use local_cltools\local\crud\helper\crud_view;
 use local_cltools\local\crud\entity_utils;
 use moodle_url;
+use ReflectionException;
 
 /**
  * Class flat_navigation
@@ -45,7 +47,7 @@ class routed_navigation extends flat_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_list_url() {
         $rootdir = $this->get_root_url();
@@ -54,7 +56,7 @@ class routed_navigation extends flat_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_add_url() {
         $rootdir = $this->get_root_url();
@@ -63,7 +65,7 @@ class routed_navigation extends flat_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_delete_url() {
         $rootdir = $this->get_root_url();
@@ -77,7 +79,7 @@ class routed_navigation extends flat_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_view_url() {
         $rootdir = $this->get_root_url();

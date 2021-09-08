@@ -25,12 +25,20 @@ declare(strict_types=1);
 
 namespace local_cltools\table;
 
+use coding_exception;
+use context_system;
+use core_user\output\user_roles_editable;
+use course_enrolment_manager;
 use DateTime;
 use context;
 use core_table\dynamic as dynamic_table;
 use core_table\local\filter\filterset;
 use core_user\output\status_field;
+use dml_exception;
+use html_writer;
 use moodle_url;
+use stdClass;
+use table_sql;
 use user_picture;
 
 defined('MOODLE_INTERNAL') || die;
@@ -47,53 +55,44 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @copyright  2017 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_list_selector extends \table_sql implements dynamic_table {
+class user_list_selector extends table_sql implements dynamic_table {
 
+    /** @var moodle_url $baseurl The base URL for the report. */
+    public $baseurl;
     /**
      * @var string[] The list of countries.
      */
     protected $countries;
-
     /**
      * @var string[] Extra fields to display.
      */
     protected $extrafields;
-
     /**
-     * @var \stdClass $course The course details.
+     * @var stdClass $course The course details.
      */
     protected $course;
-
     /**
      * @var  context $context The course context.
      */
     protected $context;
-
     /**
-     * @var \stdClass[] List of roles indexed by roleid.
+     * @var stdClass[] List of roles indexed by roleid.
      */
     protected $allroles;
-
     /**
-     * @var \stdClass[] List of roles indexed by roleid.
+     * @var stdClass[] List of roles indexed by roleid.
      */
     protected $allroleassignments;
-
     /**
-     * @var \stdClass[] Profile roles in this course.
+     * @var stdClass[] Profile roles in this course.
      */
     protected $profileroles;
-
     /**
      * @var filterset Filterset describing which participants to include.
      */
     protected $filterset;
-
-    /** @var \stdClass[] $viewableroles */
+    /** @var stdClass[] $viewableroles */
     private $viewableroles;
-
-    /** @var moodle_url $baseurl The base URL for the report. */
-    public $baseurl;
 
     /**
      * Render the participants table.
@@ -165,32 +164,31 @@ class user_list_selector extends \table_sql implements dynamic_table {
         }
     }
 
-
     /**
      * Generate the fullname column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_fullname($data) {
         global $OUTPUT;
-        return $OUTPUT->user_picture($data, array('size' => 35, 'courseid' => SITEID, 'includefullname' => true, 'link'=>false));
+        return $OUTPUT->user_picture($data, array('size' => 35, 'courseid' => SITEID, 'includefullname' => true, 'link' => false));
     }
 
     /**
      * Generate a select link
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_select($data) {
         $canviewfullnames = has_capability('moodle/site:viewfullnames', $this->context);
         $fullname = fullname($data, $canviewfullnames);
-        return \html_writer::link('#', get_string('select'),
+        return html_writer::link('#', get_string('select'),
             [
                 'data-user-id' => $data->id,
                 'data-user-fullname' => $fullname,
-                'class'=>'user-select'
+                'class' => 'user-select'
             ]
         );
     }
@@ -198,14 +196,14 @@ class user_list_selector extends \table_sql implements dynamic_table {
     /**
      * User roles column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_roles($data) {
         global $OUTPUT;
 
         $roles = isset($this->allroleassignments[$data->id]) ? $this->allroleassignments[$data->id] : [];
-        $editable = new \core_user\output\user_roles_editable($this->course,
+        $editable = new user_roles_editable($this->course,
             $this->context,
             $data,
             $this->allroles,
@@ -220,7 +218,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
     /**
      * Generate the country column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function col_country($data) {
@@ -233,9 +231,9 @@ class user_list_selector extends \table_sql implements dynamic_table {
     /**
      * Generate the last access column.
      *
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function col_lastaccess($data) {
         if ($data->lastaccess) {
@@ -248,7 +246,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
     /**
      * Generate the status column.
      *
-     * @param \stdClass $data The data object.
+     * @param stdClass $data The data object.
      * @return string
      */
     public function col_status($data) {
@@ -261,7 +259,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
             $fullname = fullname($data, $canviewfullnames);
             $coursename = format_string($this->course->fullname, true, array('context' => $this->context));
             require_once($CFG->dirroot . '/enrol/locallib.php');
-            $manager = new \course_enrolment_manager($PAGE, $this->course);
+            $manager = new course_enrolment_manager($PAGE, $this->course);
             $userenrolments = $manager->get_user_enrolments($data->id);
             foreach ($userenrolments as $ue) {
                 $timestart = $ue->timestart;
@@ -308,7 +306,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
      * a new method to this class. We also don't want to pollute this class with unnecessary methods.
      *
      * @param string $colname The column name
-     * @param \stdClass $data
+     * @param stdClass $data
      * @return string
      */
     public function other_cols($colname, $data) {
@@ -330,14 +328,14 @@ class user_list_selector extends \table_sql implements dynamic_table {
         global $DB;
         list($twhere, $tparams) = $this->get_sql_where();
 
-        list($where, $params)  = $this->get_users_list_sql($twhere, $tparams);
-        $userfieldssql = user_picture::fields('u', get_extra_user_fields(\context_system::instance()));
+        list($where, $params) = $this->get_users_list_sql($twhere, $tparams);
+        $userfieldssql = user_picture::fields('u', get_extra_user_fields(context_system::instance()));
 
         $sql = "SELECT COUNT(u.id)
                           FROM {user} u
                  {$where}";
 
-        $total =  $DB->count_records_sql($sql, $params);
+        $total = $DB->count_records_sql($sql, $params);
         $this->pagesize($pagesize, $total);
 
         $sort = $this->get_sql_sort();
@@ -350,7 +348,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
                  {$where}
                  {$sort}
                  ";
-        $rawdata =  $DB->get_recordset_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
+        $rawdata = $DB->get_recordset_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
 
         $this->rawdata = [];
         foreach ($rawdata as $user) {
@@ -373,6 +371,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
 
     /**
      * Get main sql query for users
+     *
      * @param string $additionalwhere
      * @param array $additionalparams
      * @return array
@@ -475,8 +474,8 @@ class user_list_selector extends \table_sql implements dynamic_table {
      * Prepare SQL where clause and associated parameters for any roles filtering being performed.
      *
      * @return array SQL query data in the format ['where' => '', 'params' => []].
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @throws coding_exception
+     * @throws dml_exception
      */
     protected function get_roles_sql(): array {
         global $DB;
@@ -621,7 +620,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
         if ($this->filterset->has_filter('keywords')) {
             $keywords = $keywordsfilter->get_filter_values();
         }
-        $userfields = get_extra_user_fields(\context_system::instance());
+        $userfields = get_extra_user_fields(context_system::instance());
         foreach ($keywords as $index => $keyword) {
             $searchkey1 = 'search' . $index . '1';
             $searchkey2 = 'search' . $index . '2';
@@ -648,9 +647,9 @@ class user_list_selector extends \table_sql implements dynamic_table {
                 $userid1 = 'userid' . $index . '1';
                 // Prevent users who hide their email address from being found by others
                 // who aren't allowed to see hidden email addresses.
-                $email = "(". $email ." AND (" .
+                $email = "(" . $email . " AND (" .
                     "u.maildisplay <> :$maildisplay " .
-                    "OR u.id = :$userid1". // Users can always find themselves.
+                    "OR u.id = :$userid1" . // Users can always find themselves.
                     "))";
                 $params[$maildisplay] = core_user::MAILDISPLAY_HIDE;
                 $params[$userid1] = $USER->id;
@@ -669,7 +668,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
                 $userid2 = 'userid' . $index . '2';
                 // Users who aren't allowed to see idnumbers should at most find themselves
                 // when searching for an idnumber.
-                $idnumber = "(". $idnumber . " AND u.id = :$userid2)";
+                $idnumber = "(" . $idnumber . " AND u.id = :$userid2)";
                 $params[$userid2] = $USER->id;
             }
 
@@ -694,7 +693,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
                     if (!in_array($extrasearchfield, $userfields)) {
                         // User cannot see this field, but allow match if their own account.
                         $userid3 = 'userid' . $index . '3' . $extrasearchfield;
-                        $condition = "(". $condition . " AND u.id = :$userid3)";
+                        $condition = "(" . $condition . " AND u.id = :$userid3)";
                         $params[$userid3] = $USER->id;
                     }
                     $conditions[] = $condition;
@@ -744,7 +743,7 @@ class user_list_selector extends \table_sql implements dynamic_table {
                 $where .= ' NOT ';
             }
 
-            $where .= "(". implode(" OR ", $conditions) .") ";
+            $where .= "(" . implode(" OR ", $conditions) . ") ";
             $params[$searchkey1] = "%$keyword%";
             $params[$searchkey2] = "%$keyword%";
             $params[$searchkey3] = "%$keyword%";
@@ -761,27 +760,13 @@ class user_list_selector extends \table_sql implements dynamic_table {
     }
 
     /**
-     * Override the table show_hide_link to not show for select column.
-     *
-     * @param string $column the column name, index into various names.
-     * @param int $index numerical index of the column.
-     * @return string HTML fragment.
-     */
-    protected function show_hide_link($column, $index) {
-        if ($index > 0) {
-            return parent::show_hide_link($column, $index);
-        }
-        return '';
-    }
-
-    /**
      * Set filters and build table structure.
      *
      * @param filterset $filterset The filterset object to get the filters from.
      */
     public function set_filterset(filterset $filterset): void {
         // Process the filterset.
-        $this->context = \context_system::instance();
+        $this->context = context_system::instance();
         parent::set_filterset($filterset);
     }
 
@@ -801,5 +786,19 @@ class user_list_selector extends \table_sql implements dynamic_table {
      */
     public function get_context(): context {
         return $this->context;
+    }
+
+    /**
+     * Override the table show_hide_link to not show for select column.
+     *
+     * @param string $column the column name, index into various names.
+     * @param int $index numerical index of the column.
+     * @return string HTML fragment.
+     */
+    protected function show_hide_link($column, $index) {
+        if ($index > 0) {
+            return parent::show_hide_link($column, $index);
+        }
+        return '';
     }
 }

@@ -26,8 +26,13 @@
 namespace local_cltools\local\forms;
 
 use coding_exception;
+use core\output\mustache_template_finder;
+use Exception;
 use HTML_QuickForm_group;
+use templatable;
+
 defined('MOODLE_INTERNAL') || die;
+
 trait form_element_accept {
     /**
      * Accepts a renderer, but tweak it to render the right local template
@@ -38,7 +43,7 @@ trait form_element_accept {
      * @access public
      * @return void
      */
-    public function accept(&$renderer, $required=false, $error=null) {
+    public function accept(&$renderer, $required = false, $error = null) {
         // Make sure the element has an id.
         $this->_generateId();
         $advanced = isset($renderer->_advancedElements[$this->getName()]);
@@ -85,9 +90,9 @@ trait form_element_accept {
         try {
             // We call this to generate a file not found exception if there is no template.
             // We don't want to call export_for_template if there is no template.
-            \core\output\mustache_template_finder::get_template_filepath($templatename);
+            mustache_template_finder::get_template_filepath($templatename);
 
-            if ($element instanceof \templatable) {
+            if ($element instanceof templatable) {
                 $elementcontext = $element->export_for_template($localrenderer);
 
                 $helpbutton = '';
@@ -132,7 +137,7 @@ trait form_element_accept {
                 );
                 return $localrenderer->render_from_template($templatename, $context);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // No template for this element.
             return false;
         }

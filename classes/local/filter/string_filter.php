@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 use TypeError;
 
 /**
@@ -74,11 +75,11 @@ class string_filter extends filter {
         static $paramcount = 0;
 
         $fieldval = trim($fieldval, '"');// Remove double quote if any.
-        $paramname = "stringp_". ($paramcount++);
+        $paramname = "stringp_" . ($paramcount++);
         $params = [];
 
-        $where = " ".
-            $DB->sql_like($this->get_alias(),":$paramname", false, false)
+        $where = " " .
+            $DB->sql_like($this->get_alias(), ":$paramname", false, false)
             . " ";
         $params[$paramname] = '%' . $DB->sql_like_escape($fieldval) . '%';
         return array($where, $params);

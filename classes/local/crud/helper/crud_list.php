@@ -25,7 +25,13 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use core_renderer;
+use dml_exception;
 use local_cltools\output\table\entity_table_renderable;
+use moodle_exception;
+use moodle_page;
+use ReflectionException;
 use single_button;
 
 /**
@@ -49,14 +55,13 @@ class crud_list extends base {
      */
     const ACTION_DONE = 'listed';
 
-
     /**
      * crud_helper constructor.
      *
      * @param string $entityclassname
      * @param string $action
-     * @param \core_renderer $renderer
-     * @throws \ReflectionException
+     * @param core_renderer $renderer
+     * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
         $entityprefix = null,
@@ -70,12 +75,13 @@ class crud_list extends base {
             $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_list_url();
     }
+
     /**
      * Page setup
      *
-     * @param \moodle_page $page
-     * @throws \coding_exception
-     * @throws \moodle_exception
+     * @param moodle_page $page
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     public function setup_page(&$page) {
         parent::setup_page($page);
@@ -89,10 +95,10 @@ class crud_list extends base {
      *
      * @param null $postprocesscb
      * @return mixed
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     * @throws \ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     * @throws ReflectionException
      */
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
@@ -100,7 +106,7 @@ class crud_list extends base {
         // Here the form is just the filter form.
         $renderable = new entity_table_renderable($entitylist);
 
-        /** @var entity_table_renderable entity table */
+        /* @var entity_table_renderable entity table */
         $returnedtext .= $this->renderer->render($renderable);
 
         return $returnedtext;

@@ -43,10 +43,6 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
     use templatable_form_element {
         export_for_template as export_for_template_base;
     }
-
-    /**
-     * Include this in order to use the cltools templates
-     */
     use \local_cltools\local\forms\form_element_accept;
 
     /**
@@ -105,14 +101,14 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
     /**
      * Sets the value of the form element
      *
-     * @param     string    $value      Default value of the form element
+     * @param string $value Default value of the form element
+     * @return    void
      * @since     1.0
      * @access    public
-     * @return    void
      */
-    function setValue($value)
-    {
-        $this->updateAttributes(array('value'=>$value));
+    // phpcs:ignore moodle.NamingConventions.ValidFunctionName.LowercaseMethod,Squiz.Scope.MethodScope.Missing
+    function setValue($value) {
+        $this->updateAttributes(array('value' => $value));
     } // end func setValue
 
 }

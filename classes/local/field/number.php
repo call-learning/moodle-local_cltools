@@ -24,11 +24,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class number  extends base  {
+class number extends base {
     /**
      * Add element onto the form
      *
@@ -50,6 +49,7 @@ class number  extends base  {
             'headerFilter' => $this->get_type()
         ];
     }
+
     /**
      * Get the matching formatter type to be used for display
      *

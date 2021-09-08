@@ -25,8 +25,13 @@
 namespace local_cltools\local\crud\helper;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use core_renderer;
+use dml_exception;
 use local_cltools\local\crud\entity_utils;
+use moodle_exception;
 use moodle_url;
+use ReflectionException;
 
 /**
  * Class crud_helper
@@ -54,8 +59,8 @@ class crud_delete extends base {
      *
      * @param string $entityclassname
      * @param string $action
-     * @param \core_renderer $renderer
-     * @throws \ReflectionException
+     * @param core_renderer $renderer
+     * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
         $entityprefix = null,
@@ -75,10 +80,10 @@ class crud_delete extends base {
      *
      * @param null $postprocesscb
      * @return mixed
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     * @throws \ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     * @throws ReflectionException
      */
     public function action_process($postprocesscb = null) {
         $returnedtext = '';

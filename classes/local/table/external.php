@@ -27,16 +27,173 @@
 
 namespace local_cltools\local\table;
 
+use coding_exception;
+use dml_exception;
+use external_api;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use external_warnings;
+use invalid_parameter_exception;
 use local_cltools\local\field\entity_selector;
 use local_cltools\local\filter\basic_filterset;
+use moodle_exception;
+use ReflectionClass;
+use ReflectionException;
+use restricted_context_exception;
+use UnexpectedValueException;
 
 defined('MOODLE_INTERNAL') || die;
-class external extends \external_api {
+
+class external extends external_api {
+
+    /**
+     * External function to get the table view content.
+     *
+     * @param string $handler Dynamic table class name.
+     * @param string $uniqueid Unique ID for the container.
+     * @param array $sortdata The columns and order to sort by
+     * @param array|null $filters The filters that will be applied in the request.
+     * @param string|null $jointype The join type.
+     * @param array|null $hiddencolumns
+     * @param bool $resetpreferences Whether it is resetting table preferences or not.
+     *
+     * @param int|null $pagenumber The page number.
+     * @param int|null $pagesize The number of records.
+     * @return array
+     * @throws ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function get_rows(
+        string $handler,
+        string $uniqueid,
+        array $sortdata,
+        ?array $filters = null,
+        ?string $jointype = null,
+        ?bool $editable = false,
+        ?array $hiddencolumns = null,
+        ?bool $resetpreferences = null,
+        ?int $pagenumber = null,
+        ?int $pagesize = null
+    ) {
+        global $PAGE, $CFG;
+
+        [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'sortdata' => $sortdata,
+            'filters' => $filters,
+            'jointype' => $jointype,
+            'editable' => $editable,
+            'pagenumber' => $pagenumber,
+            'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns,
+            'resetpreferences' => $resetpreferences,
+        ] = self::validate_parameters(self::get_rows_parameters(), [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'sortdata' => $sortdata,
+            'filters' => $filters,
+            'jointype' => $jointype,
+            'editable' => $editable,
+            'pagenumber' => $pagenumber,
+            'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns,
+            'resetpreferences' => $resetpreferences,
+        ]);
+
+        $instance = self::get_table_handler_instance($handler, $uniqueid);
+
+        self::setup_filters($instance, $filters, $jointype);
+        if ($resetpreferences === true) {
+            $instance->mark_table_to_reset();
+        }
+
+        $PAGE->set_url($instance->baseurl);
+
+        /* @var dynamic_table_sql $instance */
+        // TODO : correct this, we should be able to rely on the default value.
+        if ($pagesize === 0 || $pagenumber < 0 || empty($pagenumber)) {
+            $instance->pageable(false);
+        } else {
+            $instance->pageable(true);
+            $instance->set_page_number($pagenumber);
+        }
+        // Convert from an array of sort definition to column => sortorder.
+        if (!empty($sortdata)) {
+            $sortdef = [];
+            foreach ($sortdata as $def) {
+                $def = (object) $def;
+                $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
+            }
+            $instance->set_sort_data($sortdef);
+        }
+
+        $instance->validate_access();
+
+        $rows = $instance->retrieve_raw_data($pagesize);
+        if (!empty($rows) && empty($rows[0]->id)) {
+            throw new UnexpectedValueException("The table handler class {$handler} must be return an id column
+             that will then be hidden but keep reference to the row unique identifier.");
+        }
+        $returnval = [
+            'data' => array_map(
+                function($r) {
+                    return json_encode($r);
+                },
+                $rows
+            )
+        ];
+        if ($instance->use_pages) {
+            $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
+        }
+        return $returnval;
+    }
+
+    /**
+     * Describes the parameters for fetching the table html.
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.9
+     */
+    public static function get_rows_parameters(): external_function_parameters {
+        return new external_function_parameters(
+            array_merge(
+                static::get_table_query_basic_parameters(), [
+                    'hiddencolumns' => new external_multiple_structure(
+                        new external_value(
+                            PARAM_ALPHANUMEXT,
+                            'Name of column',
+                            VALUE_REQUIRED,
+                            null
+                        )
+                    ),
+                    'resetpreferences' => new external_value(
+                        PARAM_BOOL,
+                        'Whether the table preferences should be reset',
+                        VALUE_REQUIRED,
+                        null
+                    ),
+                    'pagenumber' => new external_value(
+                        PARAM_INT,
+                        'The page number',
+                        VALUE_OPTIONAL,
+                        -1
+                    ),
+                    'pagesize' => new external_value(
+                        PARAM_INT,
+                        'The number of records per page',
+                        VALUE_OPTIONAL,
+                        0
+                    )
+                ]
+            )
+        );
+    }
 
     /**
      * Basic parameters for any query related to the table
@@ -103,24 +260,24 @@ class external extends \external_api {
      * @param $handler
      * @param $uniqueid
      * @return mixed
-     * @throws \ReflectionException
-     * @throws \invalid_parameter_exception
-     * @throws \restricted_context_exception
+     * @throws ReflectionException
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
      */
-    public static function get_table_handler_instance($handler, $uniqueid, $editable=false) {
+    public static function get_table_handler_instance($handler, $uniqueid, $editable = false) {
         global $CFG;
 
         if (!class_exists($handler)) {
-            throw new \UnexpectedValueException("Table handler class {$handler} not found. " .
+            throw new UnexpectedValueException("Table handler class {$handler} not found. " .
                 "Please make sure that your handler is defined.");
         }
 
         if (!is_subclass_of($handler, dynamic_table_sql::class)) {
-            throw new \UnexpectedValueException("Table handler class {$handler} does not support dynamic updating.");
+            throw new UnexpectedValueException("Table handler class {$handler} does not support dynamic updating.");
         }
-        $classfilepath = (new \ReflectionClass($handler))->getFileName();
+        $classfilepath = (new ReflectionClass($handler))->getFileName();
         if (strpos($classfilepath, $CFG->dirroot) !== 0) {
-            throw new \UnexpectedValueException("Table handler class {$handler} must be defined in
+            throw new UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
         $instance = new $handler($uniqueid, null, $editable);
@@ -156,152 +313,6 @@ class external extends \external_api {
     }
 
     /**
-     * Describes the parameters for fetching the table html.
-     *
-     * @return external_function_parameters
-     * @since Moodle 3.9
-     */
-    public static function get_rows_parameters(): external_function_parameters {
-        return new external_function_parameters(
-            array_merge(
-                static::get_table_query_basic_parameters(), [
-                'hiddencolumns' => new external_multiple_structure(
-                    new external_value(
-                        PARAM_ALPHANUMEXT,
-                        'Name of column',
-                        VALUE_REQUIRED,
-                        null
-                    )
-                ),
-                'resetpreferences' => new external_value(
-                    PARAM_BOOL,
-                    'Whether the table preferences should be reset',
-                    VALUE_REQUIRED,
-                    null
-                ),
-                'pagenumber' => new external_value(
-                    PARAM_INT,
-                    'The page number',
-                    VALUE_OPTIONAL,
-                    -1
-                ),
-                'pagesize' => new external_value(
-                    PARAM_INT,
-                    'The number of records per page',
-                    VALUE_OPTIONAL,
-                    0
-                ),
-            ])
-        );
-    }
-
-    /**
-     * External function to get the table view content.
-     *
-     * @param string $handler Dynamic table class name.
-     * @param string $uniqueid Unique ID for the container.
-     * @param array $sortdata The columns and order to sort by
-     * @param array|null $filters The filters that will be applied in the request.
-     * @param string|null $jointype The join type.
-     * @param array|null $hiddencolumns
-     * @param bool $resetpreferences Whether it is resetting table preferences or not.
-     *
-     * @param int|null $pagenumber The page number.
-     * @param int|null $pagesize The number of records.
-     * @return array
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \invalid_parameter_exception
-     * @throws \restricted_context_exception
-     */
-    public static function get_rows(
-        string $handler,
-        string $uniqueid,
-        array $sortdata,
-        ?array $filters = null,
-        ?string $jointype = null,
-        ?bool $editable = false,
-        ?array $hiddencolumns = null,
-        ?bool $resetpreferences = null,
-        ?int $pagenumber = null,
-        ?int $pagesize = null
-    ) {
-        global $PAGE, $CFG;
-
-        [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'sortdata' => $sortdata,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
-            'pagenumber' => $pagenumber,
-            'pagesize' => $pagesize,
-            'hiddencolumns' => $hiddencolumns,
-            'resetpreferences' => $resetpreferences,
-        ] = self::validate_parameters(self::get_rows_parameters(), [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'sortdata' => $sortdata,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
-            'pagenumber' => $pagenumber,
-            'pagesize' => $pagesize,
-            'hiddencolumns' => $hiddencolumns,
-            'resetpreferences' => $resetpreferences,
-        ]);
-
-        $instance = self::get_table_handler_instance($handler, $uniqueid);
-
-        self::setup_filters($instance, $filters, $jointype);
-        if ($resetpreferences === true) {
-            $instance->mark_table_to_reset();
-        }
-
-        $PAGE->set_url($instance->baseurl);
-
-        /* @var dynamic_table_sql $instance */
-        // TODO : correct this, we should be able to rely on the default value.
-        if ($pagesize === 0 || $pagenumber < 0 || empty($pagenumber)) {
-            $instance->pageable(false);
-        } else {
-            $instance->pageable(true);
-            $instance->set_page_number($pagenumber);
-        }
-        // Convert from an array of sort definition to column => sortorder
-        if (!empty($sortdata)) {
-            $sortdef = [];
-            foreach ($sortdata as $def) {
-                $def = (object) $def;
-                $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
-            }
-            $instance->set_sort_data($sortdef);
-        }
-
-        $instance->validate_access();
-
-        $rows = $instance->retrieve_raw_data($pagesize);
-        if (!empty($rows) && empty($rows[0]->id)) {
-            throw new \UnexpectedValueException("The table handler class {$handler} must be return an id column 
-            that will then be hidden but keep reference to the row unique identifier.");
-        }
-        $returnval = [
-            'data' => array_map(
-                function($r) {
-                    return json_encode($r);
-                },
-                $rows
-            )
-        ];
-        if ($instance->use_pages) {
-            $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
-        }
-        return $returnval;
-    }
-
-    /**
      * Describes the data returned from the external function.
      *
      * @return external_single_structure
@@ -314,18 +325,6 @@ class external extends \external_api {
                 new external_value(PARAM_RAW, 'JSON encoded values in return.')
             )
         ]);
-    }
-
-    /**
-     * Describes the parameters for fetching the table html.
-     *
-     * @return external_function_parameters
-     * @since Moodle 3.9
-     */
-    public static function get_columns_parameters(): external_function_parameters {
-        return new external_function_parameters(
-            static::get_table_query_basic_parameters()
-        );
     }
 
     /**
@@ -377,6 +376,18 @@ class external extends \external_api {
     }
 
     /**
+     * Describes the parameters for fetching the table html.
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.9
+     */
+    public static function get_columns_parameters(): external_function_parameters {
+        return new external_function_parameters(
+            static::get_table_query_basic_parameters()
+        );
+    }
+
+    /**
      * Describes the data returned from the external function.
      *
      * @return external_multiple_structure
@@ -397,10 +408,61 @@ class external extends \external_api {
                     'editorParams' => new external_value(PARAM_RAW, 'Editor: parameter as JSON, ....', VALUE_OPTIONAL),
                     'validator' => new external_value(PARAM_RAW, 'Validator: image, html, datetime ....', VALUE_OPTIONAL),
                     'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....', VALUE_OPTIONAL),
-                    'additionalParams' => new external_value(PARAM_RAW, 'Additional params in the form of a JSON object, 
-                    will be merged with column definition', VALUE_OPTIONAL),
+                    'additionalParams' => new external_value(PARAM_RAW, 'Additional params in the form of a JSON object,
+                      will be merged with column definition', VALUE_OPTIONAL),
                 ])
             );
+    }
+
+    /**
+     * Set a field value
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
+     * @throws ReflectionException
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function set_value($handler, $uniqueid, $id, $field, $value, $oldvalue) {
+        [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+            'oldvalue' => $oldvalue,
+        ] = self::validate_parameters(self::set_value_parameters(), [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+            'oldvalue' => $oldvalue,
+        ]);
+
+        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
+        $instance->validate_access(true);
+        $success = false;
+        $warnings = array();
+        try {
+            $success = $instance->set_value($id, $field, $value, $oldvalue);
+        } catch (moodle_exception $e) {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => "For table $handler: {$e->getMessage()}"
+            ];
+        }
+        return [
+            'success' => $success,
+            'warnings' => $warnings
+        ];
     }
 
     /**
@@ -450,57 +512,6 @@ class external extends \external_api {
     }
 
     /**
-     * Set a field value
-     *
-     * @param $handler
-     * @param $uniqueid
-     * @param $id
-     * @param $field
-     * @param $value
-     * @param $oldvalue
-     * @return array
-     * @throws \ReflectionException
-     * @throws \invalid_parameter_exception
-     * @throws \restricted_context_exception
-     */
-    public static function set_value($handler, $uniqueid, $id, $field, $value, $oldvalue) {
-        [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value,
-            'oldvalue' => $oldvalue,
-        ] = self::validate_parameters(self::set_value_parameters(), [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value,
-            'oldvalue' => $oldvalue,
-        ]);
-
-        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
-        $instance->validate_access(true);
-        $success = false;
-        $warnings = array();
-        try {
-            $success = $instance->set_value($id, $field, $value, $oldvalue);
-        } catch (\moodle_exception $e) {
-            $warnings[] = (object) [
-                'item' => $field,
-                'itemid' => $id,
-                'warningcode' => 'setvalueerror',
-                'message' => "For table $handler: {$e->getMessage()}"
-            ];
-        }
-        return [
-            'success' => $success,
-            'warnings' => $warnings
-        ];
-    }
-
-    /**
      * Set value returns
      *
      * @return external_single_structure
@@ -512,6 +523,55 @@ class external extends \external_api {
                 'warnings' => new external_warnings()
             )
         );
+    }
+
+    /**
+     * Set a field value
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
+     * @throws ReflectionException
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function is_value_valid($handler, $uniqueid, $id, $field, $value) {
+        [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value,
+        ] = self::validate_parameters(self::is_value_valid_parameters(), [
+            'handler' => $handler,
+            'uniqueid' => $uniqueid,
+            'id' => $id,
+            'field' => $field,
+            'value' => $value
+        ]);
+
+        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
+        $instance->validate_access();
+        $success = false;
+        $warnings = array();
+        try {
+            $success = $instance->is_valid_value($id, $field, $value);
+        } catch (moodle_exception $e) {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => "For table $handler: {$e->getMessage()}"
+            ];
+        }
+        return [
+            'success' => $success,
+            'warnings' => $warnings
+        ];
     }
 
     /**
@@ -555,55 +615,6 @@ class external extends \external_api {
     }
 
     /**
-     * Set a field value
-     *
-     * @param $handler
-     * @param $uniqueid
-     * @param $id
-     * @param $field
-     * @param $value
-     * @param $oldvalue
-     * @return array
-     * @throws \ReflectionException
-     * @throws \invalid_parameter_exception
-     * @throws \restricted_context_exception
-     */
-    public static function is_value_valid($handler, $uniqueid, $id, $field, $value) {
-        [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value,
-        ] = self::validate_parameters(self::is_value_valid_parameters(), [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value
-        ]);
-
-        $instance = self::get_table_handler_instance($handler, $uniqueid, true);
-        $instance->validate_access();
-        $success = false;
-        $warnings = array();
-        try {
-            $success = $instance->is_valid_value($id, $field, $value);
-        } catch (\moodle_exception $e) {
-            $warnings[] = (object) [
-                'item' => $field,
-                'itemid' => $id,
-                'warningcode' => 'setvalueerror',
-                'message' => "For table $handler: {$e->getMessage()}"
-            ];
-        }
-        return [
-            'success' => $success,
-            'warnings' => $warnings
-        ];
-    }
-
-    /**
      * Set value returns
      *
      * @return external_single_structure
@@ -615,6 +626,46 @@ class external extends \external_api {
                 'warnings' => new external_warnings()
             )
         );
+    }
+
+    /**
+     * Entity lookup value
+     *
+     * @param $handler
+     * @param $uniqueid
+     * @param $id
+     * @param $field
+     * @param $value
+     * @param $oldvalue
+     * @return array
+     * @throws ReflectionException
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function entity_lookup($entityclass, $displayfield) {
+        [
+            'entityclass' => $entityclass,
+            'displayfield' => $displayfield,
+        ] = self::validate_parameters(self::entity_lookup_parameters(), [
+            'entityclass' => $entityclass,
+            'displayfield' => $displayfield,
+        ]);
+        $values = [];
+        $warnings = [];
+        try {
+            $values = entity_selector::entity_lookup($entityclass, $displayfield);
+        } catch (moodle_exception $e) {
+            $warnings[] = (object) [
+                'entityclass' => $entityclass,
+                'displayfield' => $displayfield,
+                'warningcode' => 'lookuperror',
+                'message' => "For entity $entityclass: {$e->getMessage()}"
+            ];
+        }
+        return [
+            'values' => json_encode($values),
+            'warnings' => $warnings
+        ];
     }
 
     /**
@@ -638,46 +689,6 @@ class external extends \external_api {
             ]
         );
 
-    }
-
-    /**
-     * Entity lookup value
-     *
-     * @param $handler
-     * @param $uniqueid
-     * @param $id
-     * @param $field
-     * @param $value
-     * @param $oldvalue
-     * @return array
-     * @throws \ReflectionException
-     * @throws \invalid_parameter_exception
-     * @throws \restricted_context_exception
-     */
-    public static function entity_lookup($entityclass, $displayfield) {
-        [
-            'entityclass' => $entityclass,
-            'displayfield' => $displayfield,
-        ] = self::validate_parameters(self::entity_lookup_parameters(), [
-            'entityclass' => $entityclass,
-            'displayfield' => $displayfield,
-        ]);
-        $values = [];
-        $warnings = [];
-        try {
-            $values =  entity_selector::entity_lookup($entityclass, $displayfield);
-        } catch (\moodle_exception $e) {
-            $warnings[] = (object) [
-                'entityclass' => $entityclass,
-                'displayfield' => $displayfield,
-                'warningcode' => 'lookuperror',
-                'message' => "For entity $entityclass: {$e->getMessage()}"
-            ];
-        }
-        return [
-            'values' => json_encode($values),
-            'warnings' => $warnings
-        ];
     }
 
     /**

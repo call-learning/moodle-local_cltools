@@ -24,11 +24,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class hidden extends base  {
+class hidden extends base {
     /**
      * Add element onto the form
      *
@@ -58,6 +57,7 @@ class hidden extends base  {
     public function get_column_filter() {
         return null;
     }
+
     /**
      * Get the matching formatter type to be used for display
      *

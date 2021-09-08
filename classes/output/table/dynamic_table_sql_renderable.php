@@ -21,9 +21,10 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\output\table;
+defined('MOODLE_INTERNAL') || die();
 
+use dml_exception;
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
@@ -41,12 +42,12 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 CALL Learning - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class dynamic_table_sql_renderable implements renderable, templatable  {
+class dynamic_table_sql_renderable implements renderable, templatable {
 
     /** @var int perpage records to show */
     public $perpage;
 
-    /** @var \moodle_url url of report page */
+    /** @var moodle_url url of report page */
     public $url;
 
     /** @var string order to sort */
@@ -66,7 +67,7 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
      * @param int $page
      * @param int $perpage
      * @param string $order
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function __construct(
         $dynamictable,
@@ -81,7 +82,7 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
         $this->dynamictable->define_baseurl($url);
         $this->dynamictable->is_downloadable(true);
         $this->dynamictable->show_download_buttons_at(array(TABLE_P_BOTTOM));
-        $this->otheroptions =  $otheroptions;
+        $this->otheroptions = $otheroptions;
     }
 
     /**
@@ -108,6 +109,3 @@ class dynamic_table_sql_renderable implements renderable, templatable  {
         return $context;
     }
 }
-
-
-

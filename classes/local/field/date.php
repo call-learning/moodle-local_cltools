@@ -24,18 +24,19 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
+use coding_exception;
+
 defined('MOODLE_INTERNAL') || die();
 
-class date  extends base  {
+class date extends base {
 
     /**
      * Get the matching formatter type to be used for display
      *
      * @return string|null return the type (and null if no formatter)
      *
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_column_formatter() {
         return (object) [

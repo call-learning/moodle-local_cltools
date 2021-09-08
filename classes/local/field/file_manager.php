@@ -24,12 +24,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class file_manager  extends base  {
-    protected $filemanageroptions =  null;
+class file_manager extends base {
+    protected $filemanageroptions = null;
+
     public function __construct($fielddef) {
         parent::__construct($fielddef);
         if (is_array($fielddef)) {

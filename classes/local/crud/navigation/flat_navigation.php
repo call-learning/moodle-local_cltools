@@ -24,8 +24,12 @@
 
 namespace local_cltools\local\crud\navigation;
 defined('MOODLE_INTERNAL') || die;
+
 use local_cltools\local\crud\entity_utils;
+use moodle_exception;
 use moodle_url;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Class flat_navigation
@@ -47,18 +51,18 @@ class flat_navigation implements persistent_navigation {
      *
      * @param $persistentclass
      * @param null $rooturl
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function __construct($persistentclass, $rooturl = null) {
         $this->persistentclass = $persistentclass;
         if (!$rooturl) {
             global $CFG;
             // Deduce the path from the persistent class path.
-            $rc = new \ReflectionClass($persistentclass);
+            $rc = new ReflectionClass($persistentclass);
             $filepath = dirname($rc->getFileName());
             $foldername = basename($filepath);
             if (strstr($filepath, $CFG->dirroot) === false) {
-                throw new \moodle_exception('pagesdirectoryoutofrootdir', 'local_cltools', '', $filepath);
+                throw new moodle_exception('pagesdirectoryoutofrootdir', 'local_cltools', '', $filepath);
             }
             $filepath = str_replace($CFG->dirroot, '', $filepath);
             while ($filepath != '.' || empty($filepath)) {
@@ -67,17 +71,34 @@ class flat_navigation implements persistent_navigation {
                     $rooturl = "{$filepath}/pages/$foldername";
                     break;
                 }
-                if (file_exists("{$CFG->dirroot}{$filepath}/pages/$foldername" )) {
+                if (file_exists("{$CFG->dirroot}{$filepath}/pages/$foldername")) {
                     $rooturl = "{$filepath}/pages/$foldername";
                     break;
                 }
                 $filepath = dirname($filepath);
             }
             if (empty($rooturl)) {
-                throw new \moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $filepath);
+                throw new moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $filepath);
             }
         }
         $this->set_root_url($rooturl);
+    }
+
+    /**
+     * @return moodle_url
+     * @throws ReflectionException
+     */
+    public function get_list_url() {
+        $rootdir = $this->get_root_url();
+        return new moodle_url("$rootdir/index.php");
+    }
+
+    /**
+     * @return string
+     * @throws ReflectionException
+     */
+    protected function get_root_url() {
+        return $this->rooturl;
     }
 
     /**
@@ -86,31 +107,14 @@ class flat_navigation implements persistent_navigation {
     protected function set_root_url($rooturl) {
         global $CFG;
         if (!file_exists("{$CFG->dirroot}{$rooturl}")) {
-            throw new \moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $rooturl);
+            throw new moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $rooturl);
         }
         $this->rooturl = $rooturl;
     }
 
     /**
-     * @return string
-     * @throws \ReflectionException
-     */
-    protected function get_root_url() {
-        return $this->rooturl;
-    }
-
-    /**
      * @return moodle_url
-     * @throws \ReflectionException
-     */
-    public function get_list_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php");
-    }
-
-    /**
-     * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_add_url() {
         $rootdir = $this->get_root_url();
@@ -119,7 +123,7 @@ class flat_navigation implements persistent_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_delete_url() {
         $rootdir = $this->get_root_url();
@@ -133,10 +137,11 @@ class flat_navigation implements persistent_navigation {
 
     /**
      * @return moodle_url
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function get_view_url() {
         $rootdir = $this->get_root_url();
         return new moodle_url("$rootdir/view.php");
     }
 }
+

@@ -23,6 +23,7 @@
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 /**
  * Class representing a set of filters.
  *
@@ -31,8 +32,17 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class basic_filterset extends filterset {
+    /**
+     * @var array
+     */
+    public $optionalfilters = [];
+    /**
+     * @var array
+     */
+    public $requiredfilters = [];
+
     public function __construct($filtertypes) {
-        foreach($filtertypes as $fieldname => $fdef) {
+        foreach ($filtertypes as $fieldname => $fdef) {
             if (!empty($fdef->required)) {
                 $this->requiredfilters[$fieldname] = $fdef->filterclass;
             } else {
@@ -40,10 +50,6 @@ class basic_filterset extends filterset {
             }
         }
     }
-    /**
-     * @var array
-     */
-    public $optionalfilters = [];
 
     /**
      * Get the optional filters.
@@ -54,10 +60,6 @@ class basic_filterset extends filterset {
     protected function get_optional_filters(): array {
         return $this->optionalfilters;
     }
-    /**
-     * @var array
-     */
-    public $requiredfilters = [];
 
     /**
      * Get the optional filters.

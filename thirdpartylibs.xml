@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <libraries>
 <library>
-    <location>amd/src/table/tabulator-lazy.js</location>
+    <location>amd/src/local/table/tabulator-lazy.js</location>
     <name>Tabulator</name>
     <license>MIT</license>
     <version>4.9.3</version>
     <licenseversion></licenseversion>
 </library>
 <library>
-    <location>amd/src/moment-lazy.js</location>
+    <location>amd/src/local/moment-lazy.js</location>
     <name>Moment</name>
     <license>MIT</license>
     <version>2.29.1</version>

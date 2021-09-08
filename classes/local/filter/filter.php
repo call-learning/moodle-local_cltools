@@ -28,6 +28,7 @@ declare(strict_types=1);
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 use Countable;
 use JsonSerializable;
 use InvalidArgumentException;
@@ -47,23 +48,26 @@ abstract class filter implements Countable, JsonSerializable {
 
     /** @var int All of the following match */
     const JOINTYPE_ALL = 2;
-
-    /** @var string The name of this filter */
-    protected $name = null;
-
-    /** @var string The sql alias of this filter */
-    protected $alias = null;
-
-    /** @var int The join type currently in use */
-    protected $jointype = self::JOINTYPE_ALL;
-
-    /** @var array The list of active filter values */
-    protected $filtervalues = [];
-
     const JOIN_TYPES = [
         self::JOINTYPE_ANY,
         self::JOINTYPE_ALL
     ];
+    /**
+     * Map join types to corresponding SQL values
+     *
+     */
+    const JOIN_TYPE_TO_SQL = [
+        self::JOINTYPE_ALL => 'AND',
+        self::JOINTYPE_ANY => 'OR',
+    ];
+    /** @var string The name of this filter */
+    protected $name = null;
+    /** @var string The sql alias of this filter */
+    protected $alias = null;
+    /** @var int The join type currently in use */
+    protected $jointype = self::JOINTYPE_ALL;
+    /** @var array The list of active filter values */
+    protected $filtervalues = [];
 
     /**
      * Constructor for the generic filter class.
@@ -94,67 +98,6 @@ abstract class filter implements Countable, JsonSerializable {
     }
 
     /**
-     * Return the number of values.
-     *
-     * @return int
-     */
-    public function count(): int {
-        return count($this->filtervalues);
-    }
-
-    /**
-     * Return the name of the filter.
-     *
-     * @return string
-     */
-    public function get_name(): string {
-        return $this->name;
-    }
-
-    /**
-     * Set filter alias
-     */
-    public function set_alias($alias) {
-        $this->alias = $alias;
-    }
-    /**
-     * Return the alias of the filter, mainly for sql queries
-     *
-     * @return string either the set alias or the name of the column.
-     */
-    public function get_alias(): string {
-        if (empty($this->alias)) {
-            return $this->name;
-        }
-        return $this->alias;
-    }
-
-    /**
-     * Specify the type of join to employ for the filter.
-     *
-     * @param int $jointype The join type to use using one of the supplied constants
-     * @return self
-     */
-    public function set_join_type(int $jointype): self {
-        if (array_search($jointype,static::JOIN_TYPES) === false) {
-            throw new InvalidArgumentException('Invalid join type specified');
-        }
-
-        $this->jointype = $jointype;
-
-        return $this;
-    }
-
-    /**
-     * Return the currently specified join type.
-     *
-     * @return int
-     */
-    public function get_join_type(): int {
-        return $this->jointype;
-    }
-
-    /**
      * Add a value to the filter.
      *
      * @param mixed $value
@@ -182,13 +125,83 @@ abstract class filter implements Countable, JsonSerializable {
     }
 
     /**
-     * Sort the filter values to ensure reliable, and consistent output.
+     * Return the number of values.
+     *
+     * @return int
      */
-    protected function sort_filter_values(): void {
-        // Sort the filter values to ensure consistent output.
-        // Note: This is not a locale-aware sort, but we don't need this.
-        // It's primarily for consistency, not for actual sorting.
-        sort($this->filtervalues);
+    public function count(): int {
+        return count($this->filtervalues);
+    }
+
+    /**
+     * Return the alias of the filter, mainly for sql queries
+     *
+     * @return string either the set alias or the name of the column.
+     */
+    public function get_alias(): string {
+        if (empty($this->alias)) {
+            return $this->name;
+        }
+        return $this->alias;
+    }
+
+    /**
+     * Set filter alias
+     */
+    public function set_alias($alias) {
+        $this->alias = $alias;
+    }
+
+    /**
+     * Serialize filter.
+     *
+     * @return mixed|object
+     */
+    public function jsonSerialize() {
+        $currentclass = explode("\\", static::class);
+        $serialised = (object) [
+            'name' => $this->get_name(),
+            'jointype' => $this->get_join_type(),
+            'values' => array_map(function($val) {
+                return json_encode($val);
+            }, $this->get_filter_values()),
+            'type' => end($currentclass)
+        ];
+        return $serialised;
+    }
+
+    /**
+     * Return the name of the filter.
+     *
+     * @return string
+     */
+    public function get_name(): string {
+        return $this->name;
+    }
+
+    /**
+     * Return the currently specified join type.
+     *
+     * @return int
+     */
+    public function get_join_type(): int {
+        return $this->jointype;
+    }
+
+    /**
+     * Specify the type of join to employ for the filter.
+     *
+     * @param int $jointype The join type to use using one of the supplied constants
+     * @return self
+     */
+    public function set_join_type(int $jointype): self {
+        if (array_search($jointype, static::JOIN_TYPES) === false) {
+            throw new InvalidArgumentException('Invalid join type specified');
+        }
+
+        $this->jointype = $jointype;
+
+        return $this;
     }
 
     /**
@@ -202,28 +215,15 @@ abstract class filter implements Countable, JsonSerializable {
     }
 
     /**
-     * Serialize filter.
-     *
-     * @return mixed|object
+     * Sort the filter values to ensure reliable, and consistent output.
      */
-    public function jsonSerialize() {
-        $currentclass = explode("\\", static::class);
-        $serialised = (object) [
-            'name' => $this->get_name(),
-            'jointype' => $this->get_join_type(),
-            'values' => array_map(function($val) { return json_encode($val);}, $this->get_filter_values()),
-            'type' => end($currentclass)
-        ];
-        return $serialised;
+    protected function sort_filter_values(): void {
+        // Sort the filter values to ensure consistent output.
+        // Note: This is not a locale-aware sort, but we don't need this.
+        // It's primarily for consistency, not for actual sorting.
+        sort($this->filtervalues);
     }
-    /**
-     * Map join types to corresponding SQL values
-     *
-     */
-    const JOIN_TYPE_TO_SQL = [
-        filter::JOINTYPE_ALL => 'AND',
-        filter::JOINTYPE_ANY => 'OR',
-    ];
+
     /**
      * Get the sql where / params used for filtering
      *
@@ -232,7 +232,7 @@ abstract class filter implements Countable, JsonSerializable {
      */
     public function get_sql_for_filter($tableprefix = null) {
         $filtervalues = $this->get_filter_values();
-        $joinsql = filter::JOIN_TYPE_TO_SQL[$this->get_join_type()];
+        $joinsql = self::JOIN_TYPE_TO_SQL[$this->get_join_type()];
         $filterwheres = [];
         $filterparams = [];
         foreach ($filtervalues as $fieldval) {

@@ -25,11 +25,19 @@
 namespace local_cltools\local\crud\form;
 defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
+use context_system;
+use core\form\persistent;
+use dml_exception;
+use HTML_QuickForm_element;
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\field\base;
+use moodleform;
+use MoodleQuickForm;
+use ReflectionException;
 use stdClass;
 
-// Custom form element types
+// Custom form element types.
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
@@ -54,7 +62,7 @@ require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
  * @copyright  2015 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class entity_form extends \core\form\persistent {
+abstract class entity_form extends persistent {
 
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
@@ -71,7 +79,7 @@ abstract class entity_form extends \core\form\persistent {
      * @param null $attributes
      * @param bool $editable
      * @param null $ajaxformdata
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
         $editable = true, $ajaxformdata = null) {
@@ -86,76 +94,9 @@ abstract class entity_form extends \core\form\persistent {
     }
 
     /**
-     * Usual properties definition for a persistent form
-     *
-     * @return array|array[]
-     */
-    protected static function get_fields_definition() {
-        return array();
-    }
-
-    /**
-     * @param \MoodleQuickForm $mform
-     * Additional definitions for the form (after we add the fields)
-     */
-    protected function post_field_definitions(&$mform) {
-    }
-
-    /**
-     * @param \MoodleQuickForm $mform
-     * Additional definitions for the form (before we add the fields)
-     */
-    protected function pre_field_definitions(&$mform) {
-    }
-
-    /**
-     * Filter out the foreign fields of the persistent.
-     *
-     * This can be overridden to filter out more complex fields.
-     *
-     * @param stdClass $data The data to filter the fields out of.
-     * @return object.
-     * @throws \coding_exception
-     */
-    protected function filter_data_for_persistent($data) {
-        $filtereddata = parent::filter_data_for_persistent($data);
-        foreach($this->fields as $field) {
-            $field->filter_data_for_persistent($filtereddata);
-        }
-        if(!empty($filtereddata->submitbutton)) {
-            unset($filtereddata->submitbutton);
-        }
-        return $filtereddata;
-    }
-
-    /**
-     * Convert some fields.
-     *
-     * Here we take care of the specific case of the editor
-     *
-     * @param stdClass $data The whole data set.
-     * @return stdClass The amended data set.
-     */
-    protected static function convert_fields(\stdClass $data) {
-        $properties = (static::$persistentclass)::properties_definition();
-        $expandeddata = clone $data;
-        foreach ($data as $field => $value) {
-            // Replace formatted properties.
-            $rawfieldname = static::remove_editor_suffix($field);
-            if ($field != $rawfieldname  && isset($properties[$rawfieldname.'format'])) {
-                $formatfield = $rawfieldname.'format';
-                $expandeddata->$formatfield = $data->{$field}['format'];
-                $expandeddata->$rawfieldname = $data->{$field}['text'];
-                unset($expandeddata->$field);
-            }
-        }
-        return $expandeddata;
-    }
-
-    /**
      * Get dynamic form properties from either form definition or directly from the persistent
      *
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     protected function build_fields_info() {
         $persistentprops = (static::$persistentclass)::properties_definition();
@@ -168,7 +109,7 @@ abstract class entity_form extends \core\form\persistent {
                 $prop['rawtype'] = empty($prop['type']) ? PARAM_RAW : $prop['type'];
                 unset($prop['type']); // Type will be guessed if not set in the format.
                 $format = !empty($prop['format']) ? $prop['format'] : [];
-                $prop = array_merge($prop, $format); // We make sure that the raw type is the
+                $prop = array_merge($prop, $format); // We make sure that the raw type os the default.
                 return $prop;
             },
             $allproperties
@@ -176,7 +117,7 @@ abstract class entity_form extends \core\form\persistent {
 
         foreach ($allproperties as $name => $format) {
 
-            if (strpos($name, 'format') > 0 ) {
+            if (strpos($name, 'format') > 0) {
                 continue; // Skip fields with description in their name.
             }
             $fieldinfo = array_merge(
@@ -186,7 +127,7 @@ abstract class entity_form extends \core\form\persistent {
                 ],
                 !empty($allproperties[$name]) ? $allproperties[$name] : []
             );
-            if (in_array($name.'format', array_keys($allproperties))) {
+            if (in_array($name . 'format', array_keys($allproperties))) {
                 $fieldinfo['type'] = 'editor';
             }
             $possibledefault = '';
@@ -223,6 +164,85 @@ abstract class entity_form extends \core\form\persistent {
     }
 
     /**
+     * Usual properties definition for a persistent form
+     *
+     * @return array|array[]
+     */
+    protected static function get_fields_definition() {
+        return array();
+    }
+
+    /**
+     * Get options for filemanager
+     *
+     * @param $fieldinfo
+     * @return array
+     * @throws dml_exception
+     */
+    protected function filemanager_get_default_options(&$fieldinfo) {
+        $formoptions = ['context' => context_system::instance()];
+        return $formoptions;
+    }
+
+    /**
+     * Get options for editor
+     *
+     * @param $fieldinfo
+     * @return array
+     * @throws dml_exception
+     */
+    protected function editor_get_option($fieldinfo) {
+        global $CFG;
+        $formoptions =
+            [
+                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                'maxbytes' => $CFG->maxbytes,
+                'noclean' => true,
+                'context' => context_system::instance(),
+                'enable_filemanagement' => true,
+                'changeformat' => true
+            ];
+        $formoptions =
+            empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
+        return $formoptions;
+    }
+
+    /**
+     * Convert some fields.
+     *
+     * Here we take care of the specific case of the editor
+     *
+     * @param stdClass $data The whole data set.
+     * @return stdClass The amended data set.
+     */
+    protected static function convert_fields(stdClass $data) {
+        $properties = (static::$persistentclass)::properties_definition();
+        $expandeddata = clone $data;
+        foreach ($data as $field => $value) {
+            // Replace formatted properties.
+            $rawfieldname = static::remove_editor_suffix($field);
+            if ($field != $rawfieldname && isset($properties[$rawfieldname . 'format'])) {
+                $formatfield = $rawfieldname . 'format';
+                $expandeddata->$formatfield = $data->{$field}['format'];
+                $expandeddata->$rawfieldname = $data->{$field}['text'];
+                unset($expandeddata->$field);
+            }
+        }
+        return $expandeddata;
+    }
+
+    const EDITOR_SUFFIX = '_editor';
+
+    /**
+     * Tweak for editor element names as they are created with _editor suffix
+     *
+     */
+    private static function remove_editor_suffix($fieldname) {
+        return (substr($fieldname, -strlen(self::EDITOR_SUFFIX)) == self::EDITOR_SUFFIX) ?
+            substr($fieldname, 0, strlen($fieldname) - strlen(self::EDITOR_SUFFIX)) : $fieldname;
+    }
+
+    /**
      * The form definition.
      */
     public function definition() {
@@ -236,45 +256,101 @@ abstract class entity_form extends \core\form\persistent {
     }
 
     /**
-     * Get options for editor
-     *
-     * @param $fieldinfo
-     * @return array
-     * @throws \dml_exception
+     * @param MoodleQuickForm $mform
+     * Additional definitions for the form (before we add the fields)
      */
-    protected function editor_get_option($fieldinfo) {
-        global $CFG;
-        $formoptions =
-            [
-                'maxfiles' => EDITOR_UNLIMITED_FILES,
-                'maxbytes' => $CFG->maxbytes,
-                'noclean' => true,
-                'context' => \context_system::instance(),
-                'enable_filemanagement' => true,
-                'changeformat' => true
-            ];
-        $formoptions =
-            empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
-        return $formoptions;
+    protected function pre_field_definitions(&$mform) {
     }
 
     /**
-     * Get options for filemanager
-     *
-     * @param $fieldinfo
-     * @return array
-     * @throws \dml_exception
+     * @param MoodleQuickForm $mform
+     * Additional definitions for the form (after we add the fields)
      */
-    protected function filemanager_get_default_options(&$fieldinfo) {
-        $formoptions = ['context' => \context_system::instance()];
-        return $formoptions;
+    protected function post_field_definitions(&$mform) {
+    }
+
+    /**
+     * Set the default values for file
+     *
+     * Either from the optional parameter or the itemid
+     *
+     * @throws ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function prepare_for_files() {
+        $context = context_system::instance();
+        $component = entity_utils::get_component(static::$persistentclass);
+        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
+        $item = $this->get_persistent();
+        $itemdata = $item->to_record();
+        $itemid = $itemdata ? $itemdata->id : 0;
+
+        foreach ($this->fields as $fieldname => $field) {
+            $filearea = $filearearoot . '_' . $fieldname;
+            $field->prepare_files($itemdata, $context, $component, $filearea, $itemid);
+        }
+        $this->set_data($itemdata);
+    }
+
+    /**
+     * Save current data in persitent
+     *
+     * @param $data
+     * @throws coding_exception
+     */
+    public function save_data() {
+        $data = $this->save_submitted_files();
+        $persistentdata = $this->filter_data_for_persistent($data);
+        $persistent = $this->get_persistent();
+        $persistent->from_record((object) $persistentdata);
+        $persistent->save();
+    }
+
+    /**
+     * Save submited files
+     *
+     * @throws ReflectionException
+     * @throws dml_exception
+     */
+    protected function save_submitted_files() {
+        $data = moodleform::get_data();
+        $context = context_system::instance();
+        $component = entity_utils::get_component(static::$persistentclass);
+        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
+        $itemid = $this->get_persistent()->get('id');
+        foreach ($this->fields as $fieldname => $field) {
+            $filearea = $filearearoot . '_' . $fieldname;
+            $field->save_files($data, $context, $component, $filearea, $itemid);
+        }
+        return $data;
+    }
+
+    /**
+     * Filter out the foreign fields of the persistent.
+     *
+     * This can be overridden to filter out more complex fields.
+     *
+     * @param stdClass $data The data to filter the fields out of.
+     * @return object.
+     * @throws coding_exception
+     */
+    protected function filter_data_for_persistent($data) {
+        $filtereddata = parent::filter_data_for_persistent($data);
+        foreach ($this->fields as $field) {
+            $field->filter_data_for_persistent($filtereddata);
+        }
+        if (!empty($filtereddata->submitbutton)) {
+            unset($filtereddata->submitbutton);
+        }
+        return $filtereddata;
     }
 
     /**
      * Get all fields related to file
      *
      * @return array
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     protected function get_file_fields_info() {
         static $fields = [];
@@ -296,81 +372,15 @@ abstract class entity_form extends \core\form\persistent {
     /**
      * Tweak for editor element names as they are created with _editor suffix
      *
-     * @param \HTML_QuickForm_element $e
+     * @param HTML_QuickForm_element $e
      * @return false|string
      */
-    private function get_real_element_name(\HTML_QuickForm_element $e) {
+    private function get_real_element_name(HTML_QuickForm_element $e) {
         $elementname = $e->getName();
         if ($e->getType() == 'editor') {
             return static::remove_editor_suffix($elementname);
         } else {
             return $elementname;
         }
-    }
-
-    /**
-     * Tweak for editor element names as they are created with _editor suffix
-     *
-     */
-    private static function remove_editor_suffix($fieldname) {
-        $EDITOR_SUFFIX = '_editor';
-        return (substr($fieldname, -strlen($EDITOR_SUFFIX)) == $EDITOR_SUFFIX) ?
-            substr($fieldname, 0, strlen($fieldname) - strlen($EDITOR_SUFFIX)) : $fieldname;
-    }
-
-    /**
-     * Set the default values for file
-     *
-     * Either from the optional parameter or the itemid
-     *
-     * @throws \ReflectionException
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public function prepare_for_files() {
-        $context = \context_system::instance();
-        $component = entity_utils::get_component(static::$persistentclass);
-        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
-        $item = $this->get_persistent();
-        $itemdata = $item->to_record();
-        $itemid = $itemdata ? $itemdata->id : 0;
-
-        foreach ($this->fields as $fieldname => $field) {
-            $filearea = $filearearoot . '_' . $fieldname;
-            $field->prepare_files($itemdata, $context, $component, $filearea, $itemid);
-        }
-        $this->set_data($itemdata);
-    }
-
-    /**
-     * Save submited files
-     *
-     * @throws \ReflectionException
-     * @throws \dml_exception
-     */
-    protected function save_submitted_files() {
-        $data = \moodleform::get_data();
-        $context = \context_system::instance();
-        $component = entity_utils::get_component(static::$persistentclass);
-        $filearearoot = entity_utils::get_persistent_prefix(static::$persistentclass);
-        $itemid = $this->get_persistent()->get('id');
-        foreach ($this->fields as $fieldname => $field) {
-            $filearea = $filearearoot . '_' . $fieldname;
-            $field->save_files($data, $context, $component, $filearea, $itemid);
-        }
-        return $data;
-    }
-
-    /**
-     * Save current data in persitent
-     * @param $data
-     * @throws \coding_exception
-     */
-    public function save_data(){
-        $data = $this->save_submitted_files();
-        $persistentdata = $this->filter_data_for_persistent($data);
-        $persistent = $this->get_persistent();
-        $persistent->from_record((object) $persistentdata);
-        $persistent->save();
     }
 }

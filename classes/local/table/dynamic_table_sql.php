@@ -26,58 +26,58 @@
  */
 
 namespace local_cltools\local\table;
+defined('MOODLE_INTERNAL') || die;
 global $CFG;
 require_once($CFG->libdir . '/tablelib.php');
-
+use coding_exception;
+use context_system;
+use dml_exception;
+use lang_string;
 use local_cltools\local\field\base;
 use local_cltools\local\filter\filterset;
 use table_sql;
+
 defined('MOODLE_INTERNAL') || die;
+
 abstract class dynamic_table_sql extends table_sql {
 
     /**
      * @var bool $iseditable is table editable ?
      */
     protected $iseditable = false;
-
+    /**
+     * @var filterset The currently applied filerset
+     * This is required for dynamic tables, but can be used by other tables too if desired.
+     */
+    protected $filterset = null;
+    /**
+     * @var array field defintions
+     */
+    protected $fields = [];
+    /**
+     * @var array|mixed|null defined actions
+     */
+    protected $actionsdefs = [];
+    /**
+     * @var array $sortfieldaliases an associative array that will set the right
+     *  sql alias for this table if needed (sorting)
+     */
+    protected $sortfieldaliases = [];
+    /**
+     * @var array $fieldaliases an associative array that will set the right
+     *  sql alias for this table if needed (filters)
+     */
+    protected $fieldaliases = [];
     /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
      * avoid hitting the DB too much
      */
     private $userfullnames = array();
 
     /**
-     * @var filterset The currently applied filerset
-     * This is required for dynamic tables, but can be used by other tables too if desired.
-     */
-    protected $filterset = null;
-
-    /**
-     * @var array field defintions
-     */
-    protected $fields = [];
-
-    /**
-     * @var array|mixed|null defined actions
-     */
-    protected $actionsdefs = [];
-
-    /**
-     * @var array $sortfieldaliases an associative array that will set the right
-     *  sql alias for this table if needed (sorting)
-     */
-    protected $sortfieldaliases = [];
-
-    /**
-     * @var array $fieldaliases an associative array that will set the right
-     *  sql alias for this table if needed (filters)
-     */
-    protected $fieldaliases = [];
-
-    /**
      * Sets up the page_table parameters.
      *
      * @param string $uniqueid unique id of form.
-     * @throws \coding_exception
+     * @throws coding_exception
      * @see page_list::get_filter_definition() for filter definition
      */
     public function __construct($uniqueid,
@@ -102,6 +102,34 @@ abstract class dynamic_table_sql extends table_sql {
         ];
         $this->set_initial_sql();
     }
+
+    /**
+     * Table columns
+     *
+     * @return array[]
+     * @throws coding_exception
+     */
+    protected function get_table_columns_definitions() {
+        // Create the related persistent filter form.
+        $cols = [];
+        $headers = [];
+
+        $this->setup_fields();
+        foreach ($this->fields as $name => $field) {
+            $cols[] = $name;
+            $headers[] = $field->get_display_name();
+        }
+        if (!in_array('id', $cols)) {
+            $cols[] = 'id';
+        }
+        $headers[] = get_string('id', 'local_cltools');
+        return [$cols, $headers];
+    }
+
+    /**
+     * Setup the fields for this table
+     */
+    abstract protected function setup_fields();
 
     protected function set_initial_sql() {
         // Empty in this class but used in subclasses.
@@ -134,10 +162,10 @@ abstract class dynamic_table_sql extends table_sql {
      * (such as for example a filter needs to be set in order not to return data a user should not see).
      *
      *
-     * @throws \dml_exception
+     * @throws dml_exception
      */
-    public function validate_access($writeaccess=false) {
-        external::validate_context(\context_system::instance());
+    public function validate_access($writeaccess = false) {
+        external::validate_context(context_system::instance());
     }
 
     /**
@@ -181,6 +209,7 @@ abstract class dynamic_table_sql extends table_sql {
      *
      * @return type?
      */
+    // phpcs:ignore Squiz.Scope.MethodScope.Missing
     function setup() {
         if ($this->use_pages) {
             $currpage = $this->currpage;
@@ -192,6 +221,32 @@ abstract class dynamic_table_sql extends table_sql {
     }
 
     /**
+     * Main method to create the underlying query (SQL)
+     *
+     * @param int $pagesize
+     * @param bool $useinitialsbar
+     */
+    public function query_db($pagesize, $useinitialsbar = true) {
+        list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
+        if ($additionalwhere) {
+            if (!empty($this->sql->where)) {
+                $this->sql->where .= " AND ($additionalwhere)";
+            } else {
+                $this->sql->where = "$additionalwhere";
+            }
+            $this->sql->params += $additionalparams;
+        }
+        $this->sql->fields = "DISTINCT " . $this->sql->fields;
+        if ($this->countsql === null) {
+            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields}
+            FROM {$this->sql->from}
+            WHERE {$this->sql->where}) squery";
+            $this->countparams = $this->sql->params;
+        }
+        parent::query_db($pagesize, $useinitialsbar);
+    }
+
+    /**
      * Sets the pagesize variable to the given integer, the totalrows variable
      * to the given integer, and the use_pages variable to true.
      *
@@ -199,6 +254,7 @@ abstract class dynamic_table_sql extends table_sql {
      * @param int $total
      * @return void
      */
+    // phpcs:ignore Squiz.Scope.MethodScope.Missing
     function pagesize($perpage, $total) {
         if ($this->use_pages) {
             $this->pagesize = $perpage;
@@ -207,49 +263,8 @@ abstract class dynamic_table_sql extends table_sql {
         }
     }
 
-    /**
-     * Table columns
-     *
-     * @return array[]
-     * @throws \coding_exception
-     */
-    protected function get_table_columns_definitions() {
-        // Create the related persistent filter form.
-        $cols = [];
-        $headers = [];
-
-        $this->setup_fields();
-        foreach ($this->fields as $name => $field) {
-            $cols[] = $name;
-            $headers[] = $field->get_display_name();
-        }
-        if (!in_array('id', $cols)) {
-            $cols[] = 'id';
-        }
-        $headers[] = get_string('id', 'local_cltools');
-        return [$cols, $headers];
-    }
-
-    /**
-     * Setup the fields for this table
-     */
-    abstract protected function setup_fields();
-
     public function get_filter_set() {
         return $this->filterset;
-    }
-
-    /**
-     * @throws \coding_exception
-     */
-    protected function setup_other_fields() {
-        if ($this->actionsdefs) {
-            $this->fields['actions'] = base::get_instance_from_def('html', [
-                'fullname' => get_string('actions', 'local_cltools'),
-                'fieldname' => 'actions',
-                'rawtype' => PARAM_RAW,
-            ]);
-        }
     }
 
     /**
@@ -267,14 +282,14 @@ abstract class dynamic_table_sql extends table_sql {
             ];
             // Add formatter, filter, editor...
             /* @var base $field */
-            foreach (['formatter','filter', 'editor', 'validator'] as $modifier) {
+            foreach (['formatter', 'filter', 'editor', 'validator'] as $modifier) {
                 $callback = "get_column_$modifier";
-                $modifiervalues = (array)$field->$callback();
+                $modifiervalues = (array) $field->$callback();
                 if (!$column->isvisible && $modifiervalues) {
                     if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
                         continue;
                     }
-                    foreach($modifiervalues  as $modifiername => $value) {
+                    foreach ($modifiervalues as $modifiername => $value) {
                         if (!$column->isvisible && $field->$callback()) {
                             if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
                                 continue;
@@ -329,15 +344,85 @@ abstract class dynamic_table_sql extends table_sql {
     }
 
     /**
+     * Set the value of a specific row.
+     *
+     * @param $rowid
+     * @param $fieldname
+     * @param $newvalue
+     * @param $oldvalue
+     * @return bool
+     */
+    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
+        return false;
+    }
+
+    /**
+     * Change the sort if there was any alias changes.
+     *
+     * @return SQL fragment that can be used in an ORDER BY clause.
+     */
+    public function get_sort_columns() {
+        $sorts = parent::get_sort_columns();
+        foreach ($sorts as $colname => $sort) {
+            if (!empty($this->sortfieldaliases[$colname])) {
+                unset($sorts[$colname]);
+                $sorts[$this->sortfieldaliases[$colname]] = $sort;
+            }
+        }
+        return $sorts;
+    }
+
+    /**
+     * Check if the value is valid for this row, column
+     *
+     * @param $rowid
+     * @param $fieldname
+     * @param $newvalue
+     * @return bool
+     */
+    public function is_valid_value($rowid, $fieldname, $newvalue) {
+        return false;
+    }
+
+    /**
+     * Check if table editable
+     *
+     * @returns bool
+     */
+    public function is_editable() {
+        return $this->iseditable;
+    }
+
+    /**
+     * @throws coding_exception
+     */
+    protected function setup_other_fields() {
+        if ($this->actionsdefs) {
+            $this->fields['actions'] = base::get_instance_from_def('html', [
+                'fullname' => get_string('actions', 'local_cltools'),
+                'fieldname' => 'actions',
+                'rawtype' => PARAM_RAW,
+            ]);
+        }
+    }
+
+    /**
+     * Check if the value is valid for this row, column
+     *
+     * @param $rowid
+     * @param $oldvalue
+     */
+
+    /**
      * Gets the user full name helper
      *
      * This function is useful because, in the unlikely case that the user is
      * not already loaded in $this->userfullname it will fetch it from db.
      *
      * @param int $userid
-     * @return false|\lang_string|mixed|string
-     * @throws \coding_exception
-     * @throws \dml_exception
+     * @return false|lang_string|mixed|string
+     * @throws coding_exception
+     * @throws dml_exception
      */
     protected function get_user_fullname($userid) {
         global $DB;
@@ -372,7 +457,7 @@ abstract class dynamic_table_sql extends table_sql {
      *
      * @param $time
      * @return string
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     protected function get_time($time) {
         if (empty($this->download)) {
@@ -381,88 +466,5 @@ abstract class dynamic_table_sql extends table_sql {
             $dateformat = get_string('strftimedatetimeshort', 'core_langconfig');
         }
         return userdate($time, $dateformat);
-    }
-
-    /**
-     * Main method to create the underlying query (SQL)
-     *
-     * @param int $pagesize
-     * @param bool $useinitialsbar
-     */
-    public function query_db($pagesize, $useinitialsbar = true) {
-        list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
-        if ($additionalwhere) {
-            if (!empty($this->sql->where)) {
-                $this->sql->where .= " AND ($additionalwhere)";
-            } else {
-                $this->sql->where = "$additionalwhere";
-            }
-            $this->sql->params += $additionalparams;
-        }
-        $this->sql->fields = "DISTINCT " . $this->sql->fields;
-        if ($this->countsql === null) {
-            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields}
-            FROM {$this->sql->from}
-            WHERE {$this->sql->where}) squery";
-            $this->countparams = $this->sql->params;
-        }
-        parent::query_db($pagesize, $useinitialsbar);
-    }
-
-    /**
-     * Set the value of a specific row.
-     *
-     * @param $rowid
-     * @param $fieldname
-     * @param $newvalue
-     * @param $oldvalue
-     * @return bool
-     */
-    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
-        return false;
-    }
-
-
-    /**
-     * Change the sort if there was any alias changes.
-     *
-     * @return SQL fragment that can be used in an ORDER BY clause.
-     */
-    public function get_sort_columns() {
-        $sorts =  parent::get_sort_columns();
-        foreach($sorts as $colname => $sort) {
-            if (!empty($this->sortfieldaliases[$colname])) {
-                unset($sorts[$colname]);
-                $sorts[$this->sortfieldaliases[$colname]] = $sort;
-            }
-        }
-        return $sorts;
-    }
-
-    /**
-     * Check if the value is valid for this row, column
-     *
-     * @param $rowid
-     * @param $oldvalue
-     */
-
-    /**
-     * Check if the value is valid for this row, column
-     * @param $rowid
-     * @param $fieldname
-     * @param $newvalue
-     * @return bool
-     */
-    public function is_valid_value($rowid, $fieldname, $newvalue) {
-        return false;
-    }
-
-    /**
-     * Check if table editable
-     *
-     * @returns bool
-     */
-    public function is_editable() {
-        return $this->iseditable;
     }
 }

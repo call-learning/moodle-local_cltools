@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
+
 use TypeError;
 
 /**
@@ -72,7 +73,7 @@ class integer_filter extends filter {
     protected function get_sql_filter_element($fieldval, $tableprefix = null) {
         static $paramcount = 0;
 
-        $paramname = "intergerp_". ($paramcount++);
+        $paramname = "intergerp_" . ($paramcount++);
         $params = [];
         $where = " {$this->get_alias()}  =  :$paramname ";
         $params[$paramname] = intval($fieldval->value);
