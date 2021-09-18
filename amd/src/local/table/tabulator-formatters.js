@@ -27,12 +27,18 @@ export const TABULATOR_FORMATTERS = {
         return cell.getValue().toUpperCase();
     },
     datets: function (cell, formatterParams) {
+        if (cell.getValue() == 0) {
+            return '';
+        }
         const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
         moment.locale(currentLang);
         return moment.unix(cell.getValue()).format(formatterParams.outputFormat);
         // From Unix TS to displayable date.
     },
     datetimets: function (cell, formatterParams) {
+        if (cell.getValue() == 0) {
+            return '';
+        }
         const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
         const timestamp = Number.parseInt(cell.getValue());
         moment.locale(currentLang);

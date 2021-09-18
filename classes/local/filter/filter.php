@@ -240,7 +240,7 @@ abstract class filter implements Countable, JsonSerializable {
             $filterwheres[] = $wheres;
             $filterparams += $params;
         }
-        return array(join(" $joinsql ", $filterwheres), $filterparams);
+        return array("(". join(" $joinsql ", $filterwheres). ")", $filterparams);
     }
 
     /**
