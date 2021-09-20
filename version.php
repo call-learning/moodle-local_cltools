@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_cltools';
 $plugin->release = '1.0.0';
-$plugin->version = 2021010508;
+$plugin->version = 2021092001;
 $plugin->requires = 2019111800;
 $plugin->maturity = MATURITY_ALPHA;
