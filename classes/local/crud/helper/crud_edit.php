@@ -88,16 +88,14 @@ class crud_edit extends base {
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
         // Add a new entity or edit it.
-        $entity = null;
-        $mform = null;
         $id = required_param('id', PARAM_INT);
-        $entity = $this->refpersistentclass->newInstance($id);
-        $mform = $this->instanciate_related_form($this->actionurl, ['persistent' => $entity]);
+        $mform = $this->instanciate_related_form($id);
         $mform->prepare_for_files();
         if ($mform->is_cancelled()) {
             redirect($this->persistentnavigation->get_list_url());
         } else if ($data = $mform->get_data()) {
             try {
+                $entity = $this->refpersistentclass->newInstance($id);
                 $mform->save_data();
                 if ($postprocesscb && is_callable($postprocesscb)) {
                     $postprocesscb($entity, $data);

@@ -32,10 +32,10 @@ use core_renderer;
 use dml_exception;
 use html_writer;
 use lang_string;
-use local_cltools\local\crud\form\entity_form;
-use local_cltools\local\crud\navigation\flat_navigation;
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
+use local_cltools\local\crud\form\entity_form;
+use local_cltools\local\crud\navigation\flat_navigation;
 use moodle_exception;
 use moodle_page;
 use moodle_url;
@@ -150,8 +150,12 @@ abstract class base {
      * @return entity_form|object
      * @throws ReflectionException*
      */
-    public function instanciate_related_form(...$formparameters) {
-        return $this->refpersistentformclass->newInstanceArgs($formparameters);
+    public function instanciate_related_form($persistentid = 0, ...$formparameters) {
+        $entity = null;
+        if ($persistentid) {
+            $entity = $this->refpersistentclass->newInstance($persistentid);
+        }
+        return $this->refpersistentformclass->newInstanceArgs([$this->actionurl, ['persistent' => $entity]] + $formparameters);
     }
 
     /**

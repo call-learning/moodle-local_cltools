@@ -15,35 +15,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * CRUD Helper class tests.
+ * Persistent utils base test case
  *
  * @package     local_cltools
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools;
-// See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
+namespace local_cltools\test;
 defined('MOODLE_INTERNAL') || die();
-
-use local_cltools\local\crud\helper\base as crud_helper;
-global $CFG;
-require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
 use local_cltools\simple\entity;
 
 /**
- * CRUD Helper class tests.
+ * Persistent utils test case
+ *
+ * This will add autoloading for the simple entity class
  *
  * @package     local_cltools
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_crud_helper_testcase extends \advanced_testcase {
+class base_crud_test extends \advanced_testcase {
     /**
      * Setup persistent table
      */
     public function setUp() {
         parent::setUp();
+        parent::setUp();
+        spl_autoload_register(function() {
+            global $CFG;
+            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
+            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
+            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
+            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
+            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');
+        });
         $this->resetAfterTest();
         entity::delete_table();
         entity::create_table();
@@ -56,7 +62,5 @@ class local_cltools_crud_helper_testcase extends \advanced_testcase {
         entity::delete_table();
         parent::tearDown();
     }
-
-
 
 }

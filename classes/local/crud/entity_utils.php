@@ -195,7 +195,7 @@ class entity_utils {
      * @throws dml_exception
      */
     public static function get_files_urls($entityid, $filearea, $component = null, $context = null) {
-        $context = empty($context) ? context_system::instance()->id : $context;
+        $context = empty($context) ? context_system::instance() : $context;
         $files = static::get_files($entityid, $filearea, $component, $context);
         $imagesurls = [];
         foreach ($files as $image) {

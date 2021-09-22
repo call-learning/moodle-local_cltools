@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Delete Entity template page
+ * Create related table for this entity
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -28,24 +28,15 @@ require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
 debugging() || (defined('PHPUNIT_TEST') && PHPUNIT_TEST) || defined('BEHAT_SITE_RUNNING') || die();
 
 use local_cltools\local\crud\helper\base as crud_helper;
-use local_cltools\local\crud\helper\crud_delete;
+use local_cltools\local\crud\helper\crud_add;
 
 global $CFG, $OUTPUT, $PAGE;
-require_login();
+require_login();;
 
 // To make sure the table is created.
+\local_cltools\local\simple\entity::delete_table();
 \local_cltools\local\simple\entity::create_table();
-
-$crudmgmt = crud_helper::create(
-    '\\local_cltools\\local\\simple\\entity',
-    crud_delete::ACTION
-);
-
-
-$crudmgmt->setup_page($PAGE);
-
-$out = $crudmgmt->action_process();
-
+/* @var core_renderer $OUTPUT */
 echo $OUTPUT->header();
-echo $out;
+echo $OUTPUT->single_button(new moodle_url('/local/cltools/test/fixtures/index.php'), get_string('continue'));
 echo $OUTPUT->footer();

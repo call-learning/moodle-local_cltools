@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\simple;
+namespace local_cltools\simple;
 defined('MOODLE_INTERNAL') || die();
 
 use local_cltools\local\crud\entity_exporter;
@@ -54,6 +54,6 @@ class exporter extends entity_exporter {
      * @return string
      */
     protected static function define_class() {
-        return '\\local_cltools\\local\\simple\\entity';
+        return entity::class;
     }
 }

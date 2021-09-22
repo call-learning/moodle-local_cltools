@@ -25,8 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Replace autoloading.
-require_once(__DIR__.'/fixtures/simple/entity.php');
-require_once(__DIR__.'/fixtures/simple/table.php');
-require_once(__DIR__.'/fixtures/simple/exporter.php');
-require_once(__DIR__.'/fixtures/simple/external.php');
-require_once(__DIR__.'/fixtures/simple/form.php');
+global $CFG;
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');

@@ -23,8 +23,9 @@
  */
 namespace local_cltools; // See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
 defined('MOODLE_INTERNAL') || die();
-use local_cltools\local\crud\helper as crud_helper;
 global $CFG;
+require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+use local_cltools\simple\entity;
 
 /**
  * Persistent form test case
@@ -38,12 +39,17 @@ class local_cltools_entity_form_testcase extends \advanced_testcase {
      * Setup persistent table
      */
     public function setUp() {
-        \local_cltools\sample\simple\entity::create_table(true);
+        parent::setUp();
         $this->resetAfterTest();
+        entity::delete_table();
+        entity::create_table();
     }
 
+    /**
+     * Remove persistent table
+     */
     public function tearDown() {
-        \local_cltools\sample\simple\entity::delete_table();
+        entity::delete_table();
         parent::tearDown();
     }
 

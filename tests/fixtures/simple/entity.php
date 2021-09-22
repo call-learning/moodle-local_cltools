@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\simple;
+namespace local_cltools\simple;
 
 use lang_string;
 use xmldb_table;
@@ -93,21 +93,18 @@ class entity extends \core\persistent {
     /**
      * This is specific to the test environment. We create the table structure.
      *
-     * @param false $dropexistingtable
+     * If the table exist we leave it as it is.
+     *
      * @throws \ddl_exception
      * @throws \ddl_table_missing_exception
      */
-    public static function create_table($dropexistingtable = false) {
+    public static function create_table() {
         global $DB;
         $dbman = $DB->get_manager();
         $table = new xmldb_table(static::TABLE);
 
         if ($dbman->table_exists($table)) {
-            if ($dropexistingtable) {
-                $dbman->drop_table($table);
-            } else {
-                return;
-            }
+           return;
         }
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, null, null, null);

@@ -27,7 +27,7 @@
 namespace local_cltools\local\field;
 defined('MOODLE_INTERNAL') || die();
 
-class html extends base {
+class html_template extends base {
     /**
      * Get the matching editor type to be used in the table
      *

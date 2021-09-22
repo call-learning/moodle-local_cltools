@@ -227,7 +227,11 @@ abstract class dynamic_table_sql extends table_sql {
      * @param bool $useinitialsbar
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-        list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
+        $additionalwhere = null;
+        $additionalparams = [];
+        if (!empty( $this->filterset)) {
+            list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
+        }
         if ($additionalwhere) {
             if (!empty($this->sql->where)) {
                 $this->sql->where .= " AND ($additionalwhere)";

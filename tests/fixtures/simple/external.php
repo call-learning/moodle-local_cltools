@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\simple;
+namespace local_cltools\simple;
 
 use external_api;
 use external_multiple_structure;

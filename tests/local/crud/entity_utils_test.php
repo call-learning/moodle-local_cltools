@@ -21,19 +21,12 @@
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_cltools;
+
+namespace local_cltools\local\crud;
+
+use local_cltools\test\base_crud_test;
 
 defined('MOODLE_INTERNAL') || die();
-// See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
-require_once(__DIR__ . '/fixtures/simple/entity.php');
-
-use context_user;
-use local_cltools\local\crud\entity_utils;
-use local_cltools\simple\entity;
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
 
 /**
  * Persistent utils test case
@@ -42,19 +35,7 @@ global $CFG;
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_entity_utils_testcase extends \advanced_testcase {
-    /**
-     * Setup persistent table
-     */
-    public function setUp() {
-        entity::create_table(true);
-        $this->resetAfterTest();
-    }
-
-    public function tearDown() {
-        entity::delete_table();
-        parent::tearDown();
-    }
+class entity_utils_test extends base_crud_test {
 
     public function test_get_persistent_prefix() {
         $persistentprefix = entity_utils::get_persistent_prefix("\\local_cltools\\simple\\entity");
@@ -70,7 +51,7 @@ class local_cltools_entity_utils_testcase extends \advanced_testcase {
     }
 
     public function test_external_get_filter_generic_parameters() {
-        $this->assertnotNull(static::external_get_filter_generic_parameters());
+        $this->assertnotNull(entity_utils::external_get_filter_generic_parameters());
     }
 
     public function test_external_get_files_url() {
@@ -98,7 +79,6 @@ class local_cltools_entity_utils_testcase extends \advanced_testcase {
             $files[1]->out());
         $this->delete_files('testfilearea', 'local_cltools');
     }
-
 
     /**
      * Upload a set of files in a given area

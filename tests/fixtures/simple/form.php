@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\simple;
+namespace local_cltools\simple;
 
 use local_cltools\local\crud\form\entity_form;
 
@@ -59,7 +59,7 @@ class form extends entity_form {
     }
 
     /** @var string The fully qualified classname. */
-    protected static $persistentclass = '\\local_cltools\\local\\simple\\entity';
+    protected static $persistentclass = entity::class;
 
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton', 'files');

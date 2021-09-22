@@ -22,7 +22,7 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\simple;
+namespace local_cltools\simple;
 
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
@@ -40,7 +40,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class table extends entity_table {
     /** @var string The fully qualified classname. */
-    protected static $persistentclass = '\\local_cltools\\local\\simple\\entity';
+    protected static $persistentclass = entity::class;
 
     /**
      * List columns
