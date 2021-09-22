@@ -148,7 +148,7 @@ class external extends external_api {
                 $rows
             )
         ];
-        if ($instance->use_pages) {
+        if ($instance->use_pages && $instance->pagesize > 0) {
             $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
         }
         return $returnval;
