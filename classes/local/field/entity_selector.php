@@ -14,47 +14,59 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+
+use dml_exception;
+use local_cltools\local\crud\entity_utils;
+use MoodleQuickForm;
+use ReflectionException;
+
+defined('MOODLE_INTERNAL') || die();
 /**
- * Base field
- *
- * For input and output
+ * Entity selector field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class entity_selector extends persistent_field {
 
-namespace local_cltools\local\field;
-
-use dml_exception;
-use local_cltools\local\crud\entity_utils;
-use ReflectionException;
-
-defined('MOODLE_INTERNAL') || die();
-
-class entity_selector extends base {
+    /**
+     * @var string|null $entityclass
+     */
     protected $entityclass = "";
+    /**
+     * @var string $displayfield
+     */
     protected $displayfield = "";
 
-    public function __construct($fielddef) {
-        parent::__construct($fielddef);
-        if (is_array($fielddef)) {
-            $fielddef = (object) $fielddef;
-        }
-        $this->entityclass = empty($fielddef->format['entityclass']) ? null : $fielddef->format['entityclass'];
-        $this->displayfield = empty($fielddef->format['displayfield']) ? 'id' : $fielddef->format['displayfield'];
+    /**
+     * Construct the field from its definition
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * definiton
+     */
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+            'required' => false,
+            'rawtype' => PARAM_TEXT,
+            'default' => null
+        ];
+        $fielddef = $this->init($fielnameordef, $standarddefaults);
+        $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
+        $this->displayfield = empty($fielddef->displayfield) ? 'id' : $fielddef->displayfield;
     }
+
 
     /**
      * Add element onto the form
      *
-     * @param $mform
-     * @return mixed
-     * @throws dml_exception
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
      */
-    public function internal_add_form_element(&$mform) {
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
         $choices = $this->get_entities();
-        $mform->addElement('searchableselector', $this->fieldname, $this->fullname, $choices);
+        $mform->addElement('searchableselector', $this->get_name(), $this->get_display_name(), $choices);
+        parent::internal_form_add_element($mform);
     }
 
     /**
@@ -150,7 +162,7 @@ class entity_selector extends base {
     public function get_additional_util_field() {
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
         $fieldname = $aliasname . $this->displayfield;
-        $field = base::get_instance_from_def($fieldname, [
+        $field = persistent_field::get_instance_from_def($fieldname, [
                 "fullname" => $fieldname,
                 "rawtype" => PARAM_RAW,
                 "type" => "hidden"

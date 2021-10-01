@@ -14,29 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+defined('MOODLE_INTERNAL') || die();
 /**
- * Base field
- *
- * For input and output
+ * Hidden field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
-
-class hidden extends base {
+class hidden extends persistent_field {
     /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
+     * Form field type for this field
      */
-    public function internal_add_form_element(&$mform) {
-        $mform->addElement('hidden', $this->fieldname);
-    }
+    const FORM_FIELD_TYPE = 'hidden';
 
     /**
      * Check if the field is visible or not

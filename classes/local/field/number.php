@@ -14,28 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Base field
- *
- * For input and output
+ * Number field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
-
-class number extends base {
+class number extends persistent_field {
     /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
+     * Construct the field from its definition
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * definiton
      */
-    public function internal_add_form_element(&$mform) {
-        $mform->addElement('text', $this->fieldname, $this->fullname);
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+            'required' => false,
+            'rawtype' => PARAM_FLOAT,
+            'default' => 0
+        ];
+        $this->init($fielnameordef, $standarddefaults);
     }
 
     /**

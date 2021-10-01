@@ -13,45 +13,45 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace local_cltools\local\field\adapter;
+defined('MOODLE_INTERNAL') || die;
 
 /**
- * Base formatter
- *
- * For input and output
+ * Adapter for Tabulator and fields
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
-
-class text extends persistent_field {
+trait tabulator_default_trait {
     /**
-     * Construct the field from its definition
-     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
-     * definiton
+     * Get the matching filter type and parameters to be used for display
+     *
+     *
+     * @link  http://tabulator.info/docs/4.9/filter
+     * @return object|null return the parameters (or null if no matching filter)
+     *
      */
-    public function __construct($fielnameordef) {
-        $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_TEXT,
-            'default' => ''
-        ];
-        $this->init($fielnameordef, $standarddefaults);
+    public function get_column_filter() {
+        $editor = $this->get_column_editor();
+        if ($editor) {
+            return (object) [
+                'filter' => $editor->editor,
+                'filterParams' => $editor->editorParams
+            ];
+        }
+        return null;
     }
+
     /**
-     * Get the matching editor type to be used in the table
+     * Get the matching editor type and parameters to be used in the table
      *
      * @link  http://tabulator.info/docs/4.9/editor
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
     public function get_column_editor() {
-        return (object) [
-            'editor' => 'input'
-        ];
+        return null;
     }
 
     /**
@@ -62,21 +62,18 @@ class text extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'textarea'
-        ];
+        return null;
     }
 
     /**
-     * Get the matching validator type to be used in the table
+     * Get the matching editor type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
+     * @link http://tabulator.info/docs/4.9/validate
+     * @return object|null return the parameters (or null if no matching validator)
      *
      */
     public function get_column_validator() {
-        return (object) [
-            'validator' => 'string'
-        ];
+        return null;
     }
 
 }

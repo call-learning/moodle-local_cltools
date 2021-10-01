@@ -14,37 +14,44 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+use MoodleQuickForm;
+
+defined('MOODLE_INTERNAL') || die();
 /**
- * Base field
- *
- * For input and output
+ * File manager field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class file_manager extends persistent_field {
+    /**
+     * Construct the field from its definition
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * definiton
+     */
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+            'required' => false,
+            'rawtype' => PARAM_INT,
+            'default' => null
+        ];
 
-namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
-
-class file_manager extends base {
-    protected $filemanageroptions = null;
-
-    public function __construct($fielddef) {
-        parent::__construct($fielddef);
-        if (is_array($fielddef)) {
-            $fielddef = (object) $fielddef;
-        }
+        $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->filemanageroptions = empty($fielddef->filemanageroptions) ? [] : $fielddef->filemanageroptions;
     }
+
+    protected $filemanageroptions = null;
 
     /**
      * Add element onto the form
      *
-     * @param $mform
-     * @return mixed
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
      */
-    protected function internal_add_form_element(&$mform) {
-        $mform->addElement('filemanager', $this->fieldname, $this->fullname, $this->filemanageroptions);
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $mform->addElement('filemanager', $this->get_name(), $this->get_display_name(), $this->filemanageroptions);
+        parent::internal_form_add_element($mform);
     }
 }

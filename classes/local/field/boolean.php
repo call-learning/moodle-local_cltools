@@ -14,29 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Boolean field
- *
- * For input and output
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class boolean extends persistent_field {
 
-namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
-
-class boolean extends base {
     /**
-     * Add element onto the form
+     * Construct the field from its definition
      *
-     * @param $mform
-     * @return mixed
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * definiton
      */
-    public function internal_add_form_element(&$mform) {
-        $mform->addElement('advcheckbox', $this->fieldname, $this->fullname);
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+            'required' => false,
+            'rawtype' => PARAM_BOOL,
+            'default' => false
+        ];
+        $this->init($fielnameordef, $standarddefaults);
     }
+
+    /**
+     * Form field type for this field
+     */
+    const FORM_FIELD_TYPE = 'advcheckbox';
 
     /**
      * Get the matching formatter type to be used for display
@@ -70,5 +78,67 @@ class boolean extends base {
                 'tristate' => true
             ]
         ];
+    }
+
+    /**
+     * Return true if the value is truish
+     *
+     * @param mixed $value
+     * @return bool
+     * @throws \coding_exception
+     */
+    protected function is_true_value($value) {
+        return in_array($value, [
+            get_string('truevalue', 'local_cltools'),
+            true,
+            1,
+            'true'
+        ], true);
+    }
+
+    /**
+     * Return false if the value is falsish
+     *
+     * @param mixed $value
+     * @return bool
+     * @throws \coding_exception
+     */
+    protected function is_flase_value($value) {
+        return in_array($value, [
+            get_string('falsevalue', 'local_cltools'),
+            false,
+            0,
+            'false'
+        ], true);
+    }
+
+    /**
+     * Return a printable version of the current value
+     *
+     * @param $value
+     * @param mixed $additionalcontext
+     * @return mixed
+     */
+    public function format_value($value, $additionalcontext = null) {
+        if (is_string($value)) {
+            $value = strtolower($value);
+        }
+        if ($this->is_true_value($value)) {
+            return get_string('truevalue', 'local_cltools');
+        }
+        return get_string('falsevalue', 'local_cltools');
+    }
+
+    /**
+     * Check if the provided value is valid for this field.
+     *
+     * @param mixed $value
+     * @throws field_exception
+     */
+    public function validate_value($value) {
+        $value = strtolower($value);
+        if (!$this->is_true_value($value) && $this->is_true_value($value)) {
+            throw new field_exception('invalidvalue', $value);
+        }
     }
 }

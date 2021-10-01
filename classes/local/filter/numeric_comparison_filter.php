@@ -26,8 +26,7 @@ declare(strict_types=1);
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
 
-use InvalidArgumentException;
-use TypeError;
+use local_cltools\local\filter\adapter\sql_adapter;
 
 /**
  * Class representing an integer filter.
@@ -36,110 +35,17 @@ use TypeError;
  * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class numeric_comparison_filter extends filter {
+class numeric_comparison_filter extends \core_table\local\filter\numeric_comparison_filter implements sql_adapter {
     /**
-     * Add a value to the filter.
+     * Return filter SQL
      *
-     * @param string $value A json-encoded array containing a direction, and comparison value
-     * @return self
+     * @param string $columnname
+     * @return array array of two elements - SQL query and named parameters
      */
-    public function add_filter_value($value): parent {
-        if (!is_string($value)) {
-            $type = gettype($value);
-            if ($type === 'object') {
-                $type = get_class($value);
-            }
-
-            throw new TypeError(
-                "The value supplied was of type '{$type}'. A string representing a json-encoded value was expected."
-            );
-        }
-
-        $data = json_decode($value);
-
-        if ($data === null) {
-            throw new InvalidArgumentException(
-                "A json-encoded object containing both a direction, and comparison value was expected."
-            );
-        }
-
-        if (!is_object($data)) {
-            $type = gettype($value);
-            throw new InvalidArgumentException(
-                "The value supplied was a json encoded '{$type}'. " .
-                "An object containing both a direction, and comparison value was expected."
-            );
-        }
-
-        if (!property_exists($data, 'direction')) {
-            throw new InvalidArgumentException("A 'direction' must be provided.");
-        }
-        $direction = $this->get_direction($data->direction);
-
-        if (!property_exists($data, 'value')) {
-            throw new InvalidArgumentException("A 'value' must be provided.");
-        }
-        $value = $data->value;
-
-        if (!is_numeric($value)) {
-            $type = gettype($value);
-            if ($type === 'object') {
-                $type = get_class($value);
-            }
-
-            throw new TypeError("The value supplied was of type '{$type}'. A numeric value was expected.");
-        }
-
-        $fullvalue = (object) [
-            'direction' => $direction,
-            'value' => $value,
-        ];
-
-        if (array_search($fullvalue, $this->filtervalues) !== false) {
-            // Remove duplicates.
-            return $this;
-        }
-
-        $this->filtervalues[] = $fullvalue;
-
-        return $this;
-    }
-
-    /**
-     * Get the authoritative direction.
-     *
-     * @param string $direction The supplied direction
-     * @return string The authoritative direction
-     */
-    protected function get_direction(string $direction): string {
-        $validdirections = [
-            '=' => '==',
-            '==' => '==',
-            '===' => '===',
-
-            '>' => '>',
-            '=>' => '=>',
-            '<' => '<',
-            '<=' => '<=',
-        ];
-
-        if (!array_key_exists($direction, $validdirections)) {
-            throw new InvalidArgumentException("Invalid direction specified '{$direction}'.");
-        }
-
-        return $validdirections[$direction];
-    }
-
-    /**
-     * Get a specific filter for an element
-     *
-     * @param $fieldval
-     * @param string $joinsql
-     * @param null $tableprefix
-     * @return array
-     */
-    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
-        static $paramcount = 0;
+    public function get_sql_filter(string $columnname) : array{
+        $wheres = [];
+        $params = [];
+        $sanitizedname = filter_helper::get_sanitized_name($this->get_name());
         $directiontosql = [
             '=' => '=',
             '==' => '=',
@@ -149,11 +55,27 @@ class numeric_comparison_filter extends filter {
             '<' => '<',
             '<=' => '<=',
         ];
+        foreach($this->get_filter_values() as $filterkey => $fieldval) {
+            $paramname = "nump_{$sanitizedname}{$filterkey}";
+            $direction = trim($fieldval->direction);
+            $sqlcomparison = empty($directiontosql[$direction]) ? '=':  $directiontosql[$direction];
+            $wheres[] = " COALESCE({$columnname},0)  {$sqlcomparison}  :$paramname ";
+            $params[$paramname] = intval($fieldval->value);
+        }
+        return filter_helper::get_sql_filter_join($this, $wheres, $params);
+    }
 
-        $paramname = "numericp_" . ($paramcount++);
-        $params = [];
-        $where = " COALESCE({$this->get_alias()},0)  {$directiontosql[$fieldval->direction]}  :$paramname ";
-        $params[$paramname] = intval($fieldval->value);
-        return array($where, $params);
+    /**
+     * Add a value to the filter. This differs from the basic class by the fact that we can
+     * give an array instead of a json encoded value.
+     *
+     * @param string $value A json-encoded array or an array containing a direction, and comparison value
+     * @return \core_table\local\filter\numeric_comparison_filter
+     */
+    public function add_filter_value($value): parent {
+        if (is_array($value)) {
+            $value = json_encode($value);
+        }
+        return parent::add_filter_value($value);
     }
 }

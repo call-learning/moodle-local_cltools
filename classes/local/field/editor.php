@@ -14,57 +14,49 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+use coding_exception;
+use MoodleQuickForm;
+
+defined('MOODLE_INTERNAL') || die();
 /**
- * Base field
- *
- * For input and output
+ * Text editor field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-use coding_exception;
-
-defined('MOODLE_INTERNAL') || die();
-
-class editor extends base {
-
-    protected $editoroptions = [];
-
-    public function __construct($fielddef) {
-        parent::__construct($fielddef);
-        if (is_array($fielddef)) {
-            $fielddef = (object) $fielddef;
-        }
+class editor extends persistent_field {
+    /**
+     * Construct the field from its definition
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * definiton
+     */
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+            'required' => false,
+            'rawtype' => PARAM_TEXT,
+            'default' => ''
+        ];
+        $fielddef = $this->init($fielnameordef, $standarddefaults);
         if (!empty($fielddef->editoroptions)) {
             $this->editoroptions = $fielddef->editoroptions;
         }
     }
 
-    /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @return mixed
-     */
-    public function internal_add_form_element(&$mform) {
-        $editoroptions = $this->editoroptions;
-        $mform->addElement('editor', $this->fieldname . '_editor',
-            $this->fullname, $editoroptions);
-    }
+    protected $editoroptions = [];
 
     /**
      * Add element onto the form
      *
-     * @param $mform
+     * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
-     * @return mixed
      */
-    public function add_form_element(&$mform) {
-        parent::add_form_element($mform);
-        $mform->setType($this->fieldname, PARAM_RAW);
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $elementname = $this->get_name() . '_editor';
+        $mform->addElement('editor', $elementname, $this->get_display_name());
+        parent::internal_form_add_element($mform, $elementname);
+        $mform->setType($this->get_name(), PARAM_RAW);
     }
 
     /**

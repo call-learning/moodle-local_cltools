@@ -81,7 +81,6 @@ class dynamic_table_sql_renderable implements renderable, templatable {
         $this->url = $url;
         $this->dynamictable->define_baseurl($url);
         $this->dynamictable->is_downloadable(true);
-        $this->dynamictable->show_download_buttons_at(array(TABLE_P_BOTTOM));
         $this->otheroptions = $otheroptions;
     }
 
@@ -96,8 +95,8 @@ class dynamic_table_sql_renderable implements renderable, templatable {
 
     public function export_for_template(renderer_base $output) {
         $context = new stdClass();
-        $context->tableuniqueid = $this->dynamictable->uniqueid;
-        $context->filtersetjson = json_encode($this->dynamictable->get_filter_set());
+        $context->tableuniqueid = $this->dynamictable->get_unique_id();
+        $context->filtersetjson = json_encode($this->dynamictable->get_filterset());
         $context->sortdatajson = '';
         $context->pagesize = $this->perpage;
         $context->handler = get_class($this->dynamictable);

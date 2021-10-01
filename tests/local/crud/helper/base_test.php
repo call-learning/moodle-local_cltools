@@ -127,7 +127,6 @@ class base_test extends base_crud_test {
         $this->assertEquals($expected['header'], $page->heading);
     }
 
-
     /**
      * @dataProvider action_data_provider
      */
@@ -158,10 +157,10 @@ class base_test extends base_crud_test {
             $entityid = 0;
             if ($action != crud_add::ACTION) {
                 $entityid = $existingentity->get('id');
-                $formdata = $formdata + ['id'=> $existingentity->get('id')];
+                $formdata = $formdata + ['id' => $existingentity->get('id')];
             }
             $form = $crudmgmt->instanciate_related_form($entityid);
-            forward_static_call([get_class($form), 'mock_submit'],  [$formdata]);
+            forward_static_call([get_class($form), 'mock_submit'], [$formdata]);
         }
         $crudmgmt->setup_page($PAGE);
         $crudmgmt->action_process();
@@ -179,7 +178,7 @@ class base_test extends base_crud_test {
                     'title' => 'Add Simple entity',
                     'header' => 'Add Simple entity',
                     'eventdescription' => 'Add Simple entity',
-                    'eventclass'=> ''
+                    'eventclass' => ''
                 ],
                 'formdata' => [
                     'shortname' => 'Entity Test Added',
@@ -194,7 +193,7 @@ class base_test extends base_crud_test {
                     'title' => 'Delete Simple entity',
                     'header' => 'Delete Simple entity',
                     'eventdescription' => 'Delete Simple entity',
-                    'eventclass'=> ''
+                    'eventclass' => ''
                 ],
             ],
             'edit' => [
@@ -203,7 +202,7 @@ class base_test extends base_crud_test {
                     'title' => 'Edit Simple entity',
                     'header' => 'Edit Simple entity',
                     'eventdescription' => 'Edit Simple entity',
-                    'eventclass'=> ''
+                    'eventclass' => ''
                 ],
                 'formdata' => [
                     'shortname' => 'Entity Test Modified',
@@ -218,13 +217,13 @@ class base_test extends base_crud_test {
                     'title' => 'List Simple entity',
                     'header' => 'List Simple entity',
                     'eventdescription' => 'List Simple entity',
-                    'eventclass'=> ''
+                    'eventclass' => ''
                 ]
             ]
         ];
     }
 
-    protected function create_fake_form_payload(){
+    protected function create_fake_form_payload() {
 
     }
 }

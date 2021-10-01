@@ -25,6 +25,10 @@
 namespace local_cltools\simple;
 
 use lang_string;
+use local_cltools\local\field\editor;
+use local_cltools\local\field\number;
+use local_cltools\local\field\select_choice;
+use local_cltools\local\field\text;
 use xmldb_table;
 
 defined('MOODLE_INTERNAL') || die();
@@ -45,31 +49,30 @@ class entity extends \core\persistent {
      * @return array|array[]
      * @throws \coding_exception
      */
-    protected static function define_properties() {
+    protected static function define_fields() {
         return array(
-            'shortname' => array(
-                'type' => PARAM_TEXT,
-                'default' => ''
+            new text('shortname'),
+            new text('fieldname'),
+            new editor('description'),
+            new select_choice(
+                [
+                    'fieldname' => 'descriptionformat',
+                    'choices' => [
+                        FORMAT_HTML => get_string('formathtml'),
+                        FORMAT_MOODLE => get_string('formatmoodle'),
+                        FORMAT_PLAIN=> get_string('formatplain'),
+                        FORMAT_MARKDOWN=> get_string('formatmarkdown'),
+                    ]
+                 ]
             ),
-            'idnumber' => array(
-                'type' => PARAM_TEXT,
-            ),
-            'description' => array(
-                'type' => PARAM_RAW,
-                'default' => '',
-                'format' => [
-                    'type' => 'editor'
-                ]
-            ),
-            'descriptionformat' => array(
-                'choices' => array(FORMAT_HTML, FORMAT_MOODLE, FORMAT_PLAIN, FORMAT_MARKDOWN),
-                'type' => PARAM_INT,
-                'default' => FORMAT_HTML
-            ),
+            new number('parentid'),
             'parentid' => array(
                 'type' => PARAM_INT,
                 'default' => 0
             ),
+            new text('path'),
+            new number('sortorder'),
+            new number('scaleid'),
             'path' => array(
                 'type' => PARAM_RAW,
                 'default' => ''
@@ -85,6 +88,7 @@ class entity extends \core\persistent {
             )
         );
     }
+
 
     /**
      * This is specific to the test environment. We create the table structure.
@@ -104,7 +108,7 @@ class entity extends \core\persistent {
         $table = new xmldb_table(static::TABLE);
 
         if ($dbman->table_exists($table)) {
-           return;
+            return;
         }
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, null, null, null);

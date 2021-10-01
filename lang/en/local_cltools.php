@@ -62,3 +62,5 @@ $string['entity:edited'] = 'Entity {$a} modified';
 $string['table:nodata'] = 'No data available';
 $string['momentjsdateformat'] = "dddd, MMMM Do YYYY";
 $string['momentjsdatetimeformat'] = "dddd, MMMM Do YYYY, h:mm:ss a";
+$string['truevalue'] = 'true';
+$string['falsevalue'] = 'false';

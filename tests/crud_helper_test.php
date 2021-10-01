@@ -38,7 +38,7 @@ use local_cltools\simple\entity;
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_crud_helper_testcase extends \advanced_testcase {
+class local_cltools_crud_helper_test extends \advanced_testcase {
     /**
      * Setup persistent table
      */

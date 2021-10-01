@@ -31,7 +31,7 @@ use core\form\persistent;
 use dml_exception;
 use HTML_QuickForm_element;
 use local_cltools\local\crud\entity_utils;
-use local_cltools\local\field\base;
+use local_cltools\local\field\persistent_field;
 use moodleform;
 use MoodleQuickForm;
 use ReflectionException;
@@ -158,7 +158,7 @@ abstract class entity_form extends persistent {
                     $fieldinfo['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
                 }
             }
-            $field = base::get_instance_from_def($name, $fieldinfo);
+            $field = persistent_field::get_instance_from_def($name, $fieldinfo);
             $this->fields[$name] = $field; // Update it.
         }
     }

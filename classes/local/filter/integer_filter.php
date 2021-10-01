@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
 
-use TypeError;
+use local_cltools\local\filter\adapter\sql_adapter;
 
 /**
  * Class representing an integer filter.
@@ -35,48 +35,20 @@ use TypeError;
  * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class integer_filter extends filter {
+class integer_filter extends \core_table\local\filter\integer_filter implements sql_adapter {
     /**
-     * Add a value to the filter.
+     * Return filter SQL
      *
-     * @param int $values
-     * @return self
+     * @param string $columnname
+     * @return array array of two elements - SQL query and named parameters
      */
-    public function add_filter_value($value): parent {
-        if (!is_int($value)) {
-            $type = gettype($value);
-            if ($type === 'object') {
-                $type = get_class($value);
-            }
-
-            throw new TypeError("The value supplied was of type '{$type}'. An integer was expected.");
+    public function get_sql_filter(string $columnname) : array{
+        $sanitizedname = filter_helper::get_sanitized_name($this->get_name());
+        foreach($this->get_filter_values() as $filterkey => $fieldval) {
+            $paramname = "intg_{$sanitizedname}{$filterkey}";
+            $wheres[] = " {$columnname}  =  :$paramname ";
+            $params[$paramname] = intval($fieldval);
         }
-
-        if (array_search($value, $this->filtervalues) !== false) {
-            // Remove duplicates.
-            return $this;
-        }
-
-        $this->filtervalues[] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Get a specific filter for an element
-     *
-     * @param $fieldval
-     * @param string $joinsql
-     * @param null $tableprefix
-     * @return array
-     */
-    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
-        static $paramcount = 0;
-
-        $paramname = "intergerp_" . ($paramcount++);
-        $params = [];
-        $where = " {$this->get_alias()}  =  :$paramname ";
-        $params[$paramname] = intval($fieldval->value);
-        return array($where, $params);
+        return filter_helper::get_sql_filter_join($this, $wheres, $params);
     }
 }

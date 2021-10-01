@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
 
+use local_cltools\local\filter\adapter\sql_adapter;
 use TypeError;
 
 /**
@@ -35,53 +36,25 @@ use TypeError;
  * @copyright  2020 Simey Lameze <simey@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class string_filter extends filter {
+class string_filter extends \core_table\local\filter\string_filter implements sql_adapter{
     /**
-     * Add a value to the filter.
+     * Return filter SQL
      *
-     * @param string $values
-     * @return self
+     * @param string $columnname
+     * @return array array of two elements - SQL query and named parameters
      */
-    public function add_filter_value($value): parent {
-        if (!is_string($value)) {
-            $type = gettype($value);
-            if ($type === 'object') {
-                $type = get_class($value);
-            }
-
-            throw new TypeError("The value supplied was of type '{$type}'. A string was expected.");
-        }
-
-        if (array_search($value, $this->filtervalues) !== false) {
-            // Remove duplicates.
-            return $this;
-        }
-
-        $this->filtervalues[] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Get a specific filter for an element
-     *
-     * @param $fieldval
-     * @param string $joinsql
-     * @param null $tableprefix
-     * @return array
-     */
-    protected function get_sql_filter_element($fieldval, $tableprefix = null) {
+    public function get_sql_filter(string $columnname) : array{
         global $DB;
-        static $paramcount = 0;
-
-        $fieldval = trim($fieldval, '"');// Remove double quote if any.
-        $paramname = "stringp_" . ($paramcount++);
+        $wheres = [];
         $params = [];
-
-        $where = " " .
-            $DB->sql_like($this->get_alias(), ":$paramname", false, false)
-            . " ";
-        $params[$paramname] = '%' . $DB->sql_like_escape($fieldval) . '%';
-        return array($where, $params);
+        $sanitizedname = filter_helper::get_sanitized_name($this->get_name());
+        foreach($this->get_filter_values() as $filterkey => $fieldval) {
+            $fieldval = trim($fieldval, '"');// Remove double quote if any.
+            $paramname = "strp_{$sanitizedname}{$filterkey}";
+            $wheres[] = " {$DB->sql_like($columnname, ':'.$paramname, false, false)} ";
+            $params[$paramname] = "%{$DB->sql_like_escape($fieldval)}%";
+        }
+        return filter_helper::get_sql_filter_join($this, $wheres, $params);
     }
+
 }

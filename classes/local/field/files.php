@@ -14,22 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\field;
+use MoodleQuickForm;
+
+defined('MOODLE_INTERNAL') || die();
 /**
- * Base field
- *
- * For input and output
+ * File field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-use coding_exception;
-
-defined('MOODLE_INTERNAL') || die();
-
-class files extends base {
+class files extends persistent_field {
 
     protected $filemanageroptions = [];
 
@@ -46,12 +42,12 @@ class files extends base {
     /**
      * Add element onto the form
      *
-     * @param $mform
-     * @return mixed
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
      */
-    public function internal_add_form_element(&$mform) {
-        $options = $this->filemanageroptions;
-        $mform->addElement('filemanager', $this->fieldname, $this->fullname, null, $options);
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $mform->addElement('filemanager', $this->get_name(), $this->get_display_name(), $this->filemanageroptions);
+        parent::internal_form_add_element($mform);
     }
 
     /**
@@ -63,39 +59,4 @@ class files extends base {
     public function is_visible() {
         return false;
     }
-
-    /**
-     * Callback for this field, so data can be converted before form submission
-     *
-     * @param $itemdata
-     * @throws coding_exception
-     */
-    public function prepare_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        $draftitemid = file_get_submitted_draft_itemid($this->fieldname);
-        file_prepare_draft_area($draftitemid,
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->filemanageroptions);
-        $itemdata->{$filemanagerformelt} = $draftitemid;
-    }
-
-    /**
-     * Callback for this field, so data can be saved after form submission
-     *
-     * @param $itemdata
-     * @throws coding_exception
-     */
-    public function save_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        file_save_draft_area_files($itemdata->{$this->fieldname},
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->filemanageroptions);
-    }
-
 }

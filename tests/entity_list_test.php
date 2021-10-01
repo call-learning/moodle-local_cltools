@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_entity_list_testcase extends \advanced_testcase {
+class local_cltools_entity_list_test extends \advanced_testcase {
     /**
      * Setup persistent table
      */

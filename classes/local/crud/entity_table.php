@@ -31,7 +31,7 @@ use core\invalid_persistent_exception;
 use core\persistent;
 use dml_exception;
 use html_writer;
-use local_cltools\local\field\base;
+use local_cltools\local\field\persistent_field;
 use local_cltools\local\field\entity_selector;
 use local_cltools\local\field\html;
 use local_cltools\local\table\dynamic_table_sql;
@@ -127,7 +127,7 @@ class entity_table extends dynamic_table_sql {
                     'type' => 'hidden'
                 ];
             }
-            $field = base::get_instance_from_persistent_def($name, $prop);
+            $field = persistent_field::get_instance_from_persistent_def($name, $prop);
             $this->fields[$name] = $field;
         }
         $this->setup_other_fields();

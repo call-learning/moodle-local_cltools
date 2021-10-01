@@ -106,6 +106,7 @@ class external extends external_api {
             'resetpreferences' => $resetpreferences,
         ]);
 
+        /* @var $instance dynamic_table_interface the dynamic table itself */
         $instance = self::get_table_handler_instance($handler, $uniqueid);
 
         self::setup_filters($instance, $filters, $jointype);
@@ -113,9 +114,9 @@ class external extends external_api {
             $instance->mark_table_to_reset();
         }
 
-        $PAGE->set_url($instance->baseurl);
+        $PAGE->set_url($instance->get_baseurl());
 
-        /* @var dynamic_table_sql $instance */
+        /* @var dynamic_table_sql $instance instance */
         // TODO : correct this, we should be able to rely on the default value.
         if ($pagesize === 0 || $pagenumber < 0 || empty($pagenumber)) {
             $instance->pageable(false);
@@ -130,7 +131,7 @@ class external extends external_api {
                 $def = (object) $def;
                 $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
             }
-            $instance->set_sort_data($sortdef);
+            $instance->set_sortdata($sortdef);
         }
 
         $instance->validate_access();
@@ -148,8 +149,8 @@ class external extends external_api {
                 $rows
             )
         ];
-        if ($instance->use_pages) {
-            $returnval['pagescount'] = floor($instance->totalrows / $instance->pagesize);
+        if ($instance->is_pageable()) {
+            $returnval['pagescount'] = floor($instance->get_total_rows() / $instance->get_page_size());
         }
         return $returnval;
     }
@@ -272,7 +273,7 @@ class external extends external_api {
                 "Please make sure that your handler is defined.");
         }
 
-        if (!is_subclass_of($handler, dynamic_table_sql::class)) {
+        if (!is_subclass_of($handler, dynamic_table_interface::class)) {
             throw new UnexpectedValueException("Table handler class {$handler} does not support dynamic updating.");
         }
         $classfilepath = (new ReflectionClass($handler))->getFileName();
@@ -309,7 +310,8 @@ class external extends external_api {
             );
         }
 
-        $instance->set_extended_filterset($filterset);
+        /* @var dynamic_table_sql $instance dynamic table */
+        $instance->set_filterset($filterset);
     }
 
     /**
@@ -369,7 +371,7 @@ class external extends external_api {
         $instance = self::get_table_handler_instance($handler, $uniqueid, $editable);
         $instance->validate_access();
         self::setup_filters($instance, $filters, $jointype);
-        /* @var $instance dynamic_table_sql */
+        /* @var $instance dynamic_table_sql instance */
         $columndefs = array_values($instance->get_fields_definition());
 
         return $columndefs;
@@ -706,3 +708,4 @@ class external extends external_api {
     }
 
 }
+

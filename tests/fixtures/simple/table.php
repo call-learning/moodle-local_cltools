@@ -26,6 +26,7 @@ namespace local_cltools\simple;
 
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
+use local_cltools\utils;
 use moodle_url;
 use pix_icon;
 use popup_action;
@@ -59,7 +60,7 @@ class table extends entity_table {
      * @throws \coding_exception
      */
     public function col_starttime($rotation) {
-        return $this->get_time($rotation->starttime);
+        return utils::get_time($rotation->starttime);
     }
 
     /**
@@ -68,7 +69,7 @@ class table extends entity_table {
      * @throws \coding_exception
      */
     public function col_endtime($rotation) {
-        return $this->get_time($rotation->endtime);
+        return utils::get_time($rotation->endtime);
     }
 
     /**

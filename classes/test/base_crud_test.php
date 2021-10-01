@@ -24,6 +24,7 @@
 
 namespace local_cltools\test;
 defined('MOODLE_INTERNAL') || die();
+
 use local_cltools\simple\entity;
 
 /**
@@ -62,5 +63,4 @@ class base_crud_test extends \advanced_testcase {
         entity::delete_table();
         parent::tearDown();
     }
-
 }
