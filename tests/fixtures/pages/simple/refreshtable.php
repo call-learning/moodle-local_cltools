@@ -34,8 +34,8 @@ global $CFG, $OUTPUT, $PAGE;
 require_login();;
 
 // To make sure the table is created.
-\local_cltools\local\simple\entity::delete_table();
-\local_cltools\local\simple\entity::create_table();
+\local_cltools\simple\entity::delete_table();
+\local_cltools\simple\entity::create_table();
 /* @var core_renderer $OUTPUT output */
 echo $OUTPUT->header();
 echo $OUTPUT->single_button(new moodle_url('/local/cltools/test/fixtures/index.php'), get_string('continue'));

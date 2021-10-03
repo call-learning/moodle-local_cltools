@@ -31,9 +31,10 @@ defined('MOODLE_INTERNAL') || die;
 
 use coding_exception;
 use context_system;
+use core_table\local\filter\filterset;
 use dml_exception;
 use local_cltools\local\field\persistent_field;
-use local_cltools\local\filter\filterset;
+use local_cltools\local\filter\enhanced_filterset;
 
 abstract class dynamic_table_sql implements dynamic_table_interface {
     use table_sql_trait;
@@ -42,7 +43,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      */
     protected $iseditable = false;
     /**
-     * @var filterset The currently applied filerset
+     * @var enhanced_filterset The currently applied filerset
      * This is required for dynamic tables, but can be used by other tables too if desired.
      */
     protected $filterset = null;
@@ -112,7 +113,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
 
         $this->setup_fields();
         foreach ($this->fields as $name => $field) {
-            $cols[] = $name;
+            $cols[] = $field->get_name();
             $headers[] = $field->get_display_name();
         }
         if (!in_array('id', $cols)) {
@@ -138,13 +139,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * This also sets the filter aliases if not set for each filters, depending on what is set in the
      * local $filteralias array.
      *
-     * @param filterset $filterset The filterset object to get filters and table parameters from
+     * @param enhanced_filterset $filterset The filterset object to get filters and table parameters from
      */
-    public function set_filterset(filterset $filterset): void {
+    public function set_filterset(enhanced_filterset $filterset): void {
         foreach ($this->fieldaliases as $fieldname => $sqlalias) {
             if ($filterset->has_filter($fieldname)) {
                 $filter = $filterset->get_filter($fieldname);
-                $filter->set_alias($sqlalias);
             }
         }
         $this->filterset = $filterset;
@@ -153,7 +153,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     /**
      * Get the currently defined filterset.
      *
-     * @return \core_table\local\filter\filterset
+     * @return \local_cltools\local\table\filterset|null
      */
     public function get_filterset(): ?filterset {
         return $this->filterset;
@@ -271,47 +271,55 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     public function get_fields_definition() {
         $columnsdef = [];
         $this->setup();
-        foreach ($this->columns as $fieldid => $index) {
-            $field = $this->fields[$fieldid];
-            $column = (object) [
-                'title' => $this->headers[$index],
-                'field' => $fieldid,
-                'visible' => $field->is_visible(),
-            ];
-            // Add formatter, filter, editor...
-            /* @var persistent_field $field field */
-            foreach (['formatter', 'filter', 'editor', 'validator'] as $modifier) {
-                $callback = "get_column_$modifier";
-                $modifiervalues = (array) $field->$callback();
-                if (!$column->isvisible && $modifiervalues) {
-                    if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
-                        continue;
-                    }
-                    foreach ($modifiervalues as $modifiername => $value) {
-                        if (!$column->isvisible && $field->$callback()) {
-                            if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
-                                continue;
+        foreach ($this->columns as $fieldshortname => $index) {
+            if (empty($this->fields[$index])) {
+                $column = (object) [
+                    'title' => '',
+                    'field' => $fieldshortname,
+                    'visible' => false,
+                ];
+            } else {
+                $field = $this->fields[$index];
+                $column = (object) [
+                    'title' => $this->headers[$index],
+                    'field' => $fieldshortname,
+                    'visible' => $field->is_visible(),
+                ];
+                // Add formatter, filter, editor...
+                /* @var persistent_field $field field */
+                foreach (['formatter', 'filter', 'editor', 'validator'] as $modifier) {
+                    $callback = "get_column_$modifier";
+                    $modifiervalues = (array) $field->$callback();
+                    if (!$column->isvisible && $modifiervalues) {
+                        if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
+                            continue;
+                        }
+                        foreach ($modifiervalues as $modifiername => $value) {
+                            if (!$column->isvisible && $field->$callback()) {
+                                if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
+                                    continue;
+                                }
+                                if (is_object($value) || is_array($value)) {
+                                    $value = json_encode($value);
+                                }
+                                $column->$modifiername = $value;
                             }
-                            if (is_object($value) || is_array($value)) {
-                                $value = json_encode($value);
-                            }
-                            $column->$modifiername = $value;
                         }
                     }
                 }
-            }
-            $colmethodname = 'col_' . $fieldid;
-            // Disable sorting and formatting for all formatted rows
-            // Except for row which are html formatted (in which case we just disable the sorting).
-            if (method_exists($this, $colmethodname)) {
-                if (empty($this->fields[$fieldid . 'format'])) {
-                    unset($column->filter);
-                    unset($column->filterparams);
+                $colmethodname = 'col_' . $fieldshortname;
+                // Disable sorting and formatting for all formatted rows
+                // Except for row which are html formatted (in which case we just disable the sorting).
+                if (method_exists($this, $colmethodname)) {
+                    if (empty($this->fields[$fieldshortname . 'format'])) {
+                        unset($column->filter);
+                        unset($column->filterparams);
+                    }
+                    $column->formatter = 'html';
+                    unset($column->formatterparams);
                 }
-                $column->formatter = 'html';
-                unset($column->formatterparams);
             }
-            $columnsdef[$fieldid] = $column;
+            $columnsdef[$fieldshortname] = $column;
         }
 
         return $columnsdef;

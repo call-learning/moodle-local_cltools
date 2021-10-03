@@ -38,6 +38,7 @@ use external_warnings;
 use invalid_parameter_exception;
 use local_cltools\local\field\entity_selector;
 use local_cltools\local\filter\basic_filterset;
+use local_cltools\local\filter\enhanced_filterset;
 use moodle_exception;
 use ReflectionClass;
 use ReflectionException;
@@ -268,6 +269,13 @@ class external extends external_api {
     public static function get_table_handler_instance($handler, $uniqueid, $editable = false) {
         global $CFG;
 
+        // Hack alert: this is to make sure we can "see" the test entities class.
+        // We will need to think of a better approach.
+        // Only run through behat or if we are in debug mode.
+        if (debugging() || (defined('PHPUNIT_TEST') && PHPUNIT_TEST) || defined('BEHAT_SITE_RUNNING')) {
+            require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+        }
+
         if (!class_exists($handler)) {
             throw new UnexpectedValueException("Table handler class {$handler} not found. " .
                 "Please make sure that your handler is defined.");
@@ -285,6 +293,11 @@ class external extends external_api {
         return $instance;
     }
 
+    /**
+     * @param $instance
+     * @param $filters
+     * @param $jointype
+     */
     public static function setup_filters(&$instance, $filters, $jointype) {
         $instanceclass = get_class($instance);
         $filtersetclass = "{$instanceclass}_filterset";
@@ -297,7 +310,7 @@ class external extends external_api {
                 ];
                 $filtertypedef[$rawfilter['name']] = $ftdef;
             }
-            $filterset = new basic_filterset($filtertypedef);
+            $filterset = new enhanced_filterset($filtertypedef);
         } else {
             $filterset = new $filtersetclass();
         }

@@ -15,36 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rotation entity edit or add form
+ * Enhanced entity definition
  *
  * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\simple;
-
-use local_cltools\local\crud\form\entity_form;
+namespace local_cltools\local\crud;
 
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
 
-/**
- * Add Form
- *
- * @package     local_cltools
- * @copyright   2019 CALL Learning <laurent@call-learning.fr>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class form extends entity_form {
+interface enhanced_persistent {
+    /**
+     * Return defined properties from
+     * @return array
+     */
+    public static function define_fields(): array;
 
-    /** @var string The fully qualified classname. */
-    protected static $persistentclass = entity::class;
-
-    /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton', 'files');
-
-    /** @var string[] $foreignfields */
-    protected static $foreignfields = array();
+    /**
+     * Get persistent context
+     *
+     * @return mixed
+     */
+    public function get_context();
 }

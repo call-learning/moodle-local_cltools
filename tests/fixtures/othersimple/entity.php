@@ -15,20 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Simple entity
+ * Other simple entity
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\simple;
+namespace local_cltools\othersimple;
 
+use lang_string;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\enhanced_persistent_impl;
 use local_cltools\local\field\editor;
-use local_cltools\local\field\entity_selector;
-use local_cltools\local\field\files;
 use local_cltools\local\field\number;
 use local_cltools\local\field\select_choice;
 use local_cltools\local\field\text;
@@ -43,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity extends \core\persistent implements enhanced_persistent {
+class entity extends \core\persistent implements enhanced_persistent{
 
     use enhanced_persistent_impl;
 
@@ -56,27 +55,8 @@ class entity extends \core\persistent implements enhanced_persistent {
      * @throws \coding_exception
      */
     public static function define_fields(): array {
-        global $CFG;
-        require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/entity.php');
         return array(
             new text('shortname'),
-            new text('idnumber'),
-            new editor('description'), // Description format is automatically added
-            new entity_selector([
-                'fieldname' => 'parentid',
-                'entityclass' => self::class
-            ]),
-            new text('path'),
-            new number('sortorder'),
-            new entity_selector([
-                'fieldname' => 'othersimpleid',
-                'entityclass' => \local_cltools\othersimple\entity::class
-            ]),
-            new select_choice([
-                'fieldname' => 'scaleid',
-                'choices' => [1 => 'scale1', 2 => 'scale2']
-            ]),
-            new files('files'),
         );
     }
 
@@ -103,14 +83,6 @@ class entity extends \core\persistent implements enhanced_persistent {
         }
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, null, null, null);
-        $table->add_field('idnumber', XMLDB_TYPE_CHAR, '100', null, null, null, null);
-        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $table->add_field('descriptionformat', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('parentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('othersimpleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('path', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('scaleid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
@@ -131,4 +103,3 @@ class entity extends \core\persistent implements enhanced_persistent {
         }
     }
 }
-

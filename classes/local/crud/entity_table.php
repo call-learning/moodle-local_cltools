@@ -26,14 +26,10 @@ namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
-use context;
 use core\invalid_persistent_exception;
 use core\persistent;
 use dml_exception;
 use html_writer;
-use local_cltools\local\field\persistent_field;
-use local_cltools\local\field\entity_selector;
-use local_cltools\local\field\html;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_exception;
 use moodle_url;
@@ -107,30 +103,7 @@ class entity_table extends dynamic_table_sql {
      * @throws ReflectionException
      */
     protected function setup_fields() {
-        $this->fields = [];
-        $colorder = static::define_column_order();
-        $allprops = array_merge(static::$persistentclass::properties_definition(), static::define_properties());
-        if ($colorder) {
-            $allprops = array_replace(array_flip($colorder), $allprops);
-        }
-        foreach ($allprops as $name => $prop) {
-            $prop['fieldname'] = $name;
-            if (empty($prop['fullname'])) {
-                if (entity_utils::is_reserved_property($name)) {
-                    $prop['fullname'] = $name;
-                } else {
-                    $prop['fullname'] = entity_utils::get_string_for_entity(static::$persistentclass, $name);
-                }
-            }
-            if (entity_utils::is_reserved_property($name) && empty($prop['format'])) {
-                $prop['format'] = [
-                    'type' => 'hidden'
-                ];
-            }
-            $field = persistent_field::get_instance_from_persistent_def($name, $prop);
-            $this->fields[$name] = $field;
-        }
-        $this->setup_other_fields();
+        $this->fields = entity_utils::get_defined_fields(static::$persistentclass);
     }
 
     /**
@@ -149,25 +122,6 @@ class entity_table extends dynamic_table_sql {
      */
     protected static function define_properties() {
         return array();
-    }
-
-    /**
-     * Add utility fields (for sorting for example)
-     *
-     * @throws coding_exception
-     */
-    protected function setup_other_fields() {
-        parent::setup_other_fields();
-        // Add invisible sort field for entity selector fields.
-        foreach ($this->fields as $field) {
-            $newfield = $field->get_additional_util_field();
-            if ($newfield) {
-                // We sort by this field instead.
-                $sortfieldaliases[$field->get_field_name()] = $newfield->get_field_name();
-                $this->sortfieldaliases[$field->get_field_name()] = $newfield->get_field_name();
-            }
-            $this->fieldaliases[$field->get_field_name()] = "entity." . $field->get_field_name();
-        }
     }
 
     /**

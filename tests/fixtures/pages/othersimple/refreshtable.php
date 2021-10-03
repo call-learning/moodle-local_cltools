@@ -15,36 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rotation entity edit or add form
+ * Create related table for this entity
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\simple;
-
-use local_cltools\local\crud\form\entity_form;
-
-defined('MOODLE_INTERNAL') || die();
+require_once(__DIR__ . '/../../../../../../config.php');
 global $CFG;
-require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+// Only run through behat or if we are in debug mode.
+debugging() || (defined('PHPUNIT_TEST') && PHPUNIT_TEST) || defined('BEHAT_SITE_RUNNING') || die();
 
-/**
- * Add Form
- *
- * @package     local_cltools
- * @copyright   2019 CALL Learning <laurent@call-learning.fr>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class form extends entity_form {
+use local_cltools\local\crud\helper\base as crud_helper;
+use local_cltools\local\crud\helper\crud_add;
 
-    /** @var string The fully qualified classname. */
-    protected static $persistentclass = entity::class;
+global $CFG, $OUTPUT, $PAGE;
+require_login();;
 
-    /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton', 'files');
+// To make sure the table is created.
+\local_cltools\othersimple\entity::delete_table();
+\local_cltools\othersimple\entity::create_table();
 
-    /** @var string[] $foreignfields */
-    protected static $foreignfields = array();
-}
+/* @var core_renderer $OUTPUT output */
+echo $OUTPUT->header();
+echo $OUTPUT->single_button(new moodle_url('/local/cltools/test/fixtures/index.php'), get_string('continue'));
+echo $OUTPUT->footer();

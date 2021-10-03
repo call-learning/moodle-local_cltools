@@ -30,29 +30,14 @@ defined('MOODLE_INTERNAL') || die();
  */
 class base_test extends advanced_testcase {
     /**
-     * Return a printable version of the current value
-     *
-     * @param $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * Get the name of this field
      */
-    public function test_format_string($value, $additionalcontext = null) {
-    }
+    public function test_get_name() {
+        $field = new boolean(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
+        $this->assertEquals('fieldname', $field->get_name());
 
-    /**
-     * Get an identifier for this type of format
-     *
-     * @return mixed
-     */
-    public function test_get_type() {
-    }
-
-    /**
-     * Get the the display name of this
-     *
-     * @return mixed
-     */
-    public function test_get_display_name() {
+        $field = new editor(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
+        $this->assertEquals('fieldname', $field->get_name());
     }
 
     /**
@@ -76,7 +61,6 @@ class base_test extends advanced_testcase {
      */
     public function test_get_column_editor() {
     }
-
     /**
      * Get the matching formatter type and parameters to be used for display
      *
@@ -104,44 +88,14 @@ class base_test extends advanced_testcase {
      *
      */
     public function test_is_visible() {
-
+        $field = new boolean(['fieldname' => 'fieldname', 'visible' => false]);
+        $this->assertFalse($field->is_visible());
+        $field = new boolean(['fieldname' => 'fieldname', 'visible' => true]);
+        $this->assertTrue($field->is_visible());
     }
-
-    /**
-     * Check if the provided value is valid for this field.
-     *
-     * @param mixed $value
-     * @return string|null return the type (and null if no filter)
-     *
-     */
-    public function test_is_valid($any) {
-        return true;
-    }
-
-    public function test_get_field_name() {
-    }
-
-    /**
-     * Add element onto the form
-     *
-     * @param $mform
-     * @param mixed ...$additionalargs
-     * @return mixed
-     */
-    public function test_add_form_element(&$mform) {
-    }
-
     /**
      * Call
      */
-
-    /**
-     * Get the type of parameter (see PARAM_XXX) for this type
-     *
-     * @return mixed
-     */
-    public function test_get_raw_param_type() {
-    }
 
     /**
      * Callback for this field, so data can be converted before sending it to a persistent

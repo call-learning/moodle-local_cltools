@@ -16,6 +16,7 @@
 
 namespace local_cltools\local\field;
 use coding_exception;
+use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
 /**
@@ -41,9 +42,9 @@ class date extends persistent_field {
     }
 
     /**
-     * Form field type for this field
+     * Form field type for this field, used in default implementation of form_add_element
      */
-    const FORM_FIELD_TYPE = 'datetimeselector';
+    const FORM_FIELD_TYPE = 'date_selector';
 
     /**
      * Get the matching formatter type to be used for display
@@ -63,4 +64,27 @@ class date extends persistent_field {
         ];
     }
 
+    /**
+     * Return a printable version of the current value
+     *
+     * @param int $value
+     * @param mixed $additionalcontext
+     * @return mixed
+     */
+    public function format_value($value, $additionalcontext = null) {
+        return userdate($value, get_string('strftimedatefullshort', 'langconfig'));;
+    }
+
+    /**
+     * Check if the provided value is valid for this field.
+     *
+     * @param mixed $value
+     * @throws field_exception
+     */
+    public function validate_value($value) {
+        if (strtotime($value) === false) {
+            throw new field_exception('valuecannotbechecked', $value);
+        }
+        return true;
+    }
 }

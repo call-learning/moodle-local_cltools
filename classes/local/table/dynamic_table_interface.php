@@ -18,9 +18,9 @@ namespace local_cltools\local\table;
 defined('MOODLE_INTERNAL') || die;
 
 use context;
-use local_cltools\local\filter\filterset;
+use core_table\local\filter\filterset;
+use local_cltools\local\filter\enhanced_filterset;
 use moodle_url;
-use renderable;
 use table_default_export_format_parent;
 
 /**
@@ -203,14 +203,14 @@ interface dynamic_table_interface {
      *
      * The use of filtersets is a requirement for dynamic tables, but can be used by other tables too if desired.
      *
-     * @param filterset $filterset The filterset object to get filters and table parameters from
+     * @param enhanced_filterset $filterset The filterset object to get filters and table parameters from
      */
-    public function set_filterset(filterset $filterset): void;
+    public function set_filterset(enhanced_filterset $filterset): void;
 
     /**
      * Get the currently defined filterset.
      *
-     * @return filterset
+     * @return filterset|null
      */
     public function get_filterset(): ?filterset;
 

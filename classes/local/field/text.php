@@ -79,4 +79,14 @@ class text extends persistent_field {
         ];
     }
 
+    /**
+     * Return a printable version of the current value
+     *
+     * @param bool $value
+     * @param mixed $additionalcontext
+     * @return mixed
+     */
+    public function format_value($value, $additionalcontext = null) {
+        return html_to_text($value);
+    }
 }

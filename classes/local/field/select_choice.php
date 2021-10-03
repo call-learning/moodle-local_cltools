@@ -48,17 +48,6 @@ class select_choice extends persistent_field {
     const FORM_FIELD_TYPE = 'select';
 
     /**
-     * Add element onto the form
-     *
-     * @param MoodleQuickForm $mform
-     * @param mixed ...$additionalargs
-     */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $mform->addElement('select',$this->get_name(), $this->get_display_name(), $this->choices);
-        parent::internal_form_add_element($mform);
-    }
-
-    /**
      * Get the matching formatter type to be used for display
      *
      * @link  http://tabulator.info/docs/4.9/format
@@ -100,4 +89,26 @@ class select_choice extends persistent_field {
             'validator' => "in:" . join('|', (array) array_keys($this->choices))
         ];
     }
+    /**
+     * Return a printable version of the current value
+     *
+     * @param int $value
+     * @param mixed $additionalcontext
+     * @return mixed
+     */
+    public function format_value($value, $additionalcontext = null) {
+        return empty($this->choices[$value]) ? '': $this->choices[$value];
+    }
+
+    /**
+     * Add element onto the form
+     *
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
+     */
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $mform->addElement('select',$this->get_name(), $this->get_display_name(), $this->choices);
+        parent::internal_form_add_element($mform);
+    }
+
 }

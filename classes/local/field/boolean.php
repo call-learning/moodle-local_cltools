@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
+use MoodleQuickForm;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -42,7 +44,7 @@ class boolean extends persistent_field {
     }
 
     /**
-     * Form field type for this field
+     * Form field type for this field, used in default implementation of form_add_element
      */
     const FORM_FIELD_TYPE = 'advcheckbox';
 
@@ -92,7 +94,8 @@ class boolean extends persistent_field {
             get_string('truevalue', 'local_cltools'),
             true,
             1,
-            'true'
+            'true',
+            '1'
         ], true);
     }
 
@@ -103,30 +106,26 @@ class boolean extends persistent_field {
      * @return bool
      * @throws \coding_exception
      */
-    protected function is_flase_value($value) {
+    protected function is_false_value($value) {
         return in_array($value, [
             get_string('falsevalue', 'local_cltools'),
             false,
             0,
-            'false'
+            'false',
+            '0'
         ], true);
     }
 
     /**
      * Return a printable version of the current value
      *
-     * @param $value
+     * @param bool $value
      * @param mixed $additionalcontext
      * @return mixed
      */
     public function format_value($value, $additionalcontext = null) {
-        if (is_string($value)) {
-            $value = strtolower($value);
-        }
-        if ($this->is_true_value($value)) {
-            return get_string('truevalue', 'local_cltools');
-        }
-        return get_string('falsevalue', 'local_cltools');
+        return $value ? get_string('truevalue', 'local_cltools')
+            : get_string('falsevalue', 'local_cltools');
     }
 
     /**
@@ -137,8 +136,9 @@ class boolean extends persistent_field {
      */
     public function validate_value($value) {
         $value = strtolower($value);
-        if (!$this->is_true_value($value) && $this->is_true_value($value)) {
+        if (!$this->is_true_value($value) && !$this->is_false_value($value)) {
             throw new field_exception('invalidvalue', $value);
         }
+        return true;
     }
 }

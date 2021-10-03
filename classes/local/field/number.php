@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
+use MoodleQuickForm;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -85,5 +87,16 @@ class number extends persistent_field {
         return (object) [
             'validator' => 'numeric',
         ];
+    }
+
+    /**
+     * Return a printable version of the current value
+     *
+     * @param int|float $value
+     * @param mixed $additionalcontext
+     * @return mixed
+     */
+    public function format_value($value, $additionalcontext = null) {
+        return $value;
     }
 }

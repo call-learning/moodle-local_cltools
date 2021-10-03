@@ -13,38 +13,30 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace local_cltools\local\field\adapter;
+use core_table\local\filter\filter;
+use MoodleQuickForm;
+
+defined('MOODLE_INTERNAL') || die;
 
 /**
- * Rotation entity edit or add form
+ * Filter adapter for field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+interface filter_adapter {
+    /**
+     * Add element onto the form
+     *
+     * @return filter
+     */
+    public function get_filter_definition();
 
-namespace local_cltools\simple;
-
-use local_cltools\local\crud\form\entity_form;
-
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
-
-/**
- * Add Form
- *
- * @package     local_cltools
- * @copyright   2019 CALL Learning <laurent@call-learning.fr>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class form extends entity_form {
-
-    /** @var string The fully qualified classname. */
-    protected static $persistentclass = entity::class;
-
-    /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton', 'files');
-
-    /** @var string[] $foreignfields */
-    protected static $foreignfields = array();
+    /**
+     * Is in persistent
+     *
+     */
+    public function in_persistent_definition();
 }

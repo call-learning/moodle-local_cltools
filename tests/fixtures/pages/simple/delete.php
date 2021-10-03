@@ -34,10 +34,10 @@ global $CFG, $OUTPUT, $PAGE;
 require_login();
 
 // To make sure the table is created.
-\local_cltools\local\simple\entity::create_table();
+\local_cltools\simple\entity::create_table();
 
 $crudmgmt = crud_helper::create(
-    '\\local_cltools\\local\\simple\\entity',
+    \local_cltools\simple\entity::class,
     crud_delete::ACTION
 );
 

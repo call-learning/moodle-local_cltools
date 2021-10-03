@@ -38,6 +38,7 @@ $string['simple:scaleid'] = 'Simple entity Scale ID';
 $string['simple:descriptionformat'] = 'Simple entity Description Format';
 $string['simple:path'] = 'Path';
 $string['simple:parentid'] = 'Path';
+$string['notavailable'] = 'Not available';
 $string['add'] = 'Add';
 $string['edit'] = 'Edit';
 $string['hasgrade'] = 'Graded?';

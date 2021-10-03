@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\field\adapter;
+use core\persistent;
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die;
@@ -36,16 +37,35 @@ interface form_adapter {
     public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs);
 
     /**
-     * Callback for this field, so data can be converted before form submission
+     * Filter persistent data submission
      *
      * @param $data
+     * @return mixed
      */
-    public function form_prepare_files(&$itemdata, ...$args);
+    public function filter_data_for_persistent($data);
+
+    /**
+     * Is this field part of the persistent definition
+     *
+     * @return mixed
+     */
+    public function is_in_persistent_definition();
+
+    /**
+     * Callback for this field, so data can be converted before form submission
+     *
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
+     */
+    public function form_prepare_files($itemdata, persistent $persistent);
 
     /**
      * Callback for this field, so data can be saved after form submission
      *
-     * @param $data
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
      */
-    public function form_save_files(&$itemdata, ...$args);
+    public function form_save_files($itemdata, persistent $persistent);
 }

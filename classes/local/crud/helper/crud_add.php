@@ -95,7 +95,8 @@ class crud_add extends base {
             redirect($this->persistentnavigation->get_list_url());
         } else if ($data = $mform->get_data()) {
             try {
-                $mform->save_data();
+                $entity = $mform->save_data();
+
                 if ($postprocesscb && is_callable($postprocesscb)) {
                     $postprocesscb($entity, $data);
                 }

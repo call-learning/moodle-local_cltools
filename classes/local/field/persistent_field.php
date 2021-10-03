@@ -81,7 +81,7 @@ abstract class persistent_field {
         $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
         $this->fieldname = $fielddef->fieldname;
         $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
-        $this->visible =  empty($fielddef->visible);
+        $this->visible =  empty($fielddef->visible) ? false: $fielddef->visible;
         return $fielddef;
     }
 
@@ -102,6 +102,15 @@ abstract class persistent_field {
      */
     public function get_display_name() {
         return $this->fullname;
+    }
+
+    /**
+     * Get the display name for this field
+     *
+     * @return mixed
+     */
+    public function get_default() {
+        return $this->default;
     }
 
     /**
@@ -146,7 +155,7 @@ abstract class persistent_field {
     }
 
     /**
-     * Return a printable version of the current value
+     * Return a printable version of the value provided in input
      *
      * @param $value
      * @param mixed $additionalcontext
@@ -174,9 +183,11 @@ abstract class persistent_field {
      *
      * @param $data
      */
-    public function filter_data_for_persistent(&$itemdata, ...$args) {
+    public function form_filter_data(&$itemdata, ...$args) {
 
     }
+
+
 
     /**
      * Get addional joins
@@ -200,5 +211,21 @@ abstract class persistent_field {
      */
     public function get_additional_util_field() {
         return null;
+    }
+
+    /**
+     * Get persistent properties
+     *
+     * @return array[]
+     */
+    public function get_persitent_properties():array {
+        $property = [];
+        $property['type'] = $this->get_raw_param_type();
+        $property['null'] = $this->is_required();
+        if (!$this->is_required()) {
+            $property['default'] =$this->get_default();
+        }
+
+        return [$this->get_name() => $property];
     }
 }

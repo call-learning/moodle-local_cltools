@@ -51,7 +51,10 @@ class html extends persistent_field {
             'formatter' => 'html'
         ];
     }
-
+    /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'editor';
     /**
      * Add element onto the form
      *
@@ -60,7 +63,7 @@ class html extends persistent_field {
      */
     public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
         $elementname = $this->get_name() . '_editor';
-        $mform->addElement('editor', $elementname, $this->get_display_name());
+        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name());
         parent::internal_form_add_element($mform, $elementname);
         $mform->setType($this->get_name(), PARAM_RAW);
     }

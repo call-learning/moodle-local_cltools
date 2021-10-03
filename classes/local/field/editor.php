@@ -47,19 +47,6 @@ class editor extends persistent_field {
     protected $editoroptions = [];
 
     /**
-     * Add element onto the form
-     *
-     * @param MoodleQuickForm $mform
-     * @param mixed ...$additionalargs
-     */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $elementname = $this->get_name() . '_editor';
-        $mform->addElement('editor', $elementname, $this->get_display_name());
-        parent::internal_form_add_element($mform, $elementname);
-        $mform->setType($this->get_name(), PARAM_RAW);
-    }
-
-    /**
      * Check if the field is visible or not
      *
      * @return boolean visibility
@@ -105,18 +92,65 @@ class editor extends persistent_field {
         $itemdata->{$this->fieldname . 'format'} = $data->{$this->fieldname . 'format'};
     }
 
+
     /**
-     * Callback for this field, so data can be converted before sending it to a persistent
+     * Filter persistent data submission
      *
      * @param $data
+     * @return mixed
      */
-    public function filter_data_for_persistent(&$itemdata, ...$args) {
-        if (!empty($itemdata->{$this->fieldname . '_editor'})) {
-            unset($itemdata->{$this->fieldname . '_editor'});
+    public function filter_data_for_persistent($itemdata) {
+        if (!empty($itemdata->{$this->get_name() . '_editor'})) {
+            $itemdata->{$this->get_name()} = $itemdata->{$this->get_name() . '_editor'}['text'] ?? '';
+            unset($itemdata->{$this->get_name() . '_editor'});
         }
-        if (isset($itemdata->{$this->fieldname . 'trust'})) {
-            unset($itemdata->{$this->fieldname . 'trust'});
+        if (isset($itemdata->{$this->get_name() . 'trust'})) {
+            unset($itemdata->{$this->get_name() . 'trust'});
         }
+
+        return $itemdata;
+    }
+
+    /**
+     * @return array[]
+     */
+    public function get_persitent_properties():array {
+        $property = [];
+        $property['type'] = $this->get_raw_param_type();
+        $property['null'] = $this->is_required();
+
+        return [$this->get_name() => $property, "{$this->get_name()}format" => [
+            'type' => PARAM_INT,
+            'default' => FORMAT_PLAIN,
+            'choices' => array(FORMAT_PLAIN, FORMAT_HTML, FORMAT_MOODLE, FORMAT_MARKDOWN)
+        ]];
+    }
+
+    /**
+     * Check if the provided value is valid for this field.
+     *
+     * @param mixed $value
+     * @throws field_exception
+     */
+    public function validate_value($value) {
+        return is_string($value);
+    }
+
+    /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'editor';
+    /**
+     * Add element onto the form
+     *
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
+     */
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $elementname = $this->get_name() . '_editor';
+        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name());
+        parent::internal_form_add_element($mform, $elementname);
+        $mform->setType($this->get_name(), PARAM_RAW);
     }
 
 }

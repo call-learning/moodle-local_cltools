@@ -48,7 +48,7 @@ class entity_selector extends persistent_field {
     public function __construct($fielnameordef) {
         $standarddefaults = [
             'required' => false,
-            'rawtype' => PARAM_TEXT,
+            'rawtype' => PARAM_INT,
             'default' => null
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
@@ -58,23 +58,11 @@ class entity_selector extends persistent_field {
 
 
     /**
-     * Add element onto the form
-     *
-     * @param MoodleQuickForm $mform
-     * @param mixed ...$additionalargs
-     */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $choices = $this->get_entities();
-        $mform->addElement('searchableselector', $this->get_name(), $this->get_display_name(), $choices);
-        parent::internal_form_add_element($mform);
-    }
-
-    /**
      * @return array
      * @throws dml_exception
      */
     protected function get_entities() {
-        static::entity_lookup($this->entityclass, $this->displayfield);
+        return static::entity_lookup($this->entityclass, $this->displayfield);
     }
 
     /**
@@ -145,7 +133,7 @@ class entity_selector extends persistent_field {
         $table = ($this->entityclass)::TABLE;
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
         return [
-            "{$aliasname}.{$this->displayfield} AS {$aliasname}{$this->displayfield}",
+            "",
             "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
         ];
 
@@ -169,5 +157,21 @@ class entity_selector extends persistent_field {
             ]
         );
         return $field;
+    }
+
+    /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'searchableselector';
+    /**
+     * Add element onto the form
+     *
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
+     */
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $choices = $this->get_entities();
+        $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(), $choices);
+        parent::internal_form_add_element($mform);
     }
 }

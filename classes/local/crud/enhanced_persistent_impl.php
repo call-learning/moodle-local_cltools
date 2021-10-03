@@ -15,36 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rotation entity edit or add form
+ * Enhanced entity implementation
  *
  * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\simple;
-
-use local_cltools\local\crud\form\entity_form;
+namespace local_cltools\local\crud;
 
 defined('MOODLE_INTERNAL') || die();
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
 
-/**
- * Add Form
- *
- * @package     local_cltools
- * @copyright   2019 CALL Learning <laurent@call-learning.fr>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class form extends entity_form {
+trait enhanced_persistent_impl {
+    /**
+     * Return defined properties from
+     * @return array
+     */
+    protected static function define_properties(): array {
+        $properties = [];
+        foreach(static::define_fields() as $field) {
+            if ($field->is_in_persistent_definition()) {
+                $properties = array_merge($properties, $field->get_persitent_properties());
+            }
+        }
+        return $properties;
+    }
+    // TODO: define fields from table XML definition.
 
-    /** @var string The fully qualified classname. */
-    protected static $persistentclass = entity::class;
-
-    /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton', 'files');
-
-    /** @var string[] $foreignfields */
-    protected static $foreignfields = array();
+    /**
+     * Get persistent context
+     *
+     * @return mixed
+     */
+    public function get_context() {
+        global $PAGE;
+        return $PAGE->context;
+    }
 }

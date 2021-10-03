@@ -248,4 +248,19 @@ class entity_utils {
         return !empty($prop['null'])
             && ($prop['null'] == NULL_NOT_ALLOWED);
     }
+
+    /**
+     * Get fields defined and check if tnery
+     *
+     * @param string $persistentclassname
+     * @return mixed
+     * @throws coding_exception
+     */
+    public static function get_defined_fields($persistentclassname) {
+        $interfaces = class_implements($persistentclassname);
+        if (empty($interfaces[enhanced_persistent::class])) {
+            throw new coding_exception('This class should implemented enhanced_persistent interface');
+        }
+        return $persistentclassname::define_fields();
+    }
 }

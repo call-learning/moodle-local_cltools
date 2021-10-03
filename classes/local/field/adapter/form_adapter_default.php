@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\field\adapter;
+use core\persistent;
+use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die;
@@ -35,7 +37,7 @@ trait form_adapter_default {
      */
     public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
         $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name());
-        $this->internal_form_add_element($form);
+        $this->internal_form_add_element($mform);
     }
 
     /**
@@ -45,7 +47,7 @@ trait form_adapter_default {
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function internal_form_add_element(&$mform, $elementname = '') {
+    protected function internal_form_add_element($mform, $elementname = '') {
         if (empty($elementname)) {
             $elementname = $this->get_name();
         }
@@ -59,38 +61,52 @@ trait form_adapter_default {
     }
 
     /**
+     * Filter persistent data submission
+     *
+     * @param $data
+     * @return mixed
+     */
+    public function filter_data_for_persistent($data) {
+        return $data;
+    }
+
+    /**
      * Callback for this field, so data can be converted before form submission
      *
-     * @param $itemdata
-     * @throws coding_exception
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
      */
-    public function prepare_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        $draftitemid = file_get_submitted_draft_itemid($this->fieldname);
-        file_prepare_draft_area($draftitemid,
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->filemanageroptions);
-        $itemdata->{$filemanagerformelt} = $draftitemid;
+    public function form_prepare_files($itemdata, persistent $persistent) {
+        return $itemdata;
     }
 
     /**
      * Callback for this field, so data can be saved after form submission
      *
-     * @param $itemdata
-     * @throws coding_exception
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
      */
-    public function save_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        file_save_draft_area_files($itemdata->{$this->fieldname},
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->filemanageroptions);
+    public function form_save_files($itemdata, persistent $persistent) {
+        return $itemdata;
+    }
+    /**
+     * Is in persistent
+     *
+     */
+    public function is_in_persistent_definition() {
+        return true;
     }
 
-
+    protected function get_file_info_context(persistent $persistent) {
+        if ($persistent) {
+            $context = $persistent->get_context();
+            $component = entity_utils::get_component(get_class($persistent));
+            $filearearoot = entity_utils::get_persistent_prefix(get_class($persistent));
+            $itemdata = $persistent->to_record();
+            $itemid = $itemdata ? $itemdata->id : 0;
+        }
+        return [$context, $component, $filearearoot, $itemid];
+    }
 }
