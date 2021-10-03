@@ -81,7 +81,7 @@ abstract class persistent_field {
         $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
         $this->fieldname = $fielddef->fieldname;
         $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
-        $this->visible =  empty($fielddef->visible) ? false: $fielddef->visible;
+        $this->visible =  empty($fielddef->visible) ? true: $fielddef->visible;
         return $fielddef;
     }
 

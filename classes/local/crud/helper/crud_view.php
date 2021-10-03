@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 use coding_exception;
 use core_renderer;
 use dml_exception;
-use local_cltools\local\crud\persistent_navigation;
 use local_cltools\local\crud\entity_utils;
 use moodle_exception;
 use moodle_page;
