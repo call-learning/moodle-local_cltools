@@ -41,6 +41,12 @@ class number extends persistent_field {
         $this->init($fielnameordef, $standarddefaults);
     }
 
+
+    /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'float';
+
     /**
      * Get the matching filter type to be used for display
      *

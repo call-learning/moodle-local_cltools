@@ -35,6 +35,7 @@ use core_table\local\filter\filterset;
 use dml_exception;
 use local_cltools\local\field\persistent_field;
 use local_cltools\local\filter\enhanced_filterset;
+use local_cltools\local\table\external\helper;
 
 abstract class dynamic_table_sql implements dynamic_table_interface {
     use table_sql_trait;
@@ -170,7 +171,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @throws dml_exception
      */
     public function validate_access($writeaccess = false) {
-        external::validate_context(context_system::instance());
+        helper::validate_context(context_system::instance());
     }
 
     /**

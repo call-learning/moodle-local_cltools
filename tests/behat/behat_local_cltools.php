@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
 /**
@@ -35,47 +38,56 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 class behat_local_cltools extends behat_base {
 
     /**
-     * Convert page names to URLs for steps like 'When I am on the "[page name]" page'.
+     * Convert page names to URLs for steps like 'When I am on the "[identifier]" "[page type]" page'.
+     *
+     * A typical example might be:
+     *     When I am on the "Test quiz" "mod_quiz > Responses report" page
+     * which would cause this method in behat_mod_quiz to be called with
+     * arguments 'Responses report', 'Test quiz'.
      *
      * You should override this as appropriate for your plugin. The method
-     * {@link behat_navigation::resolve_core_page_url()} is a good example.
+     * {@link behat_navigation::resolve_core_page_instance_url()} is a good example.
      *
      * Your overridden method should document the recognised page types with
      * a table like this:
      *
      * Recognised page names are:
-     * | Page            | Description                                                    |
-     * | Simple Entity   | Simple entity add
+     * | Type      | identifier meaning | Description                                     |
      *
-     * @param string $page name of the page, with the component name removed e.g. 'Admin notification'.
+     * @param string $type identifies which type of page this is, e.g. 'Attempt review'.
+     * @param string $identifier identifies the particular page, e.g. 'Test quiz > student > Attempt 1'.
      * @return moodle_url the corresponding URL.
      * @throws Exception with a meaningful error message if the specified page cannot be found.
      */
-    protected function resolve_page_url(string $page): moodle_url {
-        return new moodle_url('/local/cltools/crudpages/simple/add.php');
+    protected function resolve_page_instance_url(string $type, string $identifier): moodle_url {
+        global $CFG;
+        require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
+        switch($type) {
+            case 'Entity edit':
+                $parts = explode('>', $identifier);
+                $entitytype = trim($parts[0]);
+                $entityid = trim($parts[1]);
+                $entity = $entitytype::get_record(['idnumber' => $entityid]);
+                return new moodle_url("/local/cltools/crudpages/{$identifier}/edit.php", ['id' => $entity->get('id')]);
+            case 'Entity add':
+                return new moodle_url("/local/cltools/crudpages/{$identifier}/add.php");
+            case 'Entity list':
+                return new moodle_url("/local/cltools/crudpages/{$identifier}/list.php");
+        }
+        throw new Exception('Unrecognised page type "' . $type . '."');
     }
 
     /**
      * Create the simple entity / other entities tables for testing
      *
-     * @BeforeFeature
+     * @BeforeScenario
      */
-    public static function setup_simple_entity_table(\Behat\Behat\Hook\Scope\BeforeFeatureScope $scope) {
+    public function before_scenario(BeforeScenarioScope $scope) {
         global $CFG;
-        var_dump($scope->getFeature());
-        // Should do:
-        // require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
-        // \local_cltools\local\simple\entity::delete_table();
+        require_once($CFG->dirroot.'/local/cltools/tests/lib.php');
+        \local_cltools\othersimple\entity::delete_table();
+        \local_cltools\simple\entity::delete_table();
+        \local_cltools\othersimple\entity::create_table();
+        \local_cltools\simple\entity::create_table();
     }
-
-
-    /**
-     * Delete the simple entity / other entities tables for testing
-     *
-     * @AfterFeature
-     */
-    public static function drop_simple_entity_table(\Behat\Behat\Hook\Scope\AfterFeatureScope $scope) {
-        global $CFG;
-    }
-
 }

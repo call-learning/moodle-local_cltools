@@ -43,7 +43,7 @@ export const validateRemote = async (tableHandler, tableUniqueid, cell, value) =
     return await Promise.race(
         ajaxCall(
             [{
-                methodname: 'cltools_dynamic_table_is_value_valid',
+                methodname: 'cltools_dynamic_table_validate_value',
                 args: args
             }]
         )

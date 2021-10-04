@@ -99,14 +99,20 @@ trait form_adapter_default {
         return true;
     }
 
-    protected function get_file_info_context(persistent $persistent) {
+    /**
+     * Get context for file creation/saving
+     * @param persistent $persistent
+     * @param string $fieldname
+     * @return array
+     * @throws \ReflectionException
+     */
+    protected function get_file_info_context(persistent $persistent, string $fieldname) {
         if ($persistent) {
             $context = $persistent->get_context();
             $component = entity_utils::get_component(get_class($persistent));
             $filearearoot = entity_utils::get_persistent_prefix(get_class($persistent));
-            $itemdata = $persistent->to_record();
-            $itemid = $itemdata ? $itemdata->id : 0;
+            $itemid = $persistent && $persistent->get('id') >0 ? $persistent->get('id') : null;
         }
-        return [$context, $component, $filearearoot, $itemid];
+        return [$context, $component, "{$filearearoot}_{$fieldname}", $itemid];
     }
 }

@@ -143,8 +143,17 @@ abstract class entity_form extends persistent {
     public function definition() {
         $mform = $this->_form;
         $this->pre_field_definitions($mform);
+        $hasidfield = false;
         foreach ($this->fields as $name => $field) {
-            $field->form_add_element($mform);
+            $field->form_add_element($mform, $this->get_persistent());
+            if ($field->get_name() == 'id') {
+                $hasidfield = true;
+            }
+        }
+        if (!$hasidfield && $this->get_persistent() && $this->get_persistent()->get('id') > 0) {
+            $mform->addElement('hidden', 'id');
+            $mform->setType('id', PARAM_INT);
+            $mform->setConstant('id', $this->get_persistent()->get('id'));
         }
         $this->post_field_definitions($mform);
         $this->add_action_buttons(true, get_string('save'));
@@ -174,6 +183,12 @@ abstract class entity_form extends persistent {
      * @throws dml_exception
      */
     public function prepare_for_files() {
+        $item = $this->get_persistent();
+        $itemdata = $item->to_record();
+        $currentdata = $this->_form->exportValues();
+        if ($currentdata) {
+            $itemdata = (object) array_merge((array) $currentdata, (array) $itemdata);
+        }
         foreach ($this->fields as $field) {
             $itemdata = $field->form_prepare_files($itemdata, $this->get_persistent());
         }
@@ -188,11 +203,16 @@ abstract class entity_form extends persistent {
      * @throws coding_exception
      */
     public function save_data(): \core\persistent {
-        $data = $this->save_submitted_files();
+
+        $data = moodleform::get_data();
         $persistentdata = $this->filter_data_for_persistent($data);
         $persistent = $this->get_persistent();
         $persistent->from_record((object) $persistentdata);
         $persistent->save();
+
+        // Then save the files as the id is now updated.
+        $this->save_submitted_files($data);
+
         return $persistent;
     }
 
@@ -202,10 +222,8 @@ abstract class entity_form extends persistent {
      * @throws ReflectionException
      * @throws dml_exception
      */
-    protected function save_submitted_files() {
-        $data = moodleform::get_data();
-
-        foreach ($this->fields as $fieldname => $field) {
+    protected function save_submitted_files($data) {
+        foreach ($this->fields as $field) {
             $data = $field->form_save_files($data, $this->get_persistent());
         }
         return $data;

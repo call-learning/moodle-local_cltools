@@ -53,16 +53,7 @@ class entity_selector extends persistent_field {
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
-        $this->displayfield = empty($fielddef->displayfield) ? 'id' : $fielddef->displayfield;
-    }
-
-
-    /**
-     * @return array
-     * @throws dml_exception
-     */
-    protected function get_entities() {
-        return static::entity_lookup($this->entityclass, $this->displayfield);
+        $this->displayfield = empty($fielddef->displayfield) ? "" : $fielddef->displayfield;
     }
 
     /**
@@ -78,8 +69,15 @@ class entity_selector extends persistent_field {
     public static function entity_lookup($entityclass, $displayfield) {
         global $DB;
         if ($entityclass && class_exists($entityclass)) {
+            $fields = entity_utils::get_defined_fields($entityclass);
+            if (empty($displayfield)) {
+                foreach($fields as $field) {
+                    if (in_array($field->get_name(), ['shortname', 'idnumber'])) {
+                        $displayfield = $field->get_name();
+                    }
+                }
+            }
             $allrecords = $DB->get_records_menu($entityclass::TABLE, null, "$displayfield ASC", 'id,' . $displayfield);
-            $allrecords[0] = get_string('notavailable', 'local_cltools');
             return $allrecords;
         } else {
             return [];
@@ -170,7 +168,7 @@ class entity_selector extends persistent_field {
      * @param mixed ...$additionalargs
      */
     public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $choices = $this->get_entities();
+        $choices = static::entity_lookup($this->entityclass, $this->displayfield);
         $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(), $choices);
         parent::internal_form_add_element($mform);
     }

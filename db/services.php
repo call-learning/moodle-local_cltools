@@ -25,8 +25,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $functions = array(
     'cltools_dynamic_table_get_rows' => [
-        'classname' => 'local_cltools\\local\\table\\external',
-        'methodname' => 'get_rows',
+        'classname' => 'local_cltools\\local\\table\\external\\get_rows',
+        'methodname' => 'execute',
         'description' => 'Get rows from a table',
         'type' => 'read',
         'capabilities' => 'local/cltools:dynamictableread',
@@ -34,8 +34,8 @@ $functions = array(
         'ajax' => true
     ],
     'cltools_dynamic_table_get_columns' => [
-        'classname' => 'local_cltools\\local\\table\\external',
-        'methodname' => 'get_columns',
+        'classname' => 'local_cltools\\local\\table\\external\\get_columns',
+        'methodname' => 'execute',
         'description' => 'Get columns definition for a table',
         'type' => 'read',
         'capabilities' => 'local/cltools:dynamictableread',
@@ -43,8 +43,8 @@ $functions = array(
         'ajax' => true
     ],
     'cltools_dynamic_table_set_value' => [
-        'classname' => 'local_cltools\\local\\table\\external',
-        'methodname' => 'set_value',
+        'classname' => 'local_cltools\\local\\table\\external\\set_value',
+        'methodname' => 'execute',
         'description' => 'Set a specific row/column value',
         'type' => 'write',
         'capabilities' => 'local/cltools:dynamictablewrite',
@@ -52,8 +52,8 @@ $functions = array(
         'ajax' => true
     ],
     'cltools_dynamic_table_is_value_valid' => [
-        'classname' => 'local_cltools\\local\\table\\external',
-        'methodname' => 'is_value_valid',
+        'classname' => 'local_cltools\\local\\table\\external\\validate_value',
+        'methodname' => 'execute',
         'description' => 'Set a specific row/column value',
         'type' => 'read',
         'capabilities' => 'local/cltools:dynamictableread',
@@ -62,8 +62,8 @@ $functions = array(
     ],
 
     'cltools_entity_lookup' => [
-        'classname' => 'local_cltools\\local\\table\\external',
-        'methodname' => 'entity_lookup',
+        'classname' => 'local_cltools\\local\\table\\external\\entity_lookup',
+        'methodname' => 'execute',
         'description' => 'Get an associative array of identifier and display parameters',
         'type' => 'read',
         'ajax' => true,

@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
-use coding_exception;
+use core\persistent;
+use local_cltools\local\crud\enhanced_persistent;
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
@@ -27,6 +28,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class editor extends persistent_field {
+
+    /**
+     * Editor options
+     *
+     * @var array
+     */
+    protected $editoroptions = [];
+
     /**
      * Construct the field from its definition
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
@@ -35,7 +44,7 @@ class editor extends persistent_field {
     public function __construct($fielnameordef) {
         $standarddefaults = [
             'required' => false,
-            'rawtype' => PARAM_TEXT,
+            'rawtype' => PARAM_RAW,
             'default' => ''
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
@@ -43,8 +52,6 @@ class editor extends persistent_field {
             $this->editoroptions = $fielddef->editoroptions;
         }
     }
-
-    protected $editoroptions = [];
 
     /**
      * Check if the field is visible or not
@@ -59,37 +66,50 @@ class editor extends persistent_field {
     /**
      * Callback for this field, so data can be converted before form submission
      *
-     * @param $itemdata
-     * @throws coding_exception
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
      */
-    public function prepare_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        file_prepare_standard_editor($itemdata,
-            $this->fieldname,
-            $this->editoroptions,
+    public function form_prepare_files($itemdata, persistent $persistent) {
+        $fieldname= $this->get_name();
+        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($persistent, $fieldname);
+        // Tweak the content so we get the submitted text if ever we failed to submit the full form and come back to the
+        // intial form (case persistent is not yet created).
+        if (!empty($itemdata->{$fieldname.'_editor'})) {
+            $itemdata->$fieldname = $itemdata->$fieldname ?? $itemdata->{$fieldname.'_editor'}['text'];
+            $itemdata->{$fieldname.'format'} = $itemdata->{$fieldname.'format'} ?? $itemdata->{$fieldname.'_editor'}['format'];
+        }
+        $itemdata = file_prepare_standard_editor($itemdata,
+            $fieldname,
+            $this->get_editor_options($persistent),
             $context,
             $component,
             $filearea,
             $itemid
         );
+        return $itemdata;
     }
 
     /**
      * Callback for this field, so data can be saved after form submission
      *
-     * @param $itemdata
-     * @throws coding_exception
+     * @param \stdClass $itemdata
+     * @param persistent $persistent
+     * @return \stdClass
      */
-    public function save_files(&$itemdata, ...$args) {
-        list($context, $component, $filearea, $itemid) = $args;
-        $data = file_postupdate_standard_editor($itemdata, $this->fieldname,
-            $this->editoroptions,
+    public function form_save_files($itemdata, persistent $persistent) {
+        $fieldname= $this->get_name();
+        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($persistent, $fieldname);
+        $data = file_postupdate_standard_editor($itemdata, $fieldname,
+            $this->get_editor_options($persistent),
             $context,
             $component,
             $filearea,
             $itemid);
-        $itemdata->{$this->fieldname} = $data->{$this->fieldname};
-        $itemdata->{$this->fieldname . 'format'} = $data->{$this->fieldname . 'format'};
+        $fieldnameformat = $fieldname . 'format';
+        $itemdata->$fieldname = $data->$fieldname;
+        $itemdata->$fieldnameformat = $data->$fieldnameformat;
+        return $itemdata;
     }
 
 
@@ -121,7 +141,7 @@ class editor extends persistent_field {
 
         return [$this->get_name() => $property, "{$this->get_name()}format" => [
             'type' => PARAM_INT,
-            'default' => FORMAT_PLAIN,
+            'default' => FORMAT_HTML,
             'choices' => array(FORMAT_PLAIN, FORMAT_HTML, FORMAT_MOODLE, FORMAT_MARKDOWN)
         ]];
     }
@@ -148,9 +168,30 @@ class editor extends persistent_field {
      */
     public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
         $elementname = $this->get_name() . '_editor';
-        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name());
+        $persistent = $additionalargs[0]?? null;
+        $editoroptions = $this->get_editor_options($persistent);
+
+        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name(), null, $editoroptions);
         parent::internal_form_add_element($mform, $elementname);
         $mform->setType($this->get_name(), PARAM_RAW);
     }
 
+    /**
+     * Get editor options (to manage files)
+     *
+     * @param enhanced_persistent|null $persistent
+     * @return array
+     */
+    protected function get_editor_options(?enhanced_persistent $persistent) {
+        global $CFG;
+        $defaultoptions = [
+            'context' => $persistent ? $persistent->get_context(): \context_system::instance(),
+            'enable_filemanagement' => true,
+            'maxfiles' => EDITOR_UNLIMITED_FILES,
+            'changeformat' => true,
+            'maxbytes' => $CFG->maxbytes,
+            'trusttext' => true
+        ];
+        return array_merge($defaultoptions, $this->editoroptions);
+    }
 }
