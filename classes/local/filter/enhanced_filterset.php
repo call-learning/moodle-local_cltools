@@ -61,17 +61,28 @@ class enhanced_filterset extends filterset {
     public function __construct(array $filtertypes) {
         foreach ($filtertypes as $fieldname => $fdef) {
             $fdef = is_array($fdef) ? (object) $fdef : $fdef;
-            if (empty($fdef->optional) || !empty($fdef->required)) {
-                $this->requiredfilters[$fieldname] = $fdef->filterclass;
-            } else {
-                $this->optionalfilters[$fieldname] = $fdef->filterclass;
-            }
-            if (!empty($fdef->alias)) {
-                $this->aliases[$fieldname] = $fdef->alias;
-            }
+            $this->add_filter_definition($fieldname, $fdef);
         }
     }
 
+    /**
+     * Add filter definition
+     * @param $fieldname
+     * @param $filterdefinition
+     */
+    public function add_filter_definition($fieldname, $filterdefinition) {
+        if (empty($filterdefinition->optional) || !empty($filterdefinition->required)) {
+            $this->requiredfilters[$fieldname] = $filterdefinition->filterclass;
+        } else {
+            $this->optionalfilters[$fieldname] = $filterdefinition->filterclass;
+        }
+        if (!empty($filterdefinition->alias)) {
+            $this->aliases[$fieldname] = $filterdefinition->alias;
+        }
+        // Hack: when adding a new filter we must refresh the filtertypes.
+        $this->filtertypes = null;
+        $this->get_all_filtertypes();
+    }
     /**
      * Get the optional filters.
      *
@@ -95,11 +106,12 @@ class enhanced_filterset extends filterset {
     /**
      * Get the sql where / params used for filtering
      *
-     * @param null $tableprefix possible table prefix for this query. Added to all fields.
-     * @param array|null $excludedfiltersname
+     * @param null $tableprefix
+     * @param null $excludedfiltersname
+     * @param array $forcedaliases
      * @return array
      */
-    function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null) {
+    function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null, $forcedaliases = []) {
 
         $joinsql = filter_helper::get_jointype_to_sql_join($this->get_join_type());
         $filtesetwheres = [];
@@ -122,7 +134,9 @@ class enhanced_filterset extends filterset {
             if (!empty($tableprefix)) {
                 $alias = "$tableprefix.$alias";
             }
-
+            if (!empty($forcedaliases[$filter->get_name()])) {
+                $alias = $forcedaliases[$filter->get_name()];
+            }
             list($wheres, $params) = $filter->get_sql_filter($alias);
             if ($wheres) {
                 $filtesetparams += $params;

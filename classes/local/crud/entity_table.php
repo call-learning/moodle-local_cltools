@@ -89,6 +89,7 @@ class entity_table extends dynamic_table_sql {
             if ($fields) {
                 $sqlfields .= (!empty($sqlfields) ? ', ' : '') . $fields;
             }
+            $this->fieldaliases[$field->get_name()] = "entity.{$field->get_name()}";
         }
         $this->set_sql($sqlfields, $from, '1=1', []);
 
@@ -170,4 +171,6 @@ class entity_table extends dynamic_table_sql {
         }
         return $imageshtml;
     }
+
+
 }

@@ -36,8 +36,8 @@ trait tabulator_default_trait {
         $editor = $this->get_column_editor();
         if ($editor) {
             return (object) [
-                'filter' => $editor->editor,
-                'filterParams' => $editor->editorParams
+                'headerFilter' => $editor->editor,
+                'headerFilterParams' => $editor->editorParams ?? ''
             ];
         }
         return null;

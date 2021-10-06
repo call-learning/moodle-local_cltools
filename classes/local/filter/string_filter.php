@@ -27,7 +27,6 @@ namespace local_cltools\local\filter;
 defined('MOODLE_INTERNAL') || die;
 
 use local_cltools\local\filter\adapter\sql_adapter;
-use TypeError;
 
 /**
  * Class representing a string filter.
@@ -36,19 +35,21 @@ use TypeError;
  * @copyright  2020 Simey Lameze <simey@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class string_filter extends \core_table\local\filter\string_filter implements sql_adapter{
+class string_filter extends \core_table\local\filter\string_filter implements sql_adapter, enhanced_filter_adapter {
+    use enhanced_filter_impl;
+
     /**
      * Return filter SQL
      *
      * @param string $columnname
      * @return array array of two elements - SQL query and named parameters
      */
-    public function get_sql_filter(string $columnname) : array{
+    public function get_sql_filter(string $columnname): array {
         global $DB;
         $wheres = [];
         $params = [];
         $sanitizedname = filter_helper::get_sanitized_name($this->get_name());
-        foreach($this->get_filter_values() as $filterkey => $fieldval) {
+        foreach ($this->get_filter_values() as $filterkey => $fieldval) {
             $fieldval = trim($fieldval, '"');// Remove double quote if any.
             $paramname = "strp_{$sanitizedname}{$filterkey}";
             $wheres[] = " {$DB->sql_like($columnname, ':'.$paramname, false, false)} ";

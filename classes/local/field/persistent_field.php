@@ -187,8 +187,6 @@ abstract class persistent_field {
 
     }
 
-
-
     /**
      * Get addional joins
      *

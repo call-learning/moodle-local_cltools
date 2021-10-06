@@ -121,12 +121,12 @@ class get_rows extends external_api {
         }
         // Convert from an array of sort definition to column => sortorder.
         if (!empty($sortdata)) {
-            $sortdef = [];
-            foreach ($sortdata as $def) {
-                $def = (object) $def;
-                $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
-            }
-            $instance->set_sortdata($sortdef);
+            //$sortdef = [];
+            //foreach ($sortdata as $def) {
+            //    $def = (object) $def;
+            //    $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
+            //}
+            $instance->set_sortdata($sortdata);
         }
 
         $instance->validate_access();
@@ -177,13 +177,13 @@ class get_rows extends external_api {
                     'pagenumber' => new external_value(
                         PARAM_INT,
                         'The page number',
-                        VALUE_OPTIONAL,
+                        VALUE_DEFAULT,
                         -1
                     ),
                     'pagesize' => new external_value(
                         PARAM_INT,
                         'The number of records per page',
-                        VALUE_OPTIONAL,
+                        VALUE_DEFAULT,
                         0
                     )
                 ]

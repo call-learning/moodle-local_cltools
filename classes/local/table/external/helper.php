@@ -87,7 +87,7 @@ class helper extends external_api {
                     'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
                     'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
                     'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
-                    'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL),
+                    'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL, false),
                     'values' => new external_multiple_structure(
                         new external_value(PARAM_RAW, 'Filter value'),
                         'The value to filter on',
@@ -98,7 +98,7 @@ class helper extends external_api {
                 VALUE_OPTIONAL
             ),
             'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
-            'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_OPTIONAL, false),
+            'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
         ];
     }
 

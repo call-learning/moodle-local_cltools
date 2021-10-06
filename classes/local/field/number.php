@@ -27,25 +27,21 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class number extends persistent_field {
+    protected $isfloat = false;
     /**
      * Construct the field from its definition
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
-    public function __construct($fielnameordef) {
+    public function __construct($fielnameordef, $isfloat = false) {
         $standarddefaults = [
             'required' => false,
-            'rawtype' => PARAM_FLOAT,
+            'rawtype' => $isfloat ? PARAM_FLOAT : PARAM_INT,
             'default' => 0
         ];
+        $this->isfloat = $isfloat;
         $this->init($fielnameordef, $standarddefaults);
     }
-
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'float';
 
     /**
      * Get the matching filter type to be used for display
@@ -91,7 +87,7 @@ class number extends persistent_field {
      */
     public function get_column_validator() {
         return (object) [
-            'validator' => 'numeric',
+            'validator' => $this->isfloat? 'float' : 'integer',
         ];
     }
 
@@ -105,4 +101,17 @@ class number extends persistent_field {
     public function format_value($value, $additionalcontext = null) {
         return $value;
     }
+
+    /**
+     * Add element onto the form
+     *
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
+     * @return mixed
+     */
+    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+        $mform->addElement($this->isfloat? 'float': 'text', $this->get_name(), $this->get_display_name());
+        $this->internal_form_add_element($mform);
+    }
+
 }

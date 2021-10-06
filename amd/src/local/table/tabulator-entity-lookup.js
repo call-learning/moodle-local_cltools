@@ -50,7 +50,7 @@ export function entityLookup(entityclass, displayfield) {
                 if (result.warnings && result.warnings.length !== 0) {
                     Notification.addNotification(
                         {
-                            message: result.warnings.reduce((a, w) => (a + ',' + w), '')
+                            message: result.warnings.reduce((a, w) => (a + ' ' + w.message), '')
                         }
                     );
                     return [];

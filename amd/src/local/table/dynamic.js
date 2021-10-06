@@ -118,7 +118,7 @@ export const tableInit = async (
 
 
     Tabulator.prototype.extendModule("format", "formatters", TABULATOR_FORMATTERS);
-    Tabulator.prototype.extendModule("editor", "editor", TABULATOR_EDITORS);
+    Tabulator.prototype.extendModule("edit", "editors", TABULATOR_EDITORS);
 
     columns = await columnSetup(columns, tableHandler, tableUniqueId);
 

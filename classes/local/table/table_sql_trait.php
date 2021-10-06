@@ -55,6 +55,8 @@ trait table_sql_trait {
     protected string $uniqueid;
     protected $userfieldid;
 
+    protected $download;
+    protected $countsql;
     /**
      * Call this to pass the download type. Use :
      *         $download = optional_param('download', '', PARAM_ALPHA);
@@ -565,20 +567,6 @@ trait table_sql_trait {
         return $this->totalrows ?? 0;
     }
 
-    /**
-     * Set the preferred table sorting attributes.
-     *
-     * @param string $sortby The field to sort by.
-     * @param int $sortorder The sort order.
-     */
-    public function set_sortdata(array $sortdata): void {
-        $this->sortdata = [];
-        foreach ($sortdata as $sortitem) {
-            if (!array_key_exists($sortitem['sortby'], $this->sortdata)) {
-                $this->sortdata[$sortitem['sortby']] = (int) $sortitem['sortorder'];
-            }
-        }
-    }
     /**
      * Get the context for the table.
      *

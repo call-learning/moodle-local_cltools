@@ -27,6 +27,16 @@ use core_table\local\filter\filter;
  */
 class filter_helper {
     /**
+     * Return filter SQL
+     *
+     * @param string $alias
+     * @return array array of two elements - SQL query and named parameters
+     */
+    public static function get_sql_filter_join(filter $filter, array $wheres, array $params): array {
+        return array("(" . join(" " . static::get_jointype_to_sql_join($filter->get_join_type()) . " ", $wheres) . ")", $params);
+    }
+
+    /**
      * Map join types to corresponding SQL values
      *
      */
@@ -35,17 +45,7 @@ class filter_helper {
             filter::JOINTYPE_ALL => 'AND',
             filter::JOINTYPE_ANY => 'OR',
         ];
-        return empty($jointtypetosql[$jointtype]) ? 'AND': $jointtypetosql[$jointtype];
-    }
-
-    /**
-     * Return filter SQL
-     *
-     * @param string $alias
-     * @return array array of two elements - SQL query and named parameters
-     */
-    public static function get_sql_filter_join(filter $filter, array $wheres, array $params) : array{
-        return array("(". join(" ".static::get_jointype_to_sql_join($filter->get_join_type()). " ", $wheres). ")", $params);
+        return empty($jointtypetosql[$jointtype]) ? 'AND' : $jointtypetosql[$jointtype];
     }
 
     /**
@@ -54,7 +54,7 @@ class filter_helper {
      * @param string $name
      * @return array array of two elements - SQL query and named parameters
      */
-    public static function get_sanitized_name(string $name) : string{
+    public static function get_sanitized_name(string $name): string {
         return trim(strtolower($name));
     }
 }

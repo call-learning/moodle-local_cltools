@@ -70,10 +70,11 @@ class entity_lookup extends external_api {
             $values[0] = get_string('notavailable', 'local_cltools');
         } catch (moodle_exception $e) {
             $warnings[] = (object) [
-                'entityclass' => $entityclass,
+                'item' => $entityclass,
+                'itemid' => 0,
                 'displayfield' => $displayfield,
-                'warningcode' => 'lookuperror',
-                'message' => "For entity $entityclass: {$e->getMessage()}"
+                'warningcode' => "lookuperror",
+                'message' => "Lookup error for entity $entityclass: {$e->getMessage()} and $displayfield."
             ];
         }
         return [
@@ -98,7 +99,8 @@ class entity_lookup extends external_api {
                 'displayfield' => new external_value(
                     PARAM_ALPHANUMEXT,
                     'Name of the field used to display values',
-                    VALUE_OPTIONAL
+                    VALUE_DEFAULT,
+                    ''
                 )
             ]
         );

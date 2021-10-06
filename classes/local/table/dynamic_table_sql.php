@@ -66,10 +66,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      *  sql alias for this table if needed (filters)
      */
     protected $fieldaliases = [];
-    /** @var array list of user fullname shown in report. This is a way to store temporarilly the usernames and
-     * avoid hitting the DB too much
-     */
-    private $userfullnames = array();
 
     private string $sheettitle;
 
@@ -113,7 +109,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $headers = [];
 
         $this->setup_fields();
-        foreach ($this->fields as $name => $field) {
+        foreach ($this->fields as $field) {
             $cols[] = $field->get_name();
             $headers[] = $field->get_display_name();
         }
@@ -135,20 +131,19 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
 
     /**
      * Set the filterset in the table class.
-     *
-     * The use of filtersets is a requirement for dynamic tables, but can be used by other tables too if desired.
-     * This also sets the filter aliases if not set for each filters, depending on what is set in the
-     * local $filteralias array.
+     * If there was an existing filter replaces them by the new definition.
      *
      * @param enhanced_filterset $filterset The filterset object to get filters and table parameters from
      */
     public function set_filterset(enhanced_filterset $filterset): void {
-        foreach ($this->fieldaliases as $fieldname => $sqlalias) {
-            if ($filterset->has_filter($fieldname)) {
-                $filter = $filterset->get_filter($fieldname);
+        // If there existing filters we replace them.
+        if ($this->filterset) {
+            foreach($filterset as $filter) {
+                $this->filterset->add_filter($filter);
             }
+        } else {
+            $this->filterset = $filterset;
         }
-        $this->filterset = $filterset;
     }
 
     /**
@@ -193,16 +188,39 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Set the preferred table sorting attributes.
+     *
+     * This is a modified version.
+     *
+     * @param string $sortby The field to sort by.
+     * @param int $sortorder The sort order.
+     */
+    public function set_sortdata(array $sortdata): void {
+        $this->sortdata = [];
+        foreach ($sortdata as $sortitem) {
+            if (!array_key_exists($sortitem['sortby'], $this->sortdata)) {
+                if (is_numeric($sortitem['sortorder'])) {
+                    $sortorder =(int) $sortitem['sortorder'];
+                } else {
+                    $sortorder = ($sortitem['sortorder'] === 'ASC') ? SORT_ASC : SORT_DESC;
+                }
+                $this->sortdata[$sortitem['sortby']] = $sortorder;
+            }
+        }
+    }
+
+    /**
      * Main method to create the underlying query (SQL)
      *
      * @param int $pagesize
      * @param bool $useinitialsbar
+     * @param bool $disablefilters disable filters
      */
-    public function query_db($pagesize, $useinitialsbar = true) {
+    public function query_db($pagesize, $useinitialsbar = true, $disablefilters = false) {
         $additionalwhere = null;
         $additionalparams = [];
-        if (!empty($this->filterset)) {
-            list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter();
+        if (!empty($this->filterset) && !$disablefilters) {
+            list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter(null, null, $this->fieldaliases);
         }
         if ($additionalwhere) {
             if (!empty($this->sql->where)) {
@@ -248,7 +266,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         }
 
         // Fetch the attempts.
-        $sort = $this->construct_order_by($this->get_sort_columns(), $this->column_textsort);
+        $sort = $this->construct_order_by($this->get_sort_columns());
         if ($sort) {
             $sort = "ORDER BY $sort";
         }
@@ -291,20 +309,15 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
                 foreach (['formatter', 'filter', 'editor', 'validator'] as $modifier) {
                     $callback = "get_column_$modifier";
                     $modifiervalues = (array) $field->$callback();
-                    if (!$column->isvisible && $modifiervalues) {
+                    if ($field->is_visible() && $modifiervalues) {
                         if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
                             continue;
                         }
                         foreach ($modifiervalues as $modifiername => $value) {
-                            if (!$column->isvisible && $field->$callback()) {
-                                if (in_array($modifier, ['editor', 'validator']) && !$this->iseditable) {
-                                    continue;
-                                }
-                                if (is_object($value) || is_array($value)) {
-                                    $value = json_encode($value);
-                                }
-                                $column->$modifiername = $value;
+                            if (is_object($value) || is_array($value)) {
+                                $value = json_encode($value);
                             }
+                            $column->$modifiername = $value;
                         }
                     }
                 }
@@ -379,33 +392,21 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @return array column name => SORT_... constant.
      */
     public function get_sort_columns() {
+        $sorts = [];
         if (!$this->issetup) {
             throw new coding_exception('Cannot call get_sort_columns until you have called setup.');
         }
 
-        if (empty($this->prefs['sortby'])) {
+        if (empty($this->sortdata)) {
             return array();
         }
-
-        foreach ($this->prefs['sortby'] as $column => $notused) {
-            if (isset($this->columns[$column])) {
-                continue; // This column is OK.
+        foreach($this->sortdata as $sortcolumn => $sortorder) {
+            if (!empty($this->fieldaliases[$sortcolumn])) {
+                $sortcolumn = $this->fieldaliases[$sortcolumn];
             }
-            if (in_array($column, get_all_user_name_fields()) &&
-                isset($this->columns['fullname'])) {
-                continue; // This column is OK.
-            }
-            // This column is not OK.
-            unset($this->prefs['sortby'][$column]);
+            $sorts[$sortcolumn] = $sortorder;
         }
 
-        $sorts = $this->prefs['sortby'];
-        foreach ($sorts as $colname => $sort) {
-            if (!empty($this->sortfieldaliases[$colname])) {
-                unset($sorts[$colname]);
-                $sorts[$this->sortfieldaliases[$colname]] = $sort;
-            }
-        }
         return $sorts;
     }
 }

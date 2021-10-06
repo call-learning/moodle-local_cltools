@@ -14,22 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\filter\adapter;
-use MoodleQuickForm;
-
 defined('MOODLE_INTERNAL') || die;
 
 /**
- * Form adapter for filter
+ * Enhanced filter interface
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface form_adapter {
+interface enhanced_filter_adapter {
     /**
-     * Adds controls specific to this filter in the form.
+     * Get an identifier for this type of filter
      *
-     * @param MoodleQuickForm $mform
+     * @return string
      */
-    public function setup_form(MoodleQuickForm $mform): void;
+    public function get_type(): string;
 }

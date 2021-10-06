@@ -42,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity extends \core\persistent implements enhanced_persistent{
+class entity extends \core\persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 

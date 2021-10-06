@@ -16,7 +16,6 @@
 namespace local_cltools\local\filter\adapter;
 defined('MOODLE_INTERNAL') || die;
 
-
 /**
  * SQL query adapter for filter
  *
@@ -31,5 +30,5 @@ interface sql_adapter {
      * @param string $alias
      * @return array array of two elements - SQL query and named parameters
      */
-    public function get_sql_filter(string $alias) : array;
+    public function get_sql_filter(string $alias): array;
 }
