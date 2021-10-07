@@ -44,8 +44,8 @@ class entity_table_renderable extends dynamic_table_sql_renderable {
      */
     public function download() {
         $filename = 'page_list' . userdate(time(), get_string('backupnameformat', 'langconfig'), 99, false);
-        $this->entitytable->is_downloading('csv', $filename);
-        $this->entitytable->out($this->perpage, false);
+        $this->dynamictable->is_downloading('csv', $filename);
+        $this->dynamictable->out($this->perpage, false);
     }
 }
 

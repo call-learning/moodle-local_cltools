@@ -43,7 +43,7 @@ class exporter extends entity_exporter {
         return [
             'context' => \context_system::instance(),
             'component' => entity_utils::get_component(get_class($this->persistent)),
-            'filearea' => 'description',
+            'filearea' => 'simple_description',
             'itemid' => empty($this->data->id) ? 0 : $this->data->id
         ];
     }

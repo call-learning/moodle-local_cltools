@@ -126,32 +126,6 @@ class entity_table extends dynamic_table_sql {
     }
 
     /**
-     * Format the actions cell.
-     *
-     * @param $row
-     * @return string
-     * @throws coding_exception
-     * @throws moodle_exception
-     */
-    protected function col_actions($row) {
-        global $OUTPUT;
-        $actions = [];
-        foreach ($this->actionsdefs as $k => $a) {
-            $url = new moodle_url($a->url, ['id' => $row->id]);
-            $popupaction = empty($a->popup) ? null :
-                new popup_action('click', $url);
-            $actions[] = $OUTPUT->action_icon(
-                $url,
-                new pix_icon($a->icon,
-                    get_string($k, 'local_cltools')),
-                $popupaction
-            );
-        }
-
-        return implode('&nbsp;', $actions);
-    }
-
-    /**
      * Utility to get the relevant files for a given entity
      *
      * @param object $entity

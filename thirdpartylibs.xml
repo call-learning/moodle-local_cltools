@@ -5,13 +5,13 @@
     <name>Tabulator</name>
     <license>MIT</license>
     <version>4.9.3</version>
-    <licenseversion></licenseversion>
+    <licenseversion>1</licenseversion>
 </library>
 <library>
     <location>amd/src/local/moment-lazy.js</location>
     <name>Moment</name>
     <license>MIT</license>
     <version>2.29.1</version>
-    <licenseversion></licenseversion>
+    <licenseversion>1</licenseversion>
 </library>
 </libraries>

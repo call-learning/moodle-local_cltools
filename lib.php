@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 
 function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
+    // TODO: add new type of context - one per entity. See custom context in $CFG->custom_context_classes.
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
     }
@@ -39,7 +40,7 @@ function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $for
     require_login($course, true, $cm);
 
     // Check the relevant capabilities - these may vary depending on the filearea being accessed.
-    if (!has_capability('local/cltools:viewfiles', $context)) {
+    if (!has_capability('local/cltools:viewentityfiles', $context)) {
         return false;
     }
 
@@ -68,25 +69,3 @@ function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $for
     send_stored_file($file, 86400, 0, $forcedownload, $options);
 }
 
-
-function local_cltools_output_fragment_userselector_table($args) {
-    global $DB, $PAGE;
-    $randomid = \html_writer::random_id();
-    $userlisttable = new \local_cltools\table\user_list_selector("users-table-$randomid");
-    $context = context_course::instance(SITEID);
-
-    $renderable = new local_cltools\output\users_filter($userlisttable->uniqueid);
-    $renderer = $PAGE->get_renderer('local_cltools');
-    $filters = $renderable->export_for_template($renderer);
-    $filtershtml = $renderer->render_from_template('core_user/participantsfilter', $filters);
-    $filterset = new \local_cltools\table\user_list_selector_filterset();
-    ob_start();
-    $userlisttable->set_filterset($filterset);
-    $userlisttable->out(20, true);
-    $userlisttable = ob_get_contents();
-    ob_end_clean();
-    $PAGE->requires->js_call_amd('local_cltools/user_selector', 'init', [[
-        'uniqueid' => $args['uniqid'],
-    ]]);
-    return $filtershtml . $userlisttable;
-}

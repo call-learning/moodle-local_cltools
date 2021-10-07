@@ -33,12 +33,17 @@ use coding_exception;
 use context_system;
 use core_table\local\filter\filterset;
 use dml_exception;
+use local_cltools\local\field\html;
 use local_cltools\local\field\persistent_field;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\external\helper;
+use moodle_url;
+use pix_icon;
+use popup_action;
 
 abstract class dynamic_table_sql implements dynamic_table_interface {
     use table_sql_trait;
+
     /**
      * @var bool $iseditable is table editable ?
      */
@@ -109,6 +114,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $headers = [];
 
         $this->setup_fields();
+        if ($this->actionsdefs) {
+            $this->fields[] = new html([
+                'fieldname' => 'actions',
+                'fullname' => get_string('actions', 'local_cltools')
+            ]);
+        }
         foreach ($this->fields as $field) {
             $cols[] = $field->get_name();
             $headers[] = $field->get_display_name();
@@ -138,7 +149,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     public function set_filterset(enhanced_filterset $filterset): void {
         // If there existing filters we replace them.
         if ($this->filterset) {
-            foreach($filterset as $filter) {
+            foreach ($filterset as $filter) {
                 $this->filterset->add_filter($filter);
             }
         } else {
@@ -149,7 +160,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     /**
      * Get the currently defined filterset.
      *
-     * @return \local_cltools\local\table\filterset|null
+     * @return filterset|null
      */
     public function get_filterset(): ?filterset {
         return $this->filterset;
@@ -200,7 +211,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         foreach ($sortdata as $sortitem) {
             if (!array_key_exists($sortitem['sortby'], $this->sortdata)) {
                 if (is_numeric($sortitem['sortorder'])) {
-                    $sortorder =(int) $sortitem['sortorder'];
+                    $sortorder = (int) $sortitem['sortorder'];
                 } else {
                     $sortorder = ($sortitem['sortorder'] === 'ASC') ? SORT_ASC : SORT_DESC;
                 }
@@ -377,13 +388,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @throws coding_exception
      */
     protected function setup_other_fields() {
-        if ($this->actionsdefs) {
-            $this->fields['actions'] = persistent_field::get_instance_from_def('html', [
-                'fullname' => get_string('actions', 'local_cltools'),
-                'fieldname' => 'actions',
-                'rawtype' => PARAM_RAW,
-            ]);
-        }
     }
 
     /**
@@ -400,7 +404,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         if (empty($this->sortdata)) {
             return array();
         }
-        foreach($this->sortdata as $sortcolumn => $sortorder) {
+        foreach ($this->sortdata as $sortcolumn => $sortorder) {
             if (!empty($this->fieldaliases[$sortcolumn])) {
                 $sortcolumn = $this->fieldaliases[$sortcolumn];
             }
@@ -408,5 +412,33 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         }
 
         return $sorts;
+    }
+
+    /**
+     * Format the actions cell.
+     *
+     * @param $row
+     * @return string
+     * @throws coding_exception
+     * @throws \moodle_exception
+     */
+    protected function col_actions($row) {
+        // TODO : replace this by a column typed html_template for example
+        // That will render a template from a json instead.
+        global $OUTPUT;
+        $actions = [];
+        foreach ($this->actionsdefs as $k => $a) {
+            $url = new moodle_url($a->url, ['id' => $row->id]);
+            $popupaction = empty($a->popup) ? null :
+                new popup_action('click', $url);
+            $actions[] = $OUTPUT->action_icon(
+                $url,
+                new pix_icon($a->icon,
+                    get_string($k, $a->component ?? 'local_cltools')),
+                $popupaction
+            );
+        }
+
+        return implode('&nbsp;', $actions);
     }
 }

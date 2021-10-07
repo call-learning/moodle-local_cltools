@@ -211,7 +211,11 @@ abstract class entity_form extends persistent {
         $persistent->save();
 
         // Then save the files as the id is now updated.
-        $this->save_submitted_files($data);
+        $data = $this->save_submitted_files($data);
+        // Then update.
+        $persistentdata = $this->filter_data_for_persistent($data);
+        $persistent->from_record((object) $persistentdata);
+        $persistent->update();
 
         return $persistent;
     }

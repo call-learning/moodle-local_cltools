@@ -121,7 +121,9 @@ class editor extends persistent_field {
      */
     public function filter_data_for_persistent($itemdata) {
         if (!empty($itemdata->{$this->get_name() . '_editor'})) {
-            $itemdata->{$this->get_name()} = $itemdata->{$this->get_name() . '_editor'}['text'] ?? '';
+            if (empty($itemdata->{$this->get_name()})) {
+                $itemdata->{$this->get_name()} = $itemdata->{$this->get_name() . '_editor'}['text'] ?? '';
+            }
             unset($itemdata->{$this->get_name() . '_editor'});
         }
         if (isset($itemdata->{$this->get_name() . 'trust'})) {
