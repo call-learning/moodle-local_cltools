@@ -100,6 +100,10 @@ class dynamic_table_sql_renderable implements renderable, templatable {
         $context->sortdatajson = '';
         $context->pagesize = $this->perpage;
         $context->handler = get_class($this->dynamictable);
+        $context->handlerparams = '';
+        if (method_exists($this->dynamictable, 'get_persistent_class')) {
+            $context->handlerparams = $this->dynamictable->define_class();
+        }
         $context->otheroptions = "";
         $context->editable = $this->dynamictable->is_editable();
         if ($this->otheroptions) {

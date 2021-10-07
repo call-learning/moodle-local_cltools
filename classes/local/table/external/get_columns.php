@@ -56,6 +56,7 @@ class get_columns extends external_api {
      */
     public static function execute(
         string $handler,
+        string $handlerparams,
         string $uniqueid,
         ?array $filters = null,
         ?string $jointype = null,
@@ -63,19 +64,21 @@ class get_columns extends external_api {
     ) {
         [
             'handler' => $handler,
+            'handlerparams' => $handlerparams,
             'uniqueid' => $uniqueid,
             'filters' => $filters,
             'jointype' => $jointype,
             'editable' => $editable,
         ] = self::validate_parameters(self::execute_parameters(), [
             'handler' => $handler,
+            'handlerparams' => $handlerparams,
             'uniqueid' => $uniqueid,
             'filters' => $filters,
             'jointype' => $jointype,
             'editable' => $editable,
         ]);
 
-        $instance = helper::get_table_handler_instance($handler, $uniqueid, $editable);
+        $instance = helper::get_table_handler_instance($handler,$handlerparams ,$uniqueid, $editable);
         $instance->validate_access();
         helper::setup_filters($instance, $filters, $jointype);
         /* @var $instance dynamic_table_sql instance */

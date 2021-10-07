@@ -35,12 +35,13 @@ import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 import {TABULATOR_EDITORS} from "./tabulator-editors";
 
 
-const rowQuery = (tableHandler, tableUniqueid, pageSize, params, initialFilters, tableEditable) => {
+const rowQuery = (tableHandler, tableHandlerParams, tableUniqueid, pageSize, params, initialFilters, tableEditable) => {
     let joinType;
     let filters = convertFiltersToMoodle(params.filters);
     [joinType, filters] = convertInitialFilter(initialFilters, filters);
     const args = {
         handler: tableHandler,
+        handlerparams: tableHandlerParams,
         uniqueid: tableUniqueid,
         sortdata: (typeof params.sorters === "undefined") ? [] : params.sorters.map(
             (e) => {
@@ -79,6 +80,7 @@ export const init = async (tabulatorelementid) => {
     };
     tableInit("#" + tabulatorelementid,
         tableelement.data('tableHandler'),
+        tableelement.data('tableHandlerParams'),
         tableelement.data('tableUniqueid'),
         tableelement.data('tablePagesize'),
         tableelement.data('tableFilters'),
@@ -90,6 +92,7 @@ export const init = async (tabulatorelementid) => {
 export const tableInit = async (
     tableElement,
     tableHandler,
+    tableHandlerParams,
     tableUniqueId,
     tablePageSize,
     tableFilters,
@@ -109,6 +112,7 @@ export const tableInit = async (
             methodname: 'cltools_dynamic_table_get_columns',
             args: {
                 handler: tableHandler,
+                handlerparams: tableHandlerParams,
                 uniqueid: tableUniqueId,
                 filters: filters,
                 jointype: joinType,
@@ -125,7 +129,7 @@ export const tableInit = async (
     let options = {
         ajaxRequestFunc: function (url, config, params) {
             const pageSize = this.table.getPageSize();
-            return rowQuery(tableHandler, tableUniqueId, pageSize, params, tableFilters, tableEditable);
+            return rowQuery(tableHandler, tableHandlerParams, tableUniqueId, pageSize, params, tableFilters, tableEditable);
         },
         ajaxURL: true, // If not set the RequestFunct will never be called.
         pagination: "remote",

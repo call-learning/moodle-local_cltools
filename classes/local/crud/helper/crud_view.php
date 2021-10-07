@@ -111,9 +111,10 @@ class crud_view extends base {
         $id = required_param('id', PARAM_INT);
         $entity = $this->refpersistentclass->newInstance($id);
         $returnedtext .= $this->renderer->container_start();
+        $relatedexporter = $this->instanciate_related_exporter($entity);
         $returnedtext .= $this->renderer->render_from_template(
             "$persistentcomponent/$persistentprefix",
-            ($this->refpersistentexporterclass->newInstance($entity))->export($this->renderer)
+            $relatedexporter->export($this->renderer)
         );
         $returnedtext .= $this->renderer->container_end();
         $this->trigger_event($entity);

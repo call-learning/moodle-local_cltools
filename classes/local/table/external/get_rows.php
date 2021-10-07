@@ -65,6 +65,7 @@ class get_rows extends external_api {
      */
     public static function execute(
         string $handler,
+        string $handlerparams,
         string $uniqueid,
         array $sortdata,
         ?array $filters = null,
@@ -79,6 +80,7 @@ class get_rows extends external_api {
 
         [
             'handler' => $handler,
+            'handlerparams' => $handlerparams,
             'uniqueid' => $uniqueid,
             'sortdata' => $sortdata,
             'filters' => $filters,
@@ -90,6 +92,7 @@ class get_rows extends external_api {
             'resetpreferences' => $resetpreferences,
         ] = self::validate_parameters(self::execute_parameters(), [
             'handler' => $handler,
+            'handlerparams' => $handlerparams,
             'uniqueid' => $uniqueid,
             'sortdata' => $sortdata,
             'filters' => $filters,
@@ -102,7 +105,7 @@ class get_rows extends external_api {
         ]);
 
         /* @var $instance dynamic_table_interface the dynamic table itself */
-        $instance = helper::get_table_handler_instance($handler, $uniqueid);
+        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid);
 
         helper::setup_filters($instance, $filters, $jointype);
         if ($resetpreferences === true) {

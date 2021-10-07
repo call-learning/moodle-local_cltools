@@ -14,14 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Other simple entity
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\othersimple;
 
 use lang_string;
@@ -35,8 +27,9 @@ use xmldb_table;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
- * Class rotation
+ * Other simple entity
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -46,7 +39,7 @@ class entity extends \core\persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 
-    const TABLE = 'simple';
+    const TABLE = 'othersimple';
 
     /**
      * Usual properties definition for a persistent

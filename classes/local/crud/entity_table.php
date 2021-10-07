@@ -61,7 +61,8 @@ class entity_table extends dynamic_table_sql {
      */
     public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
         /* @var $entity persistent the persistent class */
-        $entity = new static::$persistentclass($rowid);
+        $persistentclass=  $this->define_class();
+        $entity = $persistentclass($rowid);
         try {
             $entity->set($fieldname, $newvalue);
             $entity->update();
@@ -73,13 +74,21 @@ class entity_table extends dynamic_table_sql {
     }
 
     /**
+     * Can be overriden
+     * @return string|null
+     */
+    public function define_class() {
+        return static::$persistentclass;
+    }
+    /**
      * Set SQL parameters (where, from,....) from the entity
      *
      * This can be overridden when we are looking at linked entities.
      */
     protected function set_initial_sql() {
-        $sqlfields = forward_static_call([static::$persistentclass, 'get_sql_fields'], 'entity', '');
-        $from = static::$persistentclass::TABLE;
+        $persistentclass=  $this->define_class();
+        $sqlfields = forward_static_call([$persistentclass, 'get_sql_fields'], 'entity', '');
+        $from = $persistentclass::TABLE;
         $from = '{' . $from . '} entity';
         // Add joins.
         // Set sorts (additional column).
@@ -104,7 +113,7 @@ class entity_table extends dynamic_table_sql {
      * @throws ReflectionException
      */
     protected function setup_fields() {
-        $this->fields = entity_utils::get_defined_fields(static::$persistentclass);
+        $this->fields = entity_utils::get_defined_fields($this->define_class());
     }
 
     /**

@@ -14,23 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_cltools\local\crud\generic;
+use local_cltools\local\crud\entity_table;
+
+defined('MOODLE_INTERNAL') || die();
+
+
 /**
- * Common library for tests (behat + phpunit)
+ * Persistent dynamically instanciated
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class generic_entity_table extends entity_table {
 
-defined('MOODLE_INTERNAL') || die();
+    private $genericpersistentclass;
 
-// Replace autoloading.
-global $CFG;
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/entity.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/form.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/exporter.php');
+    public function __construct($uniqueid,
+        $actionsdefs,
+        $editable,
+        $genericclassname
+    ) {
+        $this->genericpersistentclass = $genericclassname;
+        parent::__construct($uniqueid, $actionsdefs, $editable);
+    }
+
+    /**
+     * Can be overriden
+     * @return string|null
+     */
+    public function define_class() {
+        return $this->genericpersistentclass;
+    }
+}

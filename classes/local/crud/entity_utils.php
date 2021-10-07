@@ -34,6 +34,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use lang_string;
+use local_cltools\simple\entity;
 use moodle_url;
 use ReflectionClass;
 use ReflectionException;

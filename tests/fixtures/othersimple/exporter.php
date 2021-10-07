@@ -15,22 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Common library for tests (behat + phpunit)
+ * Entity exporter
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_cltools\othersimple;
 defined('MOODLE_INTERNAL') || die();
 
-// Replace autoloading.
-global $CFG;
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/entity.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/form.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/exporter.php');
+use local_cltools\local\crud\entity_exporter;
+use local_cltools\local\crud\entity_utils;
+use renderer_base;
+
+class exporter extends entity_exporter {
+
+    /**
+     * Returns the specific class the persistent should be an instance of.
+     *
+     * @return string
+     */
+    protected static function define_class() {
+        return entity::class;
+    }
+}

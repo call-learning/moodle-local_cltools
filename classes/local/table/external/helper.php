@@ -22,6 +22,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use invalid_parameter_exception;
+use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\dynamic_table_interface;
 use local_cltools\local\table\dynamic_table_sql;
@@ -59,6 +60,13 @@ class helper extends external_api {
                 PARAM_RAW,
                 'Handler',
                 VALUE_REQUIRED
+            ),
+            'handlerparams' => new external_value(
+            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+            // For now we will have to check manually.
+                PARAM_RAW,
+                'Handler parameters',
+                VALUE_OPTIONAL
             ),
             'uniqueid' => new external_value(
                 PARAM_ALPHANUMEXT,
@@ -110,7 +118,7 @@ class helper extends external_api {
      * @param bool $editable
      * @return mixed
      */
-    public static function get_table_handler_instance($handler, $uniqueid, $editable = false) {
+    public static function get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable = false) {
         global $CFG;
 
         // Hack alert: this is to make sure we can "see" the test entities class.
@@ -133,7 +141,11 @@ class helper extends external_api {
             throw new UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
-        $instance = new $handler($uniqueid, null, $editable);
+        if ($handler == generic_entity_table::class) {
+            $instance = new $handler($uniqueid, null, $editable, $handlerparams);
+        } else {
+            $instance = new $handler($uniqueid, null, $editable);
+        }
         return $instance;
     }
 
