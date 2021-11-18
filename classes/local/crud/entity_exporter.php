@@ -30,6 +30,7 @@ use context_system;
 use core\external\persistent_exporter;
 use core\persistent;
 use dml_exception;
+use local_cveteval\local\persistent\situation\entity;
 use moodle_url;
 use ReflectionException;
 use renderer_base;

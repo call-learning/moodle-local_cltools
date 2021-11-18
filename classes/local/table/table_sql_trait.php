@@ -57,6 +57,7 @@ trait table_sql_trait {
 
     protected $download;
     protected $countsql;
+    protected $sql;
     /**
      * Call this to pass the download type. Use :
      *         $download = optional_param('download', '', PARAM_ALPHA);

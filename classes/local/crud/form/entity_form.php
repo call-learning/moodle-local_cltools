@@ -145,9 +145,11 @@ abstract class entity_form extends persistent {
         $this->pre_field_definitions($mform);
         $hasidfield = false;
         foreach ($this->fields as $name => $field) {
-            $field->form_add_element($mform, $this->get_persistent());
-            if ($field->get_name() == 'id') {
-                $hasidfield = true;
+            if ($field->can_edit()) {
+                $field->form_add_element($mform, $this->get_persistent());
+                if ($field->get_name() == 'id') {
+                    $hasidfield = true;
+                }
             }
         }
         if (!$hasidfield && $this->get_persistent() && $this->get_persistent()->get('id') > 0) {

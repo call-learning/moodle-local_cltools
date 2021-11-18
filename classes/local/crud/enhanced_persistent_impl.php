@@ -34,8 +34,8 @@ trait enhanced_persistent_impl {
     protected static function define_properties(): array {
         $properties = [];
         foreach(static::define_fields() as $field) {
-            if ($field->is_in_persistent_definition()) {
-                $properties = array_merge($properties, $field->get_persitent_properties());
+            if ($field->is_persistent()) {
+                $properties = array_merge($properties, $field->get_persistent_properties());
             }
         }
         return $properties;

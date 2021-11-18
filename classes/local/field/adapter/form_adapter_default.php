@@ -95,7 +95,16 @@ trait form_adapter_default {
      * Is in persistent
      *
      */
-    public function is_in_persistent_definition() {
+    public function is_persistent() {
+        return true;
+    }
+
+    /**
+     * Can we edit this field
+     *
+     * @return bool
+     */
+    public function can_edit() {
         return true;
     }
 

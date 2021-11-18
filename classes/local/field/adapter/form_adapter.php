@@ -49,7 +49,14 @@ interface form_adapter {
      *
      * @return mixed
      */
-    public function is_in_persistent_definition();
+    public function is_persistent();
+
+    /**
+     * Can we edit this field
+     *
+     * @return bool
+     */
+    public function can_edit();
 
     /**
      * Callback for this field, so data can be converted before form submission

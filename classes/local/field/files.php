@@ -145,7 +145,7 @@ class files extends persistent_field {
      * Is in persistent table ?
      *
      */
-    public function is_in_persistent_definition() {
+    public function is_persistent() {
         return false;
     }
 

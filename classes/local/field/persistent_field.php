@@ -216,7 +216,7 @@ abstract class persistent_field {
      *
      * @return array[]
      */
-    public function get_persitent_properties():array {
+    public function get_persistent_properties():array {
         $property = [];
         $property['type'] = $this->get_raw_param_type();
         $property['null'] = $this->is_required();
