@@ -62,7 +62,9 @@ trait tabulator_default_trait {
      *
      */
     public function get_column_formatter() {
-        return null;
+        return (object) [
+            'headerSort' => $this->can_sort()
+        ];
     }
 
     /**
@@ -74,6 +76,14 @@ trait tabulator_default_trait {
      */
     public function get_column_validator() {
         return null;
+    }
+
+    /**
+     * Can we sort the column ?
+     * @return bool
+     */
+    public function can_sort() {
+        return true;
     }
 
 }

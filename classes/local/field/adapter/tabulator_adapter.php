@@ -61,4 +61,10 @@ interface tabulator_adapter {
      */
     public function get_column_validator();
 
+    /**
+     * Can we sort the column ?
+     * @return bool
+     */
+    public function can_sort();
+
 }

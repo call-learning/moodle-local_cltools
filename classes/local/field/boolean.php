@@ -55,13 +55,13 @@ class boolean extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'tickCross',
-            'formatterParams' => (object) [
-                'allowEmpty' => true,
-                'allowTruthy' => false
-            ]
+        $format = parent::get_column_formatter();
+        $format->formatter = 'tickCross';
+        $format->formatterParams = (object) [
+            'allowEmpty' => true,
+            'allowTruthy' => false
         ];
+        return $format;
     }
 
     /**
@@ -77,7 +77,7 @@ class boolean extends persistent_field {
                 'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                 'allowEmpty' => true,
                 'allowTruthy' => true,
-                'tristate' => true
+                'tristate' => false
             ]
         ];
     }

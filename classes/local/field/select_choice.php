@@ -55,10 +55,10 @@ class select_choice extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'lookup',
-            'formatterParams' => (object) $this->choices
-        ];
+        $format = parent::get_column_formatter();
+        $format->formatter ='lookup';
+        $format->formatterParams =  (object) $this->choices;
+        return $format;
     }
 
     /**

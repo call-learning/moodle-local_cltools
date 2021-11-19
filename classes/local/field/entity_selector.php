@@ -92,13 +92,13 @@ class entity_selector extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'entity_lookup',
-            'formatterParams' => (object) [
-                'entityclass' => $this->entityclass,
-                'displayfield' => $this->displayfield
-            ],
+        $format = parent::get_column_formatter();
+        $format->formatter = 'entity_lookup';
+        $format->formatterParams = (object) [
+            'entityclass' => $this->entityclass,
+            'displayfield' => $this->displayfield
         ];
+        return $format;
     }
 
     /**

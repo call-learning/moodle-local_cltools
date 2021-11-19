@@ -50,15 +50,18 @@ class blank_field extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'html'
-        ];
+        $format = parent::get_column_formatter();
+        $format->formatter = 'html';
+        return $format;
     }
     public function can_edit() {
         return false;
     }
 
     public function is_persistent() {
+        return false;
+    }
+    public function can_sort() {
         return false;
     }
 }

@@ -62,9 +62,8 @@ class text extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'textarea'
-        ];
+        $format = parent::get_column_formatter();
+        $format->formatter ='textarea';
     }
 
     /**

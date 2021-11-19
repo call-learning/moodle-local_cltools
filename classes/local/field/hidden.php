@@ -62,16 +62,6 @@ class hidden extends persistent_field {
     }
 
     /**
-     * Get the matching formatter type to be used for display
-     *
-     * @return string|null return the type (and null if no formatter)
-     *
-     */
-    public function get_column_formatter() {
-        return null;
-    }
-
-    /**
      * Get the matching editor type to be used in the table
      *
      * @return string|null return the type (and null if no filter)

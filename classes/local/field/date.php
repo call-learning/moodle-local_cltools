@@ -54,7 +54,9 @@ class date extends persistent_field {
      * @throws coding_exception
      */
     public function get_column_formatter() {
-        return (object) [
+        $format = parent::get_column_formatter();
+        $format->formatter = 'datets';
+        $format->formatterParams = (object) [
             'formatter' => 'datets',
             'formatterParams' => (object) [
                 'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
@@ -62,6 +64,7 @@ class date extends persistent_field {
                 'timezone' => usertimezone()
             ]
         ];
+        return $format;
     }
 
     /**

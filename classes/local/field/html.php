@@ -47,9 +47,9 @@ class html extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => 'html'
-        ];
+        $format = parent::get_column_formatter();
+        $format->formatter = 'html';
+        return $format;
     }
     /**
      * Form field type for this field, used in default implementation of form_add_element

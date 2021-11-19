@@ -62,9 +62,9 @@ class number extends persistent_field {
      *
      */
     public function get_column_formatter() {
-        return (object) [
-            'formatter' => $this->get_type(),
-        ];
+        $format = parent::get_column_formatter();
+        $format->formatter = $this->get_type();
+        return $format;
     }
 
     /**

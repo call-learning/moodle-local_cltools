@@ -46,17 +46,22 @@ abstract class persistent_field {
      */
     protected $default = null;
     /**
-     * @var null $fullname
+     * @var string $fullname
      */
     protected $fullname = null;
     /**
-     * @var null $fieldname
+     * @var string $fieldname
      */
     protected $fieldname = null;
     /**
-     * @var null $visible
+     * @var bool $visible
      */
     protected $visible = false;
+    /**
+     * @var bool $sortable
+     */
+    protected bool $sortable;
+
     /**
      * Initialise
      *
@@ -82,6 +87,7 @@ abstract class persistent_field {
         $this->fieldname = $fielddef->fieldname;
         $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
         $this->visible =  empty($fielddef->visible) ? true: $fielddef->visible;
+        $this->sortable = empty($fielddef->sortable) ? true: $fielddef->sortable;
         return $fielddef;
     }
 
@@ -225,5 +231,13 @@ abstract class persistent_field {
         }
 
         return [$this->get_name() => $property];
+    }
+
+    /**
+     * Can we sort the column ?
+     * @return bool
+     */
+    public function can_sort() {
+        return $this->sortable;
     }
 }

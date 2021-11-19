@@ -62,7 +62,7 @@ class entity_table extends dynamic_table_sql {
     public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
         /* @var $entity persistent the persistent class */
         $persistentclass=  $this->define_class();
-        $entity = $persistentclass($rowid);
+        $entity = new $persistentclass($rowid);
         try {
             $entity->set($fieldname, $newvalue);
             $entity->update();
