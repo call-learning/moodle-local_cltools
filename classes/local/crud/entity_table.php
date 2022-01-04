@@ -45,6 +45,20 @@ use ReflectionException;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entity_table extends dynamic_table_sql {
+
+    /**
+     * Sets up the page_table parameters.
+     *
+     * @throws coding_exception
+     * @see page_list::get_filter_definition() for filter definition
+     */
+    public function __construct($uniqueid = null,
+        $actionsdefs = null,
+        $editable = false,
+        $persistentclassname = null
+    ) {
+        parent::__construct($uniqueid, $actionsdefs, $editable);
+    }
     /**
      * @var string $persistentclass
      */

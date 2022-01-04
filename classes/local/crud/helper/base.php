@@ -37,8 +37,6 @@ use local_cltools\local\crud\entity_utils;
 use local_cltools\local\crud\form\entity_form;
 use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\crud\navigation\flat_navigation;
-use local_cltools\simple\entity;
-use local_cltools\simple\table;
 use moodle_exception;
 use moodle_page;
 use moodle_url;
@@ -223,7 +221,7 @@ abstract class base {
         $listentity = null;
         $reflectionclass = $this->get_related_persistent_reflectionclass($this->refpersistentlistclassname, "table");
         if ($reflectionclass) {
-            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs);
+            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false , $this->refpersistentclass->getName());
         } else {
             // Default list boilerplate.
             $listentity = new generic_entity_table(null, null, false, $this->refpersistentclass->getName());

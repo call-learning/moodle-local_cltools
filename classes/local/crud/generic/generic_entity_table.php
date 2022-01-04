@@ -47,4 +47,8 @@ class generic_entity_table extends entity_table {
     public function define_class() {
         return $this->genericpersistentclass;
     }
+
+    public function get_persistent_class() {
+        return $this->genericpersistentclass;
+    }
 }

@@ -70,9 +70,6 @@ abstract class persistent_field {
      * @return object
      */
     protected function init($fielddef, array $defaultvalues) {
-        $this->required = false;
-        $this->default = '';
-        $this->rawtype = PARAM_RAW;
         if (is_string($fielddef)) {
             $fielddef = [
                 'fieldname' => $fielddef
@@ -81,13 +78,13 @@ abstract class persistent_field {
         // Get default values
         $fielddef = array_merge($defaultvalues, $fielddef);
         $fielddef = (object) $fielddef;
-        $this->required = empty($fielddef->required) ? false : $fielddef->required;
-        $this->default = empty($fielddef->default) ? '' : $fielddef->default;
+        $this->required = !isset($fielddef->required) ? false : $fielddef->required;
+        $this->default = !isset($fielddef->default) ? '' : $fielddef->default;
         $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
         $this->fieldname = $fielddef->fieldname;
         $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
-        $this->visible =  empty($fielddef->visible) ? true: $fielddef->visible;
-        $this->sortable = empty($fielddef->sortable) ? true: $fielddef->sortable;
+        $this->visible =  !isset($fielddef->visible) ? true: $fielddef->visible;
+        $this->sortable = !isset($fielddef->sortable) ? true: $fielddef->sortable;
         return $fielddef;
     }
 
