@@ -26,8 +26,6 @@ namespace local_cltools\othersimple;
 defined('MOODLE_INTERNAL') || die();
 
 use local_cltools\local\crud\entity_exporter;
-use local_cltools\local\crud\entity_utils;
-use renderer_base;
 
 class exporter extends entity_exporter {
 

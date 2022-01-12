@@ -37,7 +37,7 @@ use local_cltools\local\filter\adapter\sql_adapter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class numeric_comparison_filter extends \core_table\local\filter\numeric_comparison_filter
-    implements sql_adapter, enhanced_filter_adapter {
+        implements sql_adapter, enhanced_filter_adapter {
     use enhanced_filter_impl;
 
     /**
@@ -51,13 +51,13 @@ class numeric_comparison_filter extends \core_table\local\filter\numeric_compari
         $params = [];
         $sanitizedname = filter_helper::get_sanitized_name($this->get_name());
         $directiontosql = [
-            '=' => '=',
-            '==' => '=',
-            '===' => '=',
-            '>' => '>',
-            '=>' => '>=',
-            '<' => '<',
-            '<=' => '<=',
+                '=' => '=',
+                '==' => '=',
+                '===' => '=',
+                '>' => '>',
+                '=>' => '>=',
+                '<' => '<',
+                '<=' => '<=',
         ];
         foreach ($this->get_filter_values() as $filterkey => $fieldval) {
             $paramname = "nump_{$sanitizedname}{$filterkey}";

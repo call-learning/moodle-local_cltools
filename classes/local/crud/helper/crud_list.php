@@ -64,15 +64,15 @@ class crud_list extends base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null,
+            $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation);
+                $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_list_url();
     }
 
@@ -85,8 +85,11 @@ class crud_list extends base {
      */
     public function setup_page(&$page) {
         parent::setup_page($page);
-        $buttonadd = new single_button($this->persistentnavigation->get_add_url(), get_string('add'));
-        $page->set_button($this->renderer->render($buttonadd));
+        $formclass = $this->get_related_class("form");
+        if ($formclass) {
+            $buttonadd = new single_button($this->persistentnavigation->get_add_url(), get_string('add'));
+            $page->set_button($this->renderer->render($buttonadd));
+        }
         $this->setup_page_navigation($page);
     }
 

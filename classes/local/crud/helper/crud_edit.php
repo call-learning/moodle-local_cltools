@@ -63,15 +63,15 @@ class crud_edit extends base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null,
+            $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation, $pagesrooturl);
+                $exporterclassname, $persistentnavigation, $pagesrooturl);
         $this->actionurl = $this->persistentnavigation->get_edit_url();
     }
 
@@ -102,10 +102,10 @@ class crud_edit extends base {
                 }
                 $this->trigger_event($entity);
                 redirect(
-                    new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
-                    $this->get_action_event_description(),
-                    null,
-                    $messagetype = notification::NOTIFY_SUCCESS);
+                        new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
+                        $this->get_action_event_description(),
+                        null,
+                        $messagetype = notification::NOTIFY_SUCCESS);
             } catch (moodle_exception $e) {
                 $returnedtext .= $this->renderer->notification($e->getMessage(), 'notifyfailure');
             }

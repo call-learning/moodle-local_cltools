@@ -15,9 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
+
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Full html text field
  *
@@ -27,18 +29,25 @@ defined('MOODLE_INTERNAL') || die();
  */
 class html extends persistent_field {
     /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'editor';
+
+    /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_RAW,
-            'default' => ''
+                'required' => false,
+                'rawtype' => PARAM_RAW,
+                'default' => ''
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
+
     /**
      * Get the matching editor type to be used in the table
      *
@@ -51,17 +60,14 @@ class html extends persistent_field {
         $format->formatter = 'html';
         return $format;
     }
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'editor';
+
     /**
      * Add element onto the form
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $elementname = $this->get_name() . '_editor';
         $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name());
         parent::internal_form_add_element($mform, $elementname);

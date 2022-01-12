@@ -21,21 +21,21 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use local_cltools\simple\entity;
+
 require_once(__DIR__ . '/../../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
 // Only run through behat or if we are in debug mode.
 debugging() || (defined('PHPUNIT_TEST') && PHPUNIT_TEST) || defined('BEHAT_SITE_RUNNING') || die();
 
-use local_cltools\local\crud\helper\base as crud_helper;
-use local_cltools\local\crud\helper\crud_add;
-
 global $CFG, $OUTPUT, $PAGE;
-require_login();;
+require_login();
 
 // To make sure the table is created.
-\local_cltools\simple\entity::delete_table();
-\local_cltools\simple\entity::create_table();
+entity::delete_table();
+entity::create_table();
 /* @var core_renderer $OUTPUT output */
 echo $OUTPUT->header();
 echo $OUTPUT->single_button(new moodle_url('/local/cltools/test/fixtures/index.php'), get_string('continue'));

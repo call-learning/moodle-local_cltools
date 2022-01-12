@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 interface enhanced_persistent {
     /**
      * Return defined properties from
+     *
      * @return array
      */
     public static function define_fields(): array;

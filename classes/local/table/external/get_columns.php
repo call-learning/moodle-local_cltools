@@ -22,6 +22,7 @@ use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
@@ -55,30 +56,30 @@ class get_columns extends external_api {
      * @return array
      */
     public static function execute(
-        string $handler,
-        string $handlerparams,
-        string $uniqueid,
-        ?array $filters = null,
-        ?string $jointype = null,
-        ?bool $editable = null
+            string $handler,
+            string $handlerparams,
+            string $uniqueid,
+            ?array $filters = null,
+            ?string $jointype = null,
+            ?bool $editable = null
     ) {
         [
-            'handler' => $handler,
-            'handlerparams' => $handlerparams,
-            'uniqueid' => $uniqueid,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
+                'handler' => $handler,
+                'handlerparams' => $handlerparams,
+                'uniqueid' => $uniqueid,
+                'filters' => $filters,
+                'jointype' => $jointype,
+                'editable' => $editable,
         ] = self::validate_parameters(self::execute_parameters(), [
-            'handler' => $handler,
-            'handlerparams' => $handlerparams,
-            'uniqueid' => $uniqueid,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
+                'handler' => $handler,
+                'handlerparams' => $handlerparams,
+                'uniqueid' => $uniqueid,
+                'filters' => $filters,
+                'jointype' => $jointype,
+                'editable' => $editable,
         ]);
 
-        $instance = helper::get_table_handler_instance($handler,$handlerparams ,$uniqueid, $editable);
+        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable);
         $instance->validate_access();
         helper::setup_filters($instance, $filters, $jointype);
         /* @var $instance dynamic_table_sql instance */
@@ -95,7 +96,7 @@ class get_columns extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
-            helper::get_table_query_basic_parameters()
+                helper::get_table_query_basic_parameters()
         );
     }
 
@@ -107,22 +108,26 @@ class get_columns extends external_api {
      */
     public static function execute_returns(): external_multiple_structure {
         return
-            new external_multiple_structure(
-                new external_single_structure([
-                    'title' => new external_value(PARAM_TEXT, 'Column title.'),
-                    'field' => new external_value(PARAM_TEXT, 'Field name in reference to this title.'),
-                    'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
-                    'filter' => new external_value(PARAM_RAW, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
-                    'filterParams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
-                    'formatter' => new external_value(PARAM_RAW, 'Formatter: image, html, datetime ....', VALUE_OPTIONAL),
-                    'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....', VALUE_OPTIONAL),
-                    'editor' => new external_value(PARAM_RAW, 'Editor: image, html, datetime ....', VALUE_OPTIONAL),
-                    'editorParams' => new external_value(PARAM_RAW, 'Editor: parameter as JSON, ....', VALUE_OPTIONAL),
-                    'validator' => new external_value(PARAM_RAW, 'Validator: image, html, datetime ....', VALUE_OPTIONAL),
-                    'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....', VALUE_OPTIONAL),
-                    'additionalParams' => new external_value(PARAM_RAW, 'Additional params in the form of a JSON object,
+                new external_multiple_structure(
+                        new external_single_structure([
+                                'title' => new external_value(PARAM_TEXT, 'Column title.'),
+                                'field' => new external_value(PARAM_TEXT, 'Field name in reference to this title.'),
+                                'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
+                                'filter' => new external_value(PARAM_RAW, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
+                                'filterParams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
+                                'formatter' => new external_value(PARAM_RAW, 'Formatter: image, html, datetime ....',
+                                        VALUE_OPTIONAL),
+                                'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....',
+                                        VALUE_OPTIONAL),
+                                'editor' => new external_value(PARAM_RAW, 'Editor: image, html, datetime ....', VALUE_OPTIONAL),
+                                'editorParams' => new external_value(PARAM_RAW, 'Editor: parameter as JSON, ....', VALUE_OPTIONAL),
+                                'validator' => new external_value(PARAM_RAW, 'Validator: image, html, datetime ....',
+                                        VALUE_OPTIONAL),
+                                'validatorParams' => new external_value(PARAM_RAW, 'Validator: parameter as JSON, ....',
+                                        VALUE_OPTIONAL),
+                                'additionalParams' => new external_value(PARAM_RAW, 'Additional params in the form of a JSON object,
                       will be merged with column definition', VALUE_OPTIONAL),
-                ])
-            );
+                        ])
+                );
     }
 }

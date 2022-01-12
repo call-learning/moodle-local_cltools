@@ -21,11 +21,11 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_cltools\output\table;
 defined('MOODLE_INTERNAL') || die();
 
 use dml_exception;
-use local_cltools\local\crud\entity_table;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use renderable;
@@ -70,9 +70,9 @@ class dynamic_table_sql_renderable implements renderable, templatable {
      * @throws dml_exception
      */
     public function __construct(
-        $dynamictable,
-        $otheroptions = null,
-        $perpage = 30
+            $dynamictable,
+            $otheroptions = null,
+            $perpage = 30
     ) {
         global $PAGE;
         $url = new moodle_url($PAGE->url);

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
-use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Blank html field.
  *
@@ -31,17 +31,20 @@ defined('MOODLE_INTERNAL') || die();
 class blank_field extends persistent_field {
     /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_RAW,
-            'default' => '',
+                'required' => false,
+                'rawtype' => PARAM_RAW,
+                'default' => '',
+                'editable' => false
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
+
     /**
      * Get the matching editor type to be used in the table
      *
@@ -54,6 +57,7 @@ class blank_field extends persistent_field {
         $format->formatter = 'html';
         return $format;
     }
+
     public function can_edit() {
         return false;
     }
@@ -61,6 +65,7 @@ class blank_field extends persistent_field {
     public function is_persistent() {
         return false;
     }
+
     public function can_sort() {
         return false;
     }

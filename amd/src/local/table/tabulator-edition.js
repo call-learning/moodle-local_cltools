@@ -26,6 +26,18 @@ import {call as ajaxCall} from "core/ajax";
 import Notification from 'core/notification';
 
 /**
+ * Format warning
+ * @param {Object} result
+ * @returns {null|String}
+ */
+const formatWarnings = (result) => {
+    let message = null;
+    if (Array.isArray(result.warnings) && result.warnings.length) {
+        message = result.warnings.reduce((a, w) => (w.message + (a ? a : '')), null);
+    }
+    return message;
+};
+/**
  * Send the value back to server and send an tabulator-cell-edited event
  *
  * @param {String} tableHandler
@@ -49,12 +61,9 @@ export const validateRemote = async (tableHandler, tableUniqueid, cell, value) =
         )
     ).catch(Notification.exception).then(
         (result) => {
-            if (Array.isArray(result.warnings) && result.warnings.length) {
-                Notification.addNotification(
-                    {
-                        message: result.warnings.reduce((a, w) => (a + ',' + w), '')
-                    }
-                );
+            const message = formatWarnings(result);
+            if (message) {
+                Notification.addNotification({message: message});
             }
             return result.success;
         });
@@ -90,12 +99,9 @@ export const cellEdited = (tableHandler, tableUniqueid, data) => {
             if (result && result.success) {
                 document.dispatchEvent(new CustomEvent('tabulator-cell-edited', args));
             } else {
-                if (Array.isArray(result.warnings) && result.warnings.length) {
-                    Notification.addNotification(
-                        {
-                            message: result.warnings.reduce((a, w) => (a + ',' + w), '')
-                        }
-                    );
+                const message = formatWarnings(result);
+                if (message) {
+                    Notification.addNotification({message: message});
                 }
                 return false;
             }

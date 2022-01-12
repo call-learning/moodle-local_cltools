@@ -16,17 +16,16 @@
 
 namespace local_cltools\othersimple;
 
-use lang_string;
+use coding_exception;
+use core\persistent;
+use ddl_exception;
+use ddl_table_missing_exception;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\enhanced_persistent_impl;
-use local_cltools\local\field\editor;
-use local_cltools\local\field\number;
-use local_cltools\local\field\select_choice;
 use local_cltools\local\field\text;
 use xmldb_table;
 
 defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Other simple entity
@@ -35,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity extends \core\persistent implements enhanced_persistent {
+class entity extends persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 
@@ -45,11 +44,11 @@ class entity extends \core\persistent implements enhanced_persistent {
      * Usual properties definition for a persistent
      *
      * @return array|array[]
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public static function define_fields(): array {
         return array(
-            new text('shortname'),
+                new text('shortname'),
         );
     }
 
@@ -63,8 +62,8 @@ class entity extends \core\persistent implements enhanced_persistent {
      *
      * If the table exist we leave it as it is.
      *
-     * @throws \ddl_exception
-     * @throws \ddl_table_missing_exception
+     * @throws ddl_exception
+     * @throws ddl_table_missing_exception
      */
     public static function create_table() {
         global $DB;

@@ -24,11 +24,6 @@
 
 namespace local_cltools\output\table;
 
-use local_cltools\local\crud\entity_table;
-use local_cltools\local\table\dynamic_table_sql;
-use moodle_url;
-use renderable;
-
 defined('MOODLE_INTERNAL') || die();
 
 /**

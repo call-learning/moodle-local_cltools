@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
+
 use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
@@ -28,16 +29,18 @@ defined('MOODLE_INTERNAL') || die();
  */
 class number extends persistent_field {
     protected $isfloat = false;
+
     /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef, $isfloat = false) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => $isfloat ? PARAM_FLOAT : PARAM_INT,
-            'default' => 0
+                'required' => false,
+                'rawtype' => $isfloat ? PARAM_FLOAT : PARAM_INT,
+                'default' => 0
         ];
         $this->isfloat = $isfloat;
         $this->init($fielnameordef, $standarddefaults);
@@ -51,7 +54,7 @@ class number extends persistent_field {
      */
     public function get_column_filter() {
         return (object) [
-            'headerFilter' => $this->get_type()
+                'headerFilter' => $this->get_type()
         ];
     }
 
@@ -75,7 +78,7 @@ class number extends persistent_field {
      */
     public function get_column_editor() {
         return (object) [
-            'editor' => $this->get_type(),
+                'editor' => $this->get_type(),
         ];
     }
 
@@ -87,7 +90,7 @@ class number extends persistent_field {
      */
     public function get_column_validator() {
         return (object) [
-            'validator' => $this->isfloat? 'float' : 'integer',
+                'validator' => $this->isfloat ? 'float' : 'integer',
         ];
     }
 
@@ -109,8 +112,8 @@ class number extends persistent_field {
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $mform->addElement($this->isfloat? 'float': 'text', $this->get_name(), $this->get_display_name());
+    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+        $mform->addElement($this->isfloat ? 'float' : 'text', $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
     }
 

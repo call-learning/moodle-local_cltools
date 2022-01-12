@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
-use MoodleQuickForm;
+
+use coding_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -29,6 +30,11 @@ defined('MOODLE_INTERNAL') || die();
 class boolean extends persistent_field {
 
     /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'advcheckbox';
+
+    /**
      * Construct the field from its definition
      *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
@@ -36,17 +42,12 @@ class boolean extends persistent_field {
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_BOOL,
-            'default' => false
+                'required' => false,
+                'rawtype' => PARAM_BOOL,
+                'default' => false
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'advcheckbox';
 
     /**
      * Get the matching formatter type to be used for display
@@ -58,8 +59,8 @@ class boolean extends persistent_field {
         $format = parent::get_column_formatter();
         $format->formatter = 'tickCross';
         $format->formatterParams = (object) [
-            'allowEmpty' => true,
-            'allowTruthy' => false
+                'allowEmpty' => true,
+                'allowTruthy' => false
         ];
         return $format;
     }
@@ -72,48 +73,14 @@ class boolean extends persistent_field {
      */
     public function get_column_editor() {
         return (object) [
-            'editor' => 'tickCross',
-            'editorParams' => (object) [
-                'indeterminateValue' => get_string('notavailable', 'local_cltools'),
-                'allowEmpty' => true,
-                'allowTruthy' => true,
-                'tristate' => false
-            ]
+                'editor' => 'tickCross',
+                'editorParams' => (object) [
+                        'indeterminateValue' => get_string('notavailable', 'local_cltools'),
+                        'allowEmpty' => true,
+                        'allowTruthy' => true,
+                        'tristate' => false
+                ]
         ];
-    }
-
-    /**
-     * Return true if the value is truish
-     *
-     * @param mixed $value
-     * @return bool
-     * @throws \coding_exception
-     */
-    protected function is_true_value($value) {
-        return in_array($value, [
-            get_string('truevalue', 'local_cltools'),
-            true,
-            1,
-            'true',
-            '1'
-        ], true);
-    }
-
-    /**
-     * Return false if the value is falsish
-     *
-     * @param mixed $value
-     * @return bool
-     * @throws \coding_exception
-     */
-    protected function is_false_value($value) {
-        return in_array($value, [
-            get_string('falsevalue', 'local_cltools'),
-            false,
-            0,
-            'false',
-            '0'
-        ], true);
     }
 
     /**
@@ -125,7 +92,7 @@ class boolean extends persistent_field {
      */
     public function format_value($value, $additionalcontext = null) {
         return $value ? get_string('truevalue', 'local_cltools')
-            : get_string('falsevalue', 'local_cltools');
+                : get_string('falsevalue', 'local_cltools');
     }
 
     /**
@@ -140,5 +107,39 @@ class boolean extends persistent_field {
             throw new field_exception('invalidvalue', $value);
         }
         return true;
+    }
+
+    /**
+     * Return true if the value is truish
+     *
+     * @param mixed $value
+     * @return bool
+     * @throws coding_exception
+     */
+    protected function is_true_value($value) {
+        return in_array($value, [
+                get_string('truevalue', 'local_cltools'),
+                true,
+                1,
+                'true',
+                '1'
+        ], true);
+    }
+
+    /**
+     * Return false if the value is falsish
+     *
+     * @param mixed $value
+     * @return bool
+     * @throws coding_exception
+     */
+    protected function is_false_value($value) {
+        return in_array($value, [
+                get_string('falsevalue', 'local_cltools'),
+                false,
+                0,
+                'false',
+                '0'
+        ], true);
     }
 }

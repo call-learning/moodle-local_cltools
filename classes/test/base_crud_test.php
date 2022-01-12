@@ -25,6 +25,7 @@
 namespace local_cltools\test;
 defined('MOODLE_INTERNAL') || die();
 
+use advanced_testcase;
 use local_cltools\simple\entity;
 
 /**
@@ -36,7 +37,7 @@ use local_cltools\simple\entity;
  * @copyright   2020 CALL Learning <contact@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base_crud_test extends \advanced_testcase {
+class base_crud_test extends advanced_testcase {
     /**
      * Setup persistent table
      */

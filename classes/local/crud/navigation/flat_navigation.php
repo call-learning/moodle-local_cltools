@@ -25,7 +25,6 @@
 namespace local_cltools\local\crud\navigation;
 defined('MOODLE_INTERNAL') || die;
 
-use local_cltools\local\crud\entity_utils;
 use moodle_exception;
 use moodle_url;
 use ReflectionClass;
@@ -50,13 +49,13 @@ class flat_navigation implements persistent_navigation {
      * This will deduce the root url for all pages from the path of the class if rooturl not provided.
      *
      * @param $persistentclass
-     * @param null $rooturl
+     * @param moodle_url|null $rooturl
      * @throws ReflectionException
      */
     public function __construct($persistentclass, $rooturl = null) {
+        global $CFG;
         $this->persistentclass = $persistentclass;
         if (!$rooturl) {
-            global $CFG;
             // Deduce the path from the persistent class path.
             $rc = new ReflectionClass($persistentclass);
             $filepath = dirname($rc->getFileName());
@@ -68,11 +67,11 @@ class flat_navigation implements persistent_navigation {
             while ($filepath != '.' || empty($filepath)) {
 
                 if (file_exists("{$CFG->dirroot}{$filepath}/pages/")) {
-                    $rooturl = "{$filepath}/pages/$foldername";
+                    $rooturl = new moodle_url("{$filepath}/pages/$foldername", $rooturl->params());
                     break;
                 }
                 if (file_exists("{$CFG->dirroot}{$filepath}/pages/$foldername")) {
-                    $rooturl = "{$filepath}/pages/$foldername";
+                    $rooturl = new moodle_url("{$filepath}/pages/$foldername", $rooturl->params());
                     break;
                 }
                 $filepath = dirname($filepath);
@@ -89,12 +88,12 @@ class flat_navigation implements persistent_navigation {
      * @throws ReflectionException
      */
     public function get_list_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php");
+        $rooturl = $this->get_root_url();
+        return new moodle_url($rooturl->get_path(true) . 'index.php', $rooturl->params());
     }
 
     /**
-     * @return string
+     * @return moodle_url
      * @throws ReflectionException
      */
     protected function get_root_url() {
@@ -102,11 +101,11 @@ class flat_navigation implements persistent_navigation {
     }
 
     /**
-     * @param $rooturl
+     * @param moodle_url $rooturl
      */
     protected function set_root_url($rooturl) {
         global $CFG;
-        if (!file_exists("{$CFG->dirroot}{$rooturl}")) {
+        if (!file_exists("{$CFG->dirroot}{$rooturl->get_path()}")) {
             throw new moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $rooturl);
         }
         $this->rooturl = $rooturl;
@@ -117,8 +116,8 @@ class flat_navigation implements persistent_navigation {
      * @throws ReflectionException
      */
     public function get_add_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/add.php");
+        $rooturl = $this->get_root_url();
+        return new moodle_url($rooturl->get_path(true) . 'add.php', $rooturl->params());
     }
 
     /**
@@ -126,13 +125,13 @@ class flat_navigation implements persistent_navigation {
      * @throws ReflectionException
      */
     public function get_delete_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/delete.php");
+        $rooturl = $this->get_root_url();
+        return new moodle_url($rooturl->get_path(true) . 'delete.php', $rooturl->params());
     }
 
     public function get_edit_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/edit.php");
+        $rooturl = $this->get_root_url();
+        return new moodle_url($rooturl->get_path(true) . 'edit.php', $rooturl->params());
     }
 
     /**
@@ -140,8 +139,8 @@ class flat_navigation implements persistent_navigation {
      * @throws ReflectionException
      */
     public function get_view_url() {
-        $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/view.php");
+        $rooturl = $this->get_root_url();
+        return new moodle_url($rooturl->get_path(true) . 'view.php', $rooturl->params());
     }
 }
 

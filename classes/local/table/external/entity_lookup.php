@@ -27,6 +27,7 @@ use local_cltools\local\field\entity_selector;
 use moodle_exception;
 use ReflectionException;
 use restricted_context_exception;
+
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
@@ -57,11 +58,11 @@ class entity_lookup extends external_api {
      */
     public static function execute($entityclass, $displayfield) {
         [
-            'entityclass' => $entityclass,
-            'displayfield' => $displayfield,
+                'entityclass' => $entityclass,
+                'displayfield' => $displayfield,
         ] = self::validate_parameters(self::execute_parameters(), [
-            'entityclass' => $entityclass,
-            'displayfield' => $displayfield,
+                'entityclass' => $entityclass,
+                'displayfield' => $displayfield,
         ]);
         $values = [];
         $warnings = [];
@@ -70,16 +71,16 @@ class entity_lookup extends external_api {
             $values[0] = get_string('notavailable', 'local_cltools');
         } catch (moodle_exception $e) {
             $warnings[] = (object) [
-                'item' => $entityclass,
-                'itemid' => 0,
-                'displayfield' => $displayfield,
-                'warningcode' => "lookuperror",
-                'message' => "Lookup error for entity $entityclass: {$e->getMessage()} and $displayfield."
+                    'item' => $entityclass,
+                    'itemid' => 0,
+                    'displayfield' => $displayfield,
+                    'warningcode' => "lookuperror",
+                    'message' => "Lookup error for entity $entityclass: {$e->getMessage()} and $displayfield."
             ];
         }
         return [
-            'values' => json_encode($values),
-            'warnings' => $warnings
+                'values' => json_encode($values),
+                'warnings' => $warnings
         ];
     }
 
@@ -88,21 +89,21 @@ class entity_lookup extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters (
-            [
-                'entityclass' => new external_value(
-                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                // For now we will have to check manually.
-                    PARAM_RAW,
-                    'Handler',
-                    VALUE_REQUIRED
-                ),
-                'displayfield' => new external_value(
-                    PARAM_ALPHANUMEXT,
-                    'Name of the field used to display values',
-                    VALUE_DEFAULT,
-                    ''
-                )
-            ]
+                [
+                        'entityclass' => new external_value(
+                        // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                        // For now we will have to check manually.
+                                PARAM_RAW,
+                                'Handler',
+                                VALUE_REQUIRED
+                        ),
+                        'displayfield' => new external_value(
+                                PARAM_ALPHANUMEXT,
+                                'Name of the field used to display values',
+                                VALUE_DEFAULT,
+                                ''
+                        )
+                ]
         );
 
     }
@@ -114,10 +115,10 @@ class entity_lookup extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-            array(
-                'values' => new external_value(PARAM_RAW, 'Associative array as json.'),
-                'warnings' => new external_warnings()
-            )
+                array(
+                        'values' => new external_value(PARAM_RAW, 'Associative array as json.'),
+                        'warnings' => new external_warnings()
+                )
         );
     }
 

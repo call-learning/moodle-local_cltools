@@ -16,8 +16,6 @@
 
 namespace local_cltools;
 
-use context;
-
 defined('MOODLE_INTERNAL') || die;
 
 /**

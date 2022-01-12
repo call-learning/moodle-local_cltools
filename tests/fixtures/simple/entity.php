@@ -24,6 +24,10 @@
 
 namespace local_cltools\simple;
 
+use coding_exception;
+use core\persistent;
+use ddl_exception;
+use ddl_table_missing_exception;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\enhanced_persistent_impl;
 use local_cltools\local\field\editor;
@@ -43,7 +47,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity extends \core\persistent implements enhanced_persistent {
+class entity extends persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 
@@ -53,30 +57,30 @@ class entity extends \core\persistent implements enhanced_persistent {
      * Usual properties definition for a persistent
      *
      * @return array|array[]
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public static function define_fields(): array {
         global $CFG;
         require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/entity.php');
         return array(
-            new text('shortname'),
-            new text('idnumber'),
-            new editor('description'), // Description format is automatically added
-            new entity_selector([
-                'fieldname' => 'parentid',
-                'entityclass' => self::class
-            ]),
-            new text('path'),
-            new number('sortorder'),
-            new entity_selector([
-                'fieldname' => 'othersimpleid',
-                'entityclass' => \local_cltools\othersimple\entity::class
-            ]),
-            new select_choice([
-                'fieldname' => 'scaleid',
-                'choices' => [1 => 'scale1', 2 => 'scale2']
-            ]),
-            new files('files'),
+                new text('shortname'),
+                new text('idnumber'),
+                new editor('description'), // Description format is automatically added.
+                new entity_selector([
+                        'fieldname' => 'parentid',
+                        'entityclass' => self::class
+                ]),
+                new text('path'),
+                new number('sortorder'),
+                new entity_selector([
+                        'fieldname' => 'othersimpleid',
+                        'entityclass' => \local_cltools\othersimple\entity::class
+                ]),
+                new select_choice([
+                        'fieldname' => 'scaleid',
+                        'choices' => [1 => 'scale1', 2 => 'scale2']
+                ]),
+                new files('files'),
         );
     }
 
@@ -90,8 +94,8 @@ class entity extends \core\persistent implements enhanced_persistent {
      *
      * If the table exist we leave it as it is.
      *
-     * @throws \ddl_exception
-     * @throws \ddl_table_missing_exception
+     * @throws ddl_exception
+     * @throws ddl_table_missing_exception
      */
     public static function create_table() {
         global $DB;
@@ -131,4 +135,3 @@ class entity extends \core\persistent implements enhanced_persistent {
         }
     }
 }
-

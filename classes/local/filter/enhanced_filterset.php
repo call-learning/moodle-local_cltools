@@ -67,6 +67,7 @@ class enhanced_filterset extends filterset {
 
     /**
      * Add filter definition
+     *
      * @param $fieldname
      * @param $filterdefinition
      */
@@ -83,6 +84,7 @@ class enhanced_filterset extends filterset {
         $this->filtertypes = null;
         $this->get_all_filtertypes();
     }
+
     /**
      * Get the optional filters.
      *
@@ -125,7 +127,7 @@ class enhanced_filterset extends filterset {
 
             if (!empty($interfaces[sql_adapter::class])) {
                 $alias = filter_helper::get_sanitized_name(
-                    $filter->get_name()
+                        $filter->get_name()
                 );
                 if (!empty($this->aliases[$filter->get_name()])) {
                     $alias = $this->aliases[$filter->get_name()];

@@ -24,7 +24,10 @@
 
 namespace local_cltools\local\crud;
 
+use context_system;
+use file_exception;
 use local_cltools\test\base_crud_test;
+use stored_file_creation_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -61,8 +64,60 @@ class entity_utils_test extends base_crud_test {
         $files = entity_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(1, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/0/icon',
-            $files[0]->out());
+                $files[0]->out());
         $this->delete_files('testfilearea', 'local_cltools');
+    }
+
+    /**
+     * Upload a set of files in a given area
+     *
+     * @param array $imagefilenames
+     * @param array $destfilenames
+     * @return array
+     * @throws file_exception
+     * @throws stored_file_creation_exception
+     */
+    protected function upload_files($imagefilenames, $destfilenames, $filearea, $component, $itemid = 0) {
+        $contextsystem = context_system::instance();
+        $draftitemid = file_get_unused_draft_itemid();
+        global $CFG;
+        $filesid = [];
+        $fs = get_file_storage();
+        foreach ($imagefilenames as $index => $filename) {
+            $destfilename = $filename;
+            if (!empty($destfilenames[$index])) {
+                $destfilename = $destfilenames[$index];
+            }
+            $filerecord = array(
+                    'contextid' => $contextsystem->id,
+                    'component' => $component,
+                    'filearea' => $filearea,
+                    'itemid' => $draftitemid,
+                    'filepath' => '/',
+                    'filename' => $destfilename,
+            );
+            // Create an area to upload the file.
+            // Create a file from the string that we made earlier.
+            if (!($file = $fs->get_file($filerecord['contextid'],
+                    $filerecord['component'],
+                    $filerecord['filearea'],
+                    $filerecord['itemid'],
+                    $filerecord['filepath'],
+                    $filerecord['filename']))) {
+                $filerecord['itemid'] = $itemid;
+                $file = $fs->create_file_from_pathname($filerecord,
+                        $CFG->dirroot . '/local/cltools/tests/fixtures/files/' . $filename);
+            }
+            $filesid[] = $file->get_id();
+        }
+        return $filesid;
+
+    }
+
+    protected function delete_files($filearea, $component) {
+        $contextsystem = context_system::instance();
+        $fs = get_file_storage();
+        $fs->delete_area_files($contextsystem->id, $component, $filearea);
     }
 
     public function test_external_get_files_url_with_item_id() {
@@ -74,61 +129,9 @@ class entity_utils_test extends base_crud_test {
         $files = entity_utils::get_files_urls(1, 'simple', 'local_cltools');
         $this->assertCount(2, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/1/icon',
-            $files[0]->out());
+                $files[0]->out());
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/1/icon2',
-            $files[1]->out());
+                $files[1]->out());
         $this->delete_files('testfilearea', 'local_cltools');
-    }
-
-    /**
-     * Upload a set of files in a given area
-     *
-     * @param array $imagefilenames
-     * @param array $destfilenames
-     * @return array
-     * @throws \file_exception
-     * @throws \stored_file_creation_exception
-     */
-    protected function upload_files($imagefilenames, $destfilenames, $filearea, $component, $itemid = 0) {
-        $contextsystem = \context_system::instance();
-        $draftitemid = file_get_unused_draft_itemid();
-        global $CFG;
-        $filesid = [];
-        $fs = get_file_storage();
-        foreach ($imagefilenames as $index => $filename) {
-            $destfilename = $filename;
-            if (!empty($destfilenames[$index])) {
-                $destfilename = $destfilenames[$index];
-            }
-            $filerecord = array(
-                'contextid' => $contextsystem->id,
-                'component' => $component,
-                'filearea' => $filearea,
-                'itemid' => $draftitemid,
-                'filepath' => '/',
-                'filename' => $destfilename,
-            );
-            // Create an area to upload the file.
-            // Create a file from the string that we made earlier.
-            if (!($file = $fs->get_file($filerecord['contextid'],
-                $filerecord['component'],
-                $filerecord['filearea'],
-                $filerecord['itemid'],
-                $filerecord['filepath'],
-                $filerecord['filename']))) {
-                $filerecord['itemid'] = $itemid;
-                $file = $fs->create_file_from_pathname($filerecord,
-                    $CFG->dirroot . '/local/cltools/tests/fixtures/files/' . $filename);
-            }
-            $filesid[] = $file->get_id();
-        }
-        return $filesid;
-
-    }
-
-    protected function delete_files($filearea, $component) {
-        $contextsystem = \context_system::instance();
-        $fs = get_file_storage();
-        $fs->delete_area_files($contextsystem->id, $component, $filearea);
     }
 }

@@ -26,6 +26,7 @@ use invalid_parameter_exception;
 use moodle_exception;
 use ReflectionException;
 use restricted_context_exception;
+
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
@@ -57,19 +58,19 @@ class set_value extends external_api {
      */
     public static function execute($handler, $uniqueid, $id, $field, $value, $oldvalue) {
         [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value,
-            'oldvalue' => $oldvalue,
+                'handler' => $handler,
+                'uniqueid' => $uniqueid,
+                'id' => $id,
+                'field' => $field,
+                'value' => $value,
+                'oldvalue' => $oldvalue,
         ] = helper::validate_parameters(self::execute_parameters(), [
-            'handler' => $handler,
-            'uniqueid' => $uniqueid,
-            'id' => $id,
-            'field' => $field,
-            'value' => $value,
-            'oldvalue' => $oldvalue,
+                'handler' => $handler,
+                'uniqueid' => $uniqueid,
+                'id' => $id,
+                'field' => $field,
+                'value' => $value,
+                'oldvalue' => $oldvalue,
         ]);
 
         $instance = helper::get_table_handler_instance($handler, $uniqueid, true);
@@ -77,18 +78,19 @@ class set_value extends external_api {
         $success = false;
         $warnings = array();
         try {
-            $success = $instance->set_value($id, $field, $value, $oldvalue);
+            $instance->set_value($id, $field, $value, $oldvalue);
+            $success = true;
         } catch (moodle_exception $e) {
             $warnings[] = (object) [
-                'item' => $field,
-                'itemid' => $id,
-                'warningcode' => 'setvalueerror',
-                'message' => "For table $handler: {$e->getMessage()}"
+                    'item' => $field,
+                    'itemid' => $id,
+                    'warningcode' => 'setvalueerror',
+                    'message' => $e->getMessage()
             ];
         }
         return [
-            'success' => $success,
-            'warnings' => $warnings
+                'success' => $success,
+                'warnings' => $warnings
         ];
     }
 
@@ -97,43 +99,43 @@ class set_value extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters (
-            [
-                'handler' => new external_value(
-                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                // For now we will have to check manually.
-                    PARAM_RAW,
-                    'Handler',
-                    VALUE_REQUIRED
-                ),
-                'uniqueid' => new external_value(
-                    PARAM_ALPHANUMEXT,
-                    'Unique ID for the container',
-                    VALUE_REQUIRED
-                ),
-                'id' => new external_value(
-                    PARAM_INT,
-                    'Data id',
-                    VALUE_REQUIRED
-                ),
-                'field' =>
-                    new external_value(
-                        PARAM_ALPHANUMEXT,
-                        'Name of the field',
-                        VALUE_REQUIRED
-                    ),
-                'value' =>
-                    new external_value(
-                        PARAM_RAW,
-                        'New value',
-                        VALUE_REQUIRED
-                    ),
-                'oldvalue' =>
-                    new external_value(
-                        PARAM_RAW,
-                        'Old value',
-                        VALUE_REQUIRED
-                    ),
-            ]
+                [
+                        'handler' => new external_value(
+                        // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                        // For now we will have to check manually.
+                                PARAM_RAW,
+                                'Handler',
+                                VALUE_REQUIRED
+                        ),
+                        'uniqueid' => new external_value(
+                                PARAM_ALPHANUMEXT,
+                                'Unique ID for the container',
+                                VALUE_REQUIRED
+                        ),
+                        'id' => new external_value(
+                                PARAM_INT,
+                                'Data id',
+                                VALUE_REQUIRED
+                        ),
+                        'field' =>
+                                new external_value(
+                                        PARAM_ALPHANUMEXT,
+                                        'Name of the field',
+                                        VALUE_REQUIRED
+                                ),
+                        'value' =>
+                                new external_value(
+                                        PARAM_RAW,
+                                        'New value',
+                                        VALUE_REQUIRED
+                                ),
+                        'oldvalue' =>
+                                new external_value(
+                                        PARAM_RAW,
+                                        'Old value',
+                                        VALUE_REQUIRED
+                                ),
+                ]
         );
 
     }
@@ -145,10 +147,10 @@ class set_value extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-            array(
-                'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
-                'warnings' => new external_warnings()
-            )
+                array(
+                        'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
+                        'warnings' => new external_warnings()
+                )
         );
     }
 }

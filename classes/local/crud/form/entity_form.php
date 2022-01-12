@@ -62,9 +62,9 @@ require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
  */
 abstract class entity_form extends persistent {
 
+    const EDITOR_SUFFIX = '_editor';
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
-
     protected $fields = [];
 
     /**
@@ -80,7 +80,7 @@ abstract class entity_form extends persistent {
      * @throws coding_exception
      */
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
-        $editable = true, $ajaxformdata = null) {
+            $editable = true, $ajaxformdata = null) {
         $this->fields = entity_utils::get_defined_fields(static::$persistentclass);
         // TODO: at some point we will need to get rid of persistentclass as static.
         // The only exception right not if the provided persistent is null...
@@ -89,52 +89,6 @@ abstract class entity_form extends persistent {
             $customdata = ['persistent' => null];
         }
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $ajaxformdata);
-    }
-
-    /**
-     * Get options for filemanager
-     *
-     * @param $fieldinfo
-     * @return array
-     * @throws dml_exception
-     */
-    protected function filemanager_get_default_options(&$fieldinfo) {
-        $formoptions = ['context' => $this->get_persistent()->get_context()];
-        return $formoptions;
-    }
-
-    /**
-     * Get options for editor
-     *
-     * @param $fieldinfo
-     * @return array
-     * @throws dml_exception
-     */
-    protected function editor_get_option($fieldinfo) {
-        global $CFG;
-        $formoptions =
-            [
-                'maxfiles' => EDITOR_UNLIMITED_FILES,
-                'maxbytes' => $CFG->maxbytes,
-                'noclean' => true,
-                'context' => $this->get_persistent()->get_context(),
-                'enable_filemanagement' => true,
-                'changeformat' => true
-            ];
-        $formoptions =
-            empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
-        return $formoptions;
-    }
-
-    const EDITOR_SUFFIX = '_editor';
-
-    /**
-     * Tweak for editor element names as they are created with _editor suffix
-     *
-     */
-    private static function remove_editor_suffix($fieldname) {
-        return (substr($fieldname, -strlen(self::EDITOR_SUFFIX)) == self::EDITOR_SUFFIX) ?
-            substr($fieldname, 0, strlen($fieldname) - strlen(self::EDITOR_SUFFIX)) : $fieldname;
     }
 
     /**
@@ -223,19 +177,6 @@ abstract class entity_form extends persistent {
     }
 
     /**
-     * Save submited files
-     *
-     * @throws ReflectionException
-     * @throws dml_exception
-     */
-    protected function save_submitted_files($data) {
-        foreach ($this->fields as $field) {
-            $data = $field->form_save_files($data, $this->get_persistent());
-        }
-        return $data;
-    }
-
-    /**
      * Filter out the foreign fields of the persistent.
      *
      * This can be overridden to filter out more complex fields.
@@ -253,6 +194,75 @@ abstract class entity_form extends persistent {
             unset($filtereddata->submitbutton);
         }
         return $filtereddata;
+    }
+
+    /**
+     * Save submited files
+     *
+     * @throws ReflectionException
+     * @throws dml_exception
+     */
+    protected function save_submitted_files($data) {
+        foreach ($this->fields as $field) {
+            $data = $field->form_save_files($data, $this->get_persistent());
+        }
+        return $data;
+    }
+
+    /**
+     * Get form data.
+     *
+     * Conveniently removes non-desired properties and add the ID property.
+     *
+     * @return object|null
+     */
+    public function get_data() {
+        $data = moodleform::get_data();
+        if (is_object($data)) {
+            foreach (static::$fieldstoremove as $field) {
+                unset($data->{$field});
+            }
+            $data = static::convert_fields($data);
+
+            // Ensure that the ID is set.
+            $data->id = $this->get_persistent()->get('id');
+        }
+        return $data;
+    }
+
+    /**
+     * Get options for filemanager
+     *
+     * @param $fieldinfo
+     * @return array
+     * @throws dml_exception
+     */
+    protected function filemanager_get_default_options(&$fieldinfo) {
+        $formoptions = ['context' => $this->get_persistent()->get_context()];
+        return $formoptions;
+    }
+
+    /**
+     * Get options for editor
+     *
+     * @param $fieldinfo
+     * @return array
+     * @throws dml_exception
+     */
+    protected function editor_get_option($fieldinfo) {
+        global $CFG;
+        $formoptions =
+                [
+                        'maxfiles' => EDITOR_UNLIMITED_FILES,
+                        'maxbytes' => $CFG->maxbytes,
+                        'noclean' => true,
+                        'context' => $this->get_persistent()->get_context(),
+                        'enable_filemanagement' => true,
+                        'changeformat' => true
+                ];
+        $formoptions =
+                empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);
+        return $formoptions;
     }
 
     /**
@@ -294,23 +304,11 @@ abstract class entity_form extends persistent {
     }
 
     /**
-     * Get form data.
+     * Tweak for editor element names as they are created with _editor suffix
      *
-     * Conveniently removes non-desired properties and add the ID property.
-     *
-     * @return object|null
      */
-    public function get_data() {
-        $data = moodleform::get_data();
-        if (is_object($data)) {
-            foreach (static::$fieldstoremove as $field) {
-                unset($data->{$field});
-            }
-            $data = static::convert_fields($data);
-
-            // Ensure that the ID is set.
-            $data->id = $this->get_persistent()->get('id');
-        }
-        return $data;
+    private static function remove_editor_suffix($fieldname) {
+        return (substr($fieldname, -strlen(self::EDITOR_SUFFIX)) == self::EDITOR_SUFFIX) ?
+                substr($fieldname, 0, strlen($fieldname) - strlen(self::EDITOR_SUFFIX)) : $fieldname;
     }
 }

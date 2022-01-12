@@ -30,7 +30,6 @@ use context_system;
 use core\external\persistent_exporter;
 use core\persistent;
 use dml_exception;
-use local_cveteval\local\persistent\situation\entity;
 use moodle_url;
 use ReflectionException;
 use renderer_base;
@@ -69,11 +68,11 @@ class entity_exporter extends persistent_exporter {
         $this->persistentcomponent = entity_utils::get_component(get_class($persistent));
         $this->instanceid = (int) $persistent->get('id');
         $related = array_merge($related,
-            [
-                'context' => context_system::instance(),
-                'component' => $this->persistentcomponent,
-                'itemid' => (int) $persistent->get('id')
-            ]
+                [
+                        'context' => context_system::instance(),
+                        'component' => $this->persistentcomponent,
+                        'itemid' => (int) $persistent->get('id')
+                ]
         );
         parent::__construct($persistent, $related);
     }
@@ -111,7 +110,7 @@ class entity_exporter extends persistent_exporter {
         foreach ($files as $file) {
             $foundfile = $fileprefix && strpos($file->get_filename(), $fileprefix) !== false;
             $foundfile = $foundfile || ($filetypegroup &&
-                    file_mimetype_in_typegroup($file->get_mimetype(), $filetypegroup));
+                            file_mimetype_in_typegroup($file->get_mimetype(), $filetypegroup));
             if ($foundfile) {
                 $returnedfiled = $file;
                 break;
@@ -121,12 +120,12 @@ class entity_exporter extends persistent_exporter {
             return null;
         }
         return moodle_url::make_pluginfile_url(
-            $this->related['context']->id,
-            $this->persistentcomponent,
-            $filearea,
-            $returnedfiled->get_itemid(),
-            $returnedfiled->get_filepath(),
-            $returnedfiled->get_filename()
+                $this->related['context']->id,
+                $this->persistentcomponent,
+                $filearea,
+                $returnedfiled->get_itemid(),
+                $returnedfiled->get_filepath(),
+                $returnedfiled->get_filename()
         );
     }
 }

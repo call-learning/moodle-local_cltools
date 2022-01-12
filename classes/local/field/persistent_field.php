@@ -20,6 +20,7 @@ use local_cltools\local\field\adapter\form_adapter_default;
 use local_cltools\local\field\adapter\tabulator_default_trait;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Base field
  *
@@ -61,32 +62,10 @@ abstract class persistent_field {
      * @var bool $sortable
      */
     protected bool $sortable;
-
     /**
-     * Initialise
-     *
-     * @param string|array $fielddef there is a shortform with defaults for boolean field and a long form with all or a partial
-     * @param array $defaultvalues standard values for this field (default)
-     * @return object
+     * @var bool $editable
      */
-    protected function init($fielddef, array $defaultvalues) {
-        if (is_string($fielddef)) {
-            $fielddef = [
-                'fieldname' => $fielddef
-            ];
-        }
-        // Get default values
-        $fielddef = array_merge($defaultvalues, $fielddef);
-        $fielddef = (object) $fielddef;
-        $this->required = !isset($fielddef->required) ? false : $fielddef->required;
-        $this->default = !isset($fielddef->default) ? '' : $fielddef->default;
-        $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
-        $this->fieldname = $fielddef->fieldname;
-        $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
-        $this->visible =  !isset($fielddef->visible) ? true: $fielddef->visible;
-        $this->sortable = !isset($fielddef->sortable) ? true: $fielddef->sortable;
-        return $fielddef;
-    }
+    protected $editable = false;
 
     /**
      * Get an identifier for this type of format
@@ -108,25 +87,6 @@ abstract class persistent_field {
     }
 
     /**
-     * Get the display name for this field
-     *
-     * @return mixed
-     */
-    public function get_default() {
-        return $this->default;
-    }
-
-    /**
-     * Get the field name for this field
-     *
-     * @return mixed
-     */
-    public function get_name() {
-        return $this->fieldname;
-    }
-
-
-    /**
      * Check if the field is visible or not
      *
      * @return boolean visibility
@@ -134,17 +94,6 @@ abstract class persistent_field {
      */
     public function is_visible() {
         return $this->visible;
-    }
-
-
-    /**
-     * Check if the field is required or not
-     *
-     * @return boolean required
-     *
-     */
-    public function is_required() {
-        return $this->required;
     }
 
     /**
@@ -166,19 +115,6 @@ abstract class persistent_field {
      */
     public function format_value($value, $additionalcontext = null) {
         return $value;
-    }
-
-    /**
-     * Call
-     */
-
-    /**
-     * Get the type of parameter (see PARAM_XXX) for this type
-     *
-     * @return mixed
-     */
-    public function get_raw_param_type() {
-        return $this->rawtype;
     }
 
     /**
@@ -219,22 +155,100 @@ abstract class persistent_field {
      *
      * @return array[]
      */
-    public function get_persistent_properties():array {
+    public function get_persistent_properties(): array {
         $property = [];
         $property['type'] = $this->get_raw_param_type();
         $property['null'] = $this->is_required();
         if (!$this->is_required()) {
-            $property['default'] =$this->get_default();
+            $property['default'] = $this->get_default();
         }
 
         return [$this->get_name() => $property];
     }
 
     /**
+     * Call
+     */
+
+    /**
+     * Get the type of parameter (see PARAM_XXX) for this type
+     *
+     * @return mixed
+     */
+    public function get_raw_param_type() {
+        return $this->rawtype;
+    }
+
+    /**
+     * Check if the field is required or not
+     *
+     * @return boolean required
+     *
+     */
+    public function is_required() {
+        return $this->required;
+    }
+
+    /**
+     * Get the display name for this field
+     *
+     * @return mixed
+     */
+    public function get_default() {
+        return $this->default;
+    }
+
+    /**
+     * Get the field name for this field
+     *
+     * @return mixed
+     */
+    public function get_name() {
+        return $this->fieldname;
+    }
+
+    /**
      * Can we sort the column ?
+     *
      * @return bool
      */
     public function can_sort() {
         return $this->sortable;
+    }
+
+    /**
+     * Is the field editable
+     *
+     * @return bool
+     */
+    public function is_editable() {
+        return $this->editable;
+    }
+
+    /**
+     * Initialise
+     *
+     * @param string|array $fielddef there is a shortform with defaults for boolean field and a long form with all or a partial
+     * @param array $defaultvalues standard values for this field (default)
+     * @return object
+     */
+    protected function init($fielddef, array $defaultvalues) {
+        if (is_string($fielddef)) {
+            $fielddef = [
+                    'fieldname' => $fielddef
+            ];
+        }
+        // Get default values
+        $fielddef = array_merge($defaultvalues, $fielddef);
+        $fielddef = (object) $fielddef;
+        $this->required = !isset($fielddef->required) ? false : $fielddef->required;
+        $this->default = !isset($fielddef->default) ? '' : $fielddef->default;
+        $this->rawtype = empty($fielddef->rawtype) ? PARAM_RAW : $fielddef->rawtype;
+        $this->fieldname = $fielddef->fieldname;
+        $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
+        $this->visible = !isset($fielddef->visible) ? true : $fielddef->visible;
+        $this->sortable = !isset($fielddef->sortable) ? true : $fielddef->sortable;
+        $this->editable = !isset($fielddef->editable) ? false : $fielddef->editable;
+        return $fielddef;
     }
 }

@@ -29,11 +29,12 @@ defined('MOODLE_INTERNAL') || die();
 trait enhanced_persistent_impl {
     /**
      * Return defined properties from
+     *
      * @return array
      */
     protected static function define_properties(): array {
         $properties = [];
-        foreach(static::define_fields() as $field) {
+        foreach (static::define_fields() as $field) {
             if ($field->is_persistent()) {
                 $properties = array_merge($properties, $field->get_persistent_properties());
             }

@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
+
 use coding_exception;
-use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Date field
  *
@@ -28,23 +29,24 @@ defined('MOODLE_INTERNAL') || die();
  */
 class date extends persistent_field {
     /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'date_selector';
+
+    /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_INT,
-            'default' => time()
+                'required' => false,
+                'rawtype' => PARAM_INT,
+                'default' => time()
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'date_selector';
 
     /**
      * Get the matching formatter type to be used for display
@@ -57,12 +59,12 @@ class date extends persistent_field {
         $format = parent::get_column_formatter();
         $format->formatter = 'datets';
         $format->formatterParams = (object) [
-            'formatter' => 'datets',
-            'formatterParams' => (object) [
-                'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
-                'locale' => current_language(),
-                'timezone' => usertimezone()
-            ]
+                'formatter' => 'datets',
+                'formatterParams' => (object) [
+                        'outputFormat' => get_string('momentjsdateformat', 'local_cltools'),
+                        'locale' => current_language(),
+                        'timezone' => usertimezone()
+                ]
         ];
         return $format;
     }
@@ -75,7 +77,7 @@ class date extends persistent_field {
      * @return mixed
      */
     public function format_value($value, $additionalcontext = null) {
-        return userdate($value, get_string('strftimedatefullshort', 'langconfig'));;
+        return userdate($value, get_string('strftimedatefullshort', 'langconfig'));
     }
 
     /**

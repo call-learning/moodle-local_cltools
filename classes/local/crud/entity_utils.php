@@ -34,7 +34,6 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use lang_string;
-use local_cltools\simple\entity;
 use moodle_url;
 use ReflectionClass;
 use ReflectionException;
@@ -48,9 +47,9 @@ class entity_utils {
      * Some kewords are forbidden in a query.
      */
     const SQL_FORBIDDEN_KEWORD_PREFIX_CHANGE = [
-        'group' => 'grp',
-        'select' => 'slct',
-        'from' => 'frm',
+            'group' => 'grp',
+            'select' => 'slct',
+            'from' => 'frm',
     ];
     const RESERVED_PROPERTIES = array('id', 'timecreated', 'timemodified', 'usermodified');
     /**
@@ -148,39 +147,39 @@ class entity_utils {
      */
     public static function external_get_filter_generic_parameters() {
         return new external_function_parameters(
-            array(
-                'filters' => new external_multiple_structure (
-                    new external_single_structure(
-                        array(
-                            'type' => new external_value(PARAM_ALPHANUM,
-                                'Type of filter'),
-                            'shortname' => new external_value(PARAM_ALPHANUM,
-                                'Shortname of the field to search for',
-                                VALUE_OPTIONAL),
-                            'operator' => new external_value(PARAM_INT,
-                                'This will be EQUAL, CONTAINS, NOTEQUAL...'),
-                            'value' => new external_value(PARAM_RAW, 'The value of the filter to look for.')
-                        )
-                    ),
-                    'Filter the results',
-                    VALUE_OPTIONAL
-                ),
-                'limit' => new external_value(PARAM_INT, 'Result set limit', VALUE_DEFAULT, 0),
-                'offset' => new external_value(PARAM_INT, 'Result set offset', VALUE_DEFAULT, 0),
-                'sorting' => new external_multiple_structure(
-                    new external_single_structure(
-                        array(
-                            'column' => new external_value(PARAM_ALPHANUM,
-                                'Column name for the sorting'),
-                            'order' => new external_value(PARAM_ALPHA,
-                                'ASC for ascending, DESC for descending, ascending by default'
-                            ),
-                        )
-                    ),
-                    'Sort the results',
-                    VALUE_OPTIONAL
-                ),
-            )
+                array(
+                        'filters' => new external_multiple_structure (
+                                new external_single_structure(
+                                        array(
+                                                'type' => new external_value(PARAM_ALPHANUM,
+                                                        'Type of filter'),
+                                                'shortname' => new external_value(PARAM_ALPHANUM,
+                                                        'Shortname of the field to search for',
+                                                        VALUE_OPTIONAL),
+                                                'operator' => new external_value(PARAM_INT,
+                                                        'This will be EQUAL, CONTAINS, NOTEQUAL...'),
+                                                'value' => new external_value(PARAM_RAW, 'The value of the filter to look for.')
+                                        )
+                                ),
+                                'Filter the results',
+                                VALUE_OPTIONAL
+                        ),
+                        'limit' => new external_value(PARAM_INT, 'Result set limit', VALUE_DEFAULT, 0),
+                        'offset' => new external_value(PARAM_INT, 'Result set offset', VALUE_DEFAULT, 0),
+                        'sorting' => new external_multiple_structure(
+                                new external_single_structure(
+                                        array(
+                                                'column' => new external_value(PARAM_ALPHANUM,
+                                                        'Column name for the sorting'),
+                                                'order' => new external_value(PARAM_ALPHA,
+                                                        'ASC for ascending, DESC for descending, ascending by default'
+                                                ),
+                                        )
+                                ),
+                                'Sort the results',
+                                VALUE_OPTIONAL
+                        ),
+                )
         );
     }
 
@@ -202,12 +201,12 @@ class entity_utils {
         foreach ($files as $image) {
             if ($image->is_valid_image()) {
                 $imagesurls[] = moodle_url::make_pluginfile_url(
-                    $context->id,
-                    $component,
-                    $filearea,
-                    $entityid,
-                    $image->get_filepath(),
-                    $image->get_filename()
+                        $context->id,
+                        $component,
+                        $filearea,
+                        $entityid,
+                        $image->get_filepath(),
+                        $image->get_filename()
                 );
             }
         }
@@ -230,9 +229,9 @@ class entity_utils {
         $component = $component ? $component : self::DEFAULT_PLUGIN_COMPONENT_NAME;
         $fs = get_file_storage();
         $files = $fs->get_area_files($contextid,
-            $component,
-            $filearea,
-            $entityid);
+                $component,
+                $filearea,
+                $entityid);
         return $files;
     }
 
@@ -247,7 +246,7 @@ class entity_utils {
      */
     public static function is_property_required($prop) {
         return !empty($prop['null'])
-            && ($prop['null'] == NULL_NOT_ALLOWED);
+                && ($prop['null'] == NULL_NOT_ALLOWED);
     }
 
     /**

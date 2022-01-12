@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\field\adapter;
+
 use core_table\local\filter\filter;
-use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die;
 

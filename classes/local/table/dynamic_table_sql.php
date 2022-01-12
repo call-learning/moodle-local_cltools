@@ -33,10 +33,12 @@ use coding_exception;
 use context_system;
 use core_table\local\filter\filterset;
 use dml_exception;
+use html_writer;
 use local_cltools\local\field\html;
 use local_cltools\local\field\persistent_field;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\external\helper;
+use moodle_exception;
 use moodle_url;
 use pix_icon;
 use popup_action;
@@ -81,10 +83,10 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @see page_list::get_filter_definition() for filter definition
      */
     public function __construct($uniqueid = null,
-        $actionsdefs = null,
-        $editable = false
+            $actionsdefs = null,
+            $editable = false
     ) {
-        $this->uniqueid = $uniqueid ? $uniqueid : \html_writer::random_id('dynamictable');
+        $this->uniqueid = $uniqueid ? $uniqueid : html_writer::random_id('dynamictable');
         $this->actionsdefs = $actionsdefs;
         $this->iseditable = (bool) $editable;
         list($cols, $headers) = $this->get_table_columns_definitions();
@@ -94,10 +96,10 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $this->sortable(true);
         $this->pageable(true);
         $this->sql = (object) [
-            'where' => '',
-            'from' => '',
-            'params' => [],
-            'sort' => ''
+                'where' => '',
+                'from' => '',
+                'params' => [],
+                'sort' => ''
         ];
         $this->set_initial_sql();
     }
@@ -116,8 +118,8 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $this->setup_fields();
         if ($this->actionsdefs) {
             $this->fields[] = new html([
-                'fieldname' => 'actions',
-                'fullname' => get_string('actions', 'local_cltools')
+                    'fieldname' => 'actions',
+                    'fullname' => get_string('actions', 'local_cltools')
             ]);
         }
         foreach ($this->fields as $field) {
@@ -141,6 +143,15 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Get the currently defined filterset.
+     *
+     * @return filterset|null
+     */
+    public function get_filterset(): ?filterset {
+        return $this->filterset;
+    }
+
+    /**
      * Set the filterset in the table class.
      * If there was an existing filter replaces them by the new definition.
      *
@@ -155,15 +166,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         } else {
             $this->filterset = $filterset;
         }
-    }
-
-    /**
-     * Get the currently defined filterset.
-     *
-     * @return filterset|null
-     */
-    public function get_filterset(): ?filterset {
-        return $this->filterset;
     }
 
     /**
@@ -196,28 +198,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
             $this->close_recordset();
         }
         return $rows;
-    }
-
-    /**
-     * Set the preferred table sorting attributes.
-     *
-     * This is a modified version.
-     *
-     * @param string $sortby The field to sort by.
-     * @param int $sortorder The sort order.
-     */
-    public function set_sortdata(array $sortdata): void {
-        $this->sortdata = [];
-        foreach ($sortdata as $sortitem) {
-            if (!array_key_exists($sortitem['sortby'], $this->sortdata)) {
-                if (is_numeric($sortitem['sortorder'])) {
-                    $sortorder = (int) $sortitem['sortorder'];
-                } else {
-                    $sortorder = ($sortitem['sortorder'] === 'ASC') ? SORT_ASC : SORT_DESC;
-                }
-                $this->sortdata[$sortitem['sortby']] = $sortorder;
-            }
-        }
     }
 
     /**
@@ -296,6 +276,52 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Change the sort if there was any alias changes.
+     *
+     * @return array column name => SORT_... constant.
+     */
+    public function get_sort_columns() {
+        $sorts = [];
+        if (!$this->issetup) {
+            throw new coding_exception('Cannot call get_sort_columns until you have called setup.');
+        }
+
+        if (empty($this->sortdata)) {
+            return array();
+        }
+        foreach ($this->sortdata as $sortcolumn => $sortorder) {
+            if (!empty($this->fieldaliases[$sortcolumn])) {
+                $sortcolumn = $this->fieldaliases[$sortcolumn];
+            }
+            $sorts[$sortcolumn] = $sortorder;
+        }
+
+        return $sorts;
+    }
+
+    /**
+     * Set the preferred table sorting attributes.
+     *
+     * This is a modified version.
+     *
+     * @param string $sortby The field to sort by.
+     * @param int $sortorder The sort order.
+     */
+    public function set_sortdata(array $sortdata): void {
+        $this->sortdata = [];
+        foreach ($sortdata as $sortitem) {
+            if (!array_key_exists($sortitem['sortby'], $this->sortdata)) {
+                if (is_numeric($sortitem['sortorder'])) {
+                    $sortorder = (int) $sortitem['sortorder'];
+                } else {
+                    $sortorder = ($sortitem['sortorder'] === 'ASC') ? SORT_ASC : SORT_DESC;
+                }
+                $this->sortdata[$sortitem['sortby']] = $sortorder;
+            }
+        }
+    }
+
+    /**
      * @return array
      */
     public function get_fields_definition() {
@@ -304,16 +330,16 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         foreach ($this->columns as $fieldshortname => $index) {
             if (empty($this->fields[$index])) {
                 $column = (object) [
-                    'title' => '',
-                    'field' => $fieldshortname,
-                    'visible' => false,
+                        'title' => '',
+                        'field' => $fieldshortname,
+                        'visible' => false,
                 ];
             } else {
                 $field = $this->fields[$index];
                 $column = (object) [
-                    'title' => $this->headers[$index],
-                    'field' => $fieldshortname,
-                    'visible' => $field->is_visible(),
+                        'title' => $this->headers[$index],
+                        'field' => $fieldshortname,
+                        'visible' => $field->is_visible(),
                 ];
                 // Add formatter, filter, editor...
                 /* @var persistent_field $field field */
@@ -391,36 +417,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
-     * Change the sort if there was any alias changes.
-     *
-     * @return array column name => SORT_... constant.
-     */
-    public function get_sort_columns() {
-        $sorts = [];
-        if (!$this->issetup) {
-            throw new coding_exception('Cannot call get_sort_columns until you have called setup.');
-        }
-
-        if (empty($this->sortdata)) {
-            return array();
-        }
-        foreach ($this->sortdata as $sortcolumn => $sortorder) {
-            if (!empty($this->fieldaliases[$sortcolumn])) {
-                $sortcolumn = $this->fieldaliases[$sortcolumn];
-            }
-            $sorts[$sortcolumn] = $sortorder;
-        }
-
-        return $sorts;
-    }
-
-    /**
      * Format the actions cell.
      *
      * @param $row
      * @return string
      * @throws coding_exception
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function col_actions($row) {
         // TODO : replace this by a column typed html_template for example
@@ -430,12 +432,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         foreach ($this->actionsdefs as $k => $a) {
             $url = new moodle_url($a->url, ['id' => $row->id]);
             $popupaction = empty($a->popup) ? null :
-                new popup_action('click', $url);
+                    new popup_action('click', $url);
             $actions[] = $OUTPUT->action_icon(
-                $url,
-                new pix_icon($a->icon,
-                    get_string($k, $a->component ?? 'local_cltools')),
-                $popupaction
+                    $url,
+                    new pix_icon($a->icon,
+                            get_string($k, $a->component ?? 'local_cltools')),
+                    $popupaction
             );
         }
 

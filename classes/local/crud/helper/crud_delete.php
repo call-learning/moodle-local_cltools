@@ -63,15 +63,15 @@ class crud_delete extends base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null,
+            $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation, $pagesrooturl);
+                $exporterclassname, $persistentnavigation, $pagesrooturl);
         $this->actionurl = $this->persistentnavigation->get_delete_url();
     }
 
@@ -92,13 +92,13 @@ class crud_delete extends base {
         if (!$confirm) {
             $deleteurl = $this->persistentnavigation->get_delete_url();
             $confirmurl =
-                new moodle_url($deleteurl,
-                    array('confirm' => true, 'id' => $id, 'sesskey' => sesskey()));
+                    new moodle_url($deleteurl,
+                            array('confirm' => true, 'id' => $id, 'sesskey' => sesskey()));
             $cancelurl = new moodle_url($this->persistentnavigation->get_list_url());
             $returnedtext .= $this->renderer->confirm(
-                entity_utils::get_string_for_entity($this->refpersistentclass, 'delete'),
-                $confirmurl,
-                $cancelurl
+                    entity_utils::get_string_for_entity($this->refpersistentclass, 'delete'),
+                    $confirmurl,
+                    $cancelurl
             );
         } else {
             $persistentprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
@@ -108,8 +108,8 @@ class crud_delete extends base {
             $entity->delete();
             $this->trigger_event($entity);
             $returnedtext .= $this->renderer->notification(
-                entity_utils::get_string_for_entity($this->refpersistentclass, 'entity:deleted', $entitydisplayname),
-                'notifysuccess');
+                    entity_utils::get_string_for_entity($this->refpersistentclass, 'entity:deleted', $entitydisplayname),
+                    'notifysuccess');
             $returnedtext .= $this->renderer->single_button($this->persistentnavigation->get_list_url(), get_string('continue'));
         }
         return $returnedtext;

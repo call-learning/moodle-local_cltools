@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\crud\generic;
+
 use local_cltools\local\crud\entity_table;
 
 defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Persistent dynamically instanciated
@@ -32,9 +32,9 @@ class generic_entity_table extends entity_table {
     private $genericpersistentclass;
 
     public function __construct($uniqueid,
-        $actionsdefs,
-        $editable,
-        $genericclassname
+            $actionsdefs,
+            $editable,
+            $genericclassname
     ) {
         $this->genericpersistentclass = $genericclassname;
         parent::__construct($uniqueid, $actionsdefs, $editable);
@@ -42,6 +42,7 @@ class generic_entity_table extends entity_table {
 
     /**
      * Can be overriden
+     *
      * @return string|null
      */
     public function define_class() {

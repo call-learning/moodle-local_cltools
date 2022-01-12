@@ -40,15 +40,15 @@ trait enhanced_filter_impl {
      */
     public function jsonSerialize() {
         return (object) [
-            'type' => $this->get_type(),
-            'name' => $this->get_name(),
-            'jointype' => $this->get_join_type(),
-            'values' => array_map(
-                function($val) {
-                  return json_encode($val);
-                },
-                $this->get_filter_values()
-            ),
+                'type' => $this->get_type(),
+                'name' => $this->get_name(),
+                'jointype' => $this->get_join_type(),
+                'values' => array_map(
+                        function($val) {
+                            return json_encode($val);
+                        },
+                        $this->get_filter_values()
+                ),
         ];
     }
 

@@ -26,15 +26,11 @@ namespace local_cltools\local\crud;
 defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
-use core\invalid_persistent_exception;
 use core\persistent;
 use dml_exception;
 use html_writer;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_exception;
-use moodle_url;
-use pix_icon;
-use popup_action;
 use ReflectionException;
 
 /**
@@ -47,22 +43,41 @@ use ReflectionException;
 class entity_table extends dynamic_table_sql {
 
     /**
+     * @var string $persistentclass
+     */
+    protected static $persistentclass = null;
+
+    /**
      * Sets up the page_table parameters.
      *
      * @throws coding_exception
      * @see page_list::get_filter_definition() for filter definition
      */
     public function __construct($uniqueid = null,
-        $actionsdefs = null,
-        $editable = false,
-        $persistentclassname = null
+            $actionsdefs = null,
+            $editable = false,
+            $persistentclassname = null
     ) {
         parent::__construct($uniqueid, $actionsdefs, $editable);
     }
+
     /**
-     * @var string $persistentclass
+     * Define properties (additional properties)
+     *
+     * @return array
      */
-    protected static $persistentclass = null;
+    protected static function define_column_order() {
+        return array();
+    }
+
+    /**
+     * Define properties (additional properties)
+     *
+     * @return array
+     */
+    protected static function define_properties() {
+        return array();
+    }
 
     /**
      * Set the value of a specific row.
@@ -71,36 +86,46 @@ class entity_table extends dynamic_table_sql {
      * @param $fieldname
      * @param $newvalue
      * @param $oldvalue
-     * @return bool
+     * @return void
+     *
+     *
      */
     public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
         /* @var $entity persistent the persistent class */
-        $persistentclass=  $this->define_class();
+        $persistentclass = $this->define_class();
         $entity = new $persistentclass($rowid);
-        try {
-            $entity->set($fieldname, $newvalue);
-            $entity->update();
-            return true;
-        } catch (invalid_persistent_exception $e) {
-            return false;
+        $field = null;
+        foreach ($this->fields as $f) {
+            if ($f->get_name() == $fieldname) {
+                $field = $f;
+            }
         }
-
+        if (empty($field)) {
+            throw new moodle_exception('fielddoesnotexist', 'local_cltools', null, $fieldname);
+        }
+        if (empty($field) || !$field->is_editable()) {
+            throw new moodle_exception('cannoteditfield', 'local_cltools', null, $field->get_display_name());
+        }
+        $entity->set($fieldname, $newvalue);
+        $entity->update();
     }
 
     /**
      * Can be overriden
+     *
      * @return string|null
      */
     public function define_class() {
         return static::$persistentclass;
     }
+
     /**
      * Set SQL parameters (where, from,....) from the entity
      *
      * This can be overridden when we are looking at linked entities.
      */
     protected function set_initial_sql() {
-        $persistentclass=  $this->define_class();
+        $persistentclass = $this->define_class();
         $sqlfields = forward_static_call([$persistentclass, 'get_sql_fields'], 'entity', '');
         $from = $persistentclass::TABLE;
         $from = '{' . $from . '} entity';
@@ -131,24 +156,6 @@ class entity_table extends dynamic_table_sql {
     }
 
     /**
-     * Define properties (additional properties)
-     *
-     * @return array
-     */
-    protected static function define_column_order() {
-        return array();
-    }
-
-    /**
-     * Define properties (additional properties)
-     *
-     * @return array
-     */
-    protected static function define_properties() {
-        return array();
-    }
-
-    /**
      * Utility to get the relevant files for a given entity
      *
      * @param object $entity
@@ -159,15 +166,14 @@ class entity_table extends dynamic_table_sql {
      */
     protected function internal_col_files($entity, $entityfilearea, $entityfilecomponent, $altmessage = 'entity-image') {
         $imagesurls = entity_utils::get_files_urls(
-            $entity->id,
-            $entityfilearea,
-            $entityfilecomponent);
+                $entity->id,
+                $entityfilearea,
+                $entityfilecomponent);
         $imageshtml = '';
         foreach ($imagesurls as $src) {
             $imageshtml .= html_writer::img($src, $altmessage, array('class' => 'img-thumbnail'));
         }
         return $imageshtml;
     }
-
 
 }

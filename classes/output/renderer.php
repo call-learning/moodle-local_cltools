@@ -47,6 +47,6 @@ class renderer extends plugin_renderer_base {
      */
     public function render_entity_table(entity_table_renderable $entitytable) {
         return $this->render_from_template('local_cltools/dynamic_table_sql',
-            $entitytable->export_for_template($this));
+                $entitytable->export_for_template($this));
     }
 }

@@ -16,20 +16,19 @@
 
 namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
+
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
-use invalid_parameter_exception;
 use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\dynamic_table_interface;
 use local_cltools\local\table\dynamic_table_sql;
 use ReflectionClass;
-use ReflectionException;
-use restricted_context_exception;
 use UnexpectedValueException;
+
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
@@ -50,63 +49,63 @@ class helper extends external_api {
      * Note that we include filters as they can somewhat have an influcence on columns
      * selected too.
      *
-     * @return \external_function_parameters
+     * @return external_function_parameters
      */
     public static function get_table_query_basic_parameters(): array {
         return [
-            'handler' => new external_value(
-            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-            // For now we will have to check manually.
-                PARAM_RAW,
-                'Handler',
-                VALUE_REQUIRED
-            ),
-            'handlerparams' => new external_value(
-            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-            // For now we will have to check manually.
-                PARAM_RAW,
-                'Handler parameters',
-                VALUE_OPTIONAL
-            ),
-            'uniqueid' => new external_value(
-                PARAM_ALPHANUMEXT,
-                'Unique ID for the container',
-                VALUE_REQUIRED
-            ),
-            'sortdata' => new external_multiple_structure(
-                new external_single_structure([
-                    'sortby' => new external_value(
+                'handler' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                        PARAM_RAW,
+                        'Handler',
+                        VALUE_REQUIRED
+                ),
+                'handlerparams' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                        PARAM_RAW,
+                        'Handler parameters',
+                        VALUE_OPTIONAL
+                ),
+                'uniqueid' => new external_value(
                         PARAM_ALPHANUMEXT,
-                        'The name of a sortable column',
+                        'Unique ID for the container',
                         VALUE_REQUIRED
-                    ),
-                    'sortorder' => new external_value(
-                        PARAM_ALPHANUMEXT,
-                        'The direction that this column should be sorted by',
-                        VALUE_REQUIRED
-                    ),
-                ]),
-                'The combined sort order of the table. Multiple fields can be specified.',
-                VALUE_OPTIONAL,
-                []
-            ),
-            'filters' => new external_multiple_structure(
-                new external_single_structure([
-                    'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
-                    'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
-                    'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
-                    'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL, false),
-                    'values' => new external_multiple_structure(
-                        new external_value(PARAM_RAW, 'Filter value'),
-                        'The value to filter on',
-                        VALUE_REQUIRED
-                    )
-                ]),
-                'The filters that will be applied in the request',
-                VALUE_OPTIONAL
-            ),
-            'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
-            'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
+                ),
+                'sortdata' => new external_multiple_structure(
+                        new external_single_structure([
+                                'sortby' => new external_value(
+                                        PARAM_ALPHANUMEXT,
+                                        'The name of a sortable column',
+                                        VALUE_REQUIRED
+                                ),
+                                'sortorder' => new external_value(
+                                        PARAM_ALPHANUMEXT,
+                                        'The direction that this column should be sorted by',
+                                        VALUE_REQUIRED
+                                ),
+                        ]),
+                        'The combined sort order of the table. Multiple fields can be specified.',
+                        VALUE_OPTIONAL,
+                        []
+                ),
+                'filters' => new external_multiple_structure(
+                        new external_single_structure([
+                                'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
+                                'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
+                                'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
+                                'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL, false),
+                                'values' => new external_multiple_structure(
+                                        new external_value(PARAM_RAW, 'Filter value'),
+                                        'The value to filter on',
+                                        VALUE_REQUIRED
+                                )
+                        ]),
+                        'The filters that will be applied in the request',
+                        VALUE_OPTIONAL
+                ),
+                'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
+                'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
         ];
     }
 
@@ -130,7 +129,7 @@ class helper extends external_api {
 
         if (!class_exists($handler)) {
             throw new UnexpectedValueException("Table handler class {$handler} not found. " .
-                "Please make sure that your handler is defined.");
+                    "Please make sure that your handler is defined.");
         }
 
         if (!is_subclass_of($handler, dynamic_table_interface::class)) {
@@ -163,8 +162,8 @@ class helper extends external_api {
             $filtertypedef = [];
             foreach ($filters as $rawfilter) {
                 $ftdef = (object) [
-                    'filterclass' => 'local_cltools\\local\filter\\' . $rawfilter['type'],
-                    'required' => !empty($rawfilter['required']),
+                        'filterclass' => 'local_cltools\\local\filter\\' . $rawfilter['type'],
+                        'required' => !empty($rawfilter['required']),
                 ];
                 $filtertypedef[$rawfilter['name']] = $ftdef;
             }
@@ -175,9 +174,9 @@ class helper extends external_api {
         $filterset->set_join_type($jointype);
         foreach ($filters as $rawfilter) {
             $filterset->add_filter_from_params(
-                $rawfilter['name'], // Field name.
-                $rawfilter['jointype'],
-                $rawfilter['values']
+                    $rawfilter['name'], // Field name.
+                    $rawfilter['jointype'],
+                    $rawfilter['values']
             );
         }
 

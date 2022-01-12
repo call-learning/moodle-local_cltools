@@ -29,21 +29,22 @@ debugging() || (defined('PHPUNIT_TEST') && PHPUNIT_TEST) || defined('BEHAT_SITE_
 
 use local_cltools\local\crud\helper\base as crud_helper;
 use local_cltools\local\crud\helper\crud_view;
+use local_cltools\othersimple\entity;
 
 global $CFG, $OUTPUT, $PAGE;
 require_login();
 
 // To make sure the table is created.
-\local_cltools\othersimple\entity::create_table();
+entity::create_table();
 
 $crudmgmt = crud_helper::create(
-    \local_cltools\othersimple\entity::class,
-    crud_view::ACTION
+        entity::class,
+        crud_view::ACTION
 );
 
 $crudmgmt->setup_page($PAGE);
 
-$out  = $crudmgmt->action_process($PAGE);
+$out = $crudmgmt->action_process($PAGE);
 
 echo $OUTPUT->header();
 echo $out;

@@ -25,11 +25,21 @@
 namespace local_cltools\simple;
 defined('MOODLE_INTERNAL') || die();
 
+use context_system;
 use local_cltools\local\crud\entity_exporter;
 use local_cltools\local\crud\entity_utils;
 use renderer_base;
 
 class exporter extends entity_exporter {
+    /**
+     * Returns the specific class the persistent should be an instance of.
+     *
+     * @return string
+     */
+    protected static function define_class() {
+        return entity::class;
+    }
+
     protected function get_other_values(renderer_base $output) {
         $values = parent::get_other_values($output);
         $exportedimage = $this->export_file('image', null, 'web_image');
@@ -41,19 +51,10 @@ class exporter extends entity_exporter {
 
     protected function get_format_parameters_for_description() {
         return [
-            'context' => \context_system::instance(),
-            'component' => entity_utils::get_component(get_class($this->persistent)),
-            'filearea' => 'simple_description',
-            'itemid' => empty($this->data->id) ? 0 : $this->data->id
+                'context' => context_system::instance(),
+                'component' => entity_utils::get_component(get_class($this->persistent)),
+                'filearea' => 'simple_description',
+                'itemid' => empty($this->data->id) ? 0 : $this->data->id
         ];
-    }
-
-    /**
-     * Returns the specific class the persistent should be an instance of.
-     *
-     * @return string
-     */
-    protected static function define_class() {
-        return entity::class;
     }
 }

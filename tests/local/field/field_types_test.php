@@ -17,6 +17,7 @@
 namespace local_cltools\local\field;
 
 use advanced_testcase;
+use moodleform;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,135 +31,135 @@ defined('MOODLE_INTERNAL') || die();
 class field_types_test extends advanced_testcase {
     public function expectedTypesValue() {
         return [
-            'boolean' => [
-                'field' => new boolean('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        [true, 'true'],
-                        [false, 'false']
-                    ],
-                    'type' => PARAM_BOOL,
-                    'isvalid' => [
-                        [true, true], [false, false], ['true', true], ['15', false], ['Truer', false],
-                    ]
+                'boolean' => [
+                        'field' => new boolean('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        [true, 'true'],
+                                        [false, 'false']
+                                ],
+                                'type' => PARAM_BOOL,
+                                'isvalid' => [
+                                        [true, true], [false, false], ['true', true], ['15', false], ['Truer', false],
+                                ]
+                        ]
+                ],
+                'date' => [
+                        'field' => new date('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        [1633229569, '3/10/21'],
+                                        [1633229500, '3/10/21']
+                                ],
+                                'type' => PARAM_INT,
+                                'isvalid' => [
+                                        ['3/10/21', true], ['AAAA3/10/21', false],
+                                ]
+                        ]
+                ],
+                'datetime' => [
+                        'field' => new datetime('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        [1633229569, '3/10/21, 10:52'],
+                                        [1633229500, '3/10/21, 10:51']
+                                ],
+                                'type' => PARAM_INT,
+                                'isvalid' => [
+                                        ['3/10/21, 10:51', true], ['AAAA3/10/21', false],
+                                ]
+                        ]
+                ],
+                'editor' => [
+                        'field' => new editor('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        ['<p>Test</p>', '<p>Test</p>']
+                                ],
+                                'type' => PARAM_TEXT,
+                                'isvalid' => [
+                                        ['ABCDEF', true],
+                                ]
+                        ]
+                ],
+                'entity_selector' => [
+                        'field' => new entity_selector('fieldname'),
+                        'expectations' => [
+                                'format' => [],
+                                'type' => PARAM_INT,
+                                'isvalid' => []
+                        ]
+                ],
+                'file_manager' => [
+                        'field' => new file_manager('fieldname'),
+                        'expectations' => [
+                                'format' => [],
+                                'type' => PARAM_INT,
+                                'isvalid' => []
+                        ]
+                ],
+                'files' => [
+                        'field' => new files('fieldname'),
+                        'expectations' => [
+                                'format' => [],
+                                'type' => PARAM_INT,
+                                'isvalid' => []
+                        ]
+                ],
+                'hidden' => [
+                        'field' => new hidden('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        ['ABCDE', 'ABCDE'],
+                                ],
+                                'type' => PARAM_RAW,
+                                'isvalid' => []
+                        ]
+                ],
+                'html' => [
+                        'field' => new html('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                ],
+                                'type' => PARAM_RAW,
+                                'isvalid' => []
+                        ]
+                ],
+                'number' => [
+                        'field' => new number('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        [1, '1'],
+                                        [1.1, '1.1']
+                                ],
+                                'type' => PARAM_FLOAT,
+                                'isvalid' => []
+                        ]
+                ],
+                'select_choice' => [
+                        'field' => new select_choice(
+                                ['fieldname' => 'fieldname', 'choices' => [1 => 'choice1', 2 => 'choice2']]
+                        ),
+                        'expectations' => [
+                                'format' => [
+                                        [1, 'choice1'],
+                                        [2, 'choice2']
+                                ],
+                                'type' => PARAM_INT,
+                                'isvalid' => []
+                        ]
+                ],
+                'text' => [
+                        'field' => new text('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        ['ABCDE', 'ABCDE'],
+                                        ['<p>ABCDE</p>', "ABCDE\n"]
+                                ],
+                                'type' => PARAM_TEXT,
+                                'isvalid' => []
+                        ]
                 ]
-            ],
-            'date' => [
-                'field' => new date('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        [1633229569, '3/10/21'],
-                        [1633229500, '3/10/21']
-                    ],
-                    'type' => PARAM_INT,
-                    'isvalid' => [
-                        ['3/10/21', true], ['AAAA3/10/21', false],
-                    ]
-                ]
-            ],
-            'datetime' => [
-                'field' => new datetime('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        [1633229569, '3/10/21, 10:52'],
-                        [1633229500, '3/10/21, 10:51']
-                    ],
-                    'type' => PARAM_INT,
-                    'isvalid' => [
-                        ['3/10/21, 10:51', true], ['AAAA3/10/21', false],
-                    ]
-                ]
-            ],
-            'editor' => [
-                'field' => new editor('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        ['<p>Test</p>', '<p>Test</p>']
-                    ],
-                    'type' => PARAM_TEXT,
-                    'isvalid' => [
-                        ['ABCDEF', true],
-                    ]
-                ]
-            ],
-            'entity_selector' => [
-                'field' => new entity_selector('fieldname'),
-                'expectations' => [
-                    'format' => [],
-                    'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
-            ],
-            'file_manager' => [
-                'field' => new file_manager('fieldname'),
-                'expectations' => [
-                    'format' => [],
-                    'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
-            ],
-            'files' => [
-                'field' => new files('fieldname'),
-                'expectations' => [
-                    'format' => [],
-                    'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
-            ],
-            'hidden' => [
-                'field' => new hidden('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        ['ABCDE', 'ABCDE'],
-                    ],
-                    'type' => PARAM_RAW,
-                    'isvalid' => []
-                ]
-            ],
-            'html' => [
-                'field' => new html('fieldname'),
-                'expectations' => [
-                    'format' => [
-                    ],
-                    'type' => PARAM_RAW,
-                    'isvalid' => []
-                ]
-            ],
-            'number' => [
-                'field' => new number('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        [1, '1'],
-                        [1.1, '1.1']
-                    ],
-                    'type' => PARAM_FLOAT,
-                    'isvalid' => []
-                ]
-            ],
-            'select_choice' => [
-                'field' => new select_choice(
-                    ['fieldname' => 'fieldname', 'choices' => [1 => 'choice1', 2 => 'choice2']]
-                ),
-                'expectations' => [
-                    'format' => [
-                        [1, 'choice1'],
-                        [2, 'choice2']
-                    ],
-                    'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
-            ],
-            'text' => [
-                'field' => new text('fieldname'),
-                'expectations' => [
-                    'format' => [
-                        ['ABCDE', 'ABCDE'],
-                        ['<p>ABCDE</p>', "ABCDE\n"]
-                    ],
-                    'type' => PARAM_TEXT,
-                    'isvalid' => []
-                ]
-            ]
 
         ];
     }
@@ -171,7 +172,7 @@ class field_types_test extends advanced_testcase {
     public function test_format_string($field, $expectations) {
         foreach ($expectations['format'] as $expectation) {
             $this->assertEquals($expectation[1], $field->format_value($expectation[0]),
-                "Entry {$expectation[0]} expected {$expectation[1]}");
+                    "Entry {$expectation[0]} expected {$expectation[1]}");
         }
     }
 
@@ -184,7 +185,6 @@ class field_types_test extends advanced_testcase {
         /* @var $field persistent_field */
         $this->assertEquals($expectations['type'], $field->get_raw_param_type());
     }
-
 
     /**
      * Get an identifier for this type of format
@@ -210,7 +210,7 @@ class field_types_test extends advanced_testcase {
                 $this->expectException(field_exception::class);
             }
             $this->assertTrue($field->validate_value($isvalid[0]) == $isvalid[1],
-                "Expected Entry {$isvalid[0]} to be valid, {$fieldclass}");
+                    "Expected Entry {$isvalid[0]} to be valid, {$fieldclass}");
         }
     }
 
@@ -235,7 +235,7 @@ class field_types_test extends advanced_testcase {
         global $CFG;
         require_once($CFG->libdir . '/formslib.php');
 
-        $form = new class(null, ['field' => $field]) extends \moodleform {
+        $form = new class(null, ['field' => $field]) extends moodleform {
             protected function definition() {
                 $field = $this->_customdata['field'];
                 $field->form_add_element($this->_form);
@@ -246,18 +246,18 @@ class field_types_test extends advanced_testcase {
             }
         };
         $elements = array_filter($form->get_elements(),
-        function($e) use ($field) {
-          return (in_array($e->getName(), [$field->get_name(), $field->get_name().'_editor']));
-        });
-        $expectedtype = $field::FORM_FIELD_TYPE == 'searchableselector' ? 'autocomplete': $field::FORM_FIELD_TYPE;
+                function($e) use ($field) {
+                    return (in_array($e->getName(), [$field->get_name(), $field->get_name() . '_editor']));
+                });
+        $expectedtype = $field::FORM_FIELD_TYPE == 'searchableselector' ? 'autocomplete' : $field::FORM_FIELD_TYPE;
         $this->assertContains(
-            $expectedtype,
-            array_map(
-                function($e) {
-                    return $e->getType();
-                },
-                $elements
-            )
+                $expectedtype,
+                array_map(
+                        function($e) {
+                            return $e->getType();
+                        },
+                        $elements
+                )
         );
 
     }

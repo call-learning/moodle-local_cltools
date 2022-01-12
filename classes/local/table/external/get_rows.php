@@ -29,6 +29,7 @@ use local_cltools\local\table\dynamic_table_sql;
 use ReflectionException;
 use restricted_context_exception;
 use UnexpectedValueException;
+
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
@@ -64,44 +65,44 @@ class get_rows extends external_api {
      * @throws restricted_context_exception
      */
     public static function execute(
-        string $handler,
-        string $handlerparams,
-        string $uniqueid,
-        array $sortdata,
-        ?array $filters = null,
-        ?string $jointype = null,
-        ?bool $editable = false,
-        ?array $hiddencolumns = null,
-        ?bool $resetpreferences = null,
-        ?int $pagenumber = null,
-        ?int $pagesize = null
+            string $handler,
+            string $handlerparams,
+            string $uniqueid,
+            array $sortdata,
+            ?array $filters = null,
+            ?string $jointype = null,
+            ?bool $editable = false,
+            ?array $hiddencolumns = null,
+            ?bool $resetpreferences = null,
+            ?int $pagenumber = null,
+            ?int $pagesize = null
     ) {
         global $PAGE, $CFG;
 
         [
-            'handler' => $handler,
-            'handlerparams' => $handlerparams,
-            'uniqueid' => $uniqueid,
-            'sortdata' => $sortdata,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
-            'pagenumber' => $pagenumber,
-            'pagesize' => $pagesize,
-            'hiddencolumns' => $hiddencolumns,
-            'resetpreferences' => $resetpreferences,
+                'handler' => $handler,
+                'handlerparams' => $handlerparams,
+                'uniqueid' => $uniqueid,
+                'sortdata' => $sortdata,
+                'filters' => $filters,
+                'jointype' => $jointype,
+                'editable' => $editable,
+                'pagenumber' => $pagenumber,
+                'pagesize' => $pagesize,
+                'hiddencolumns' => $hiddencolumns,
+                'resetpreferences' => $resetpreferences,
         ] = self::validate_parameters(self::execute_parameters(), [
-            'handler' => $handler,
-            'handlerparams' => $handlerparams,
-            'uniqueid' => $uniqueid,
-            'sortdata' => $sortdata,
-            'filters' => $filters,
-            'jointype' => $jointype,
-            'editable' => $editable,
-            'pagenumber' => $pagenumber,
-            'pagesize' => $pagesize,
-            'hiddencolumns' => $hiddencolumns,
-            'resetpreferences' => $resetpreferences,
+                'handler' => $handler,
+                'handlerparams' => $handlerparams,
+                'uniqueid' => $uniqueid,
+                'sortdata' => $sortdata,
+                'filters' => $filters,
+                'jointype' => $jointype,
+                'editable' => $editable,
+                'pagenumber' => $pagenumber,
+                'pagesize' => $pagesize,
+                'hiddencolumns' => $hiddencolumns,
+                'resetpreferences' => $resetpreferences,
         ]);
 
         /* @var $instance dynamic_table_interface the dynamic table itself */
@@ -140,12 +141,12 @@ class get_rows extends external_api {
              that will then be hidden but keep reference to the row unique identifier.");
         }
         $returnval = [
-            'data' => array_map(
-                function($r) {
-                    return json_encode($r);
-                },
-                $rows
-            )
+                'data' => array_map(
+                        function($r) {
+                            return json_encode($r);
+                        },
+                        $rows
+                )
         ];
         if ($instance->is_pageable()) {
             $returnval['pagescount'] = floor($instance->get_total_rows() / $instance->get_page_size());
@@ -161,36 +162,36 @@ class get_rows extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
-            array_merge(
-                helper::get_table_query_basic_parameters(), [
-                    'hiddencolumns' => new external_multiple_structure(
-                        new external_value(
-                            PARAM_ALPHANUMEXT,
-                            'Name of column',
-                            VALUE_REQUIRED,
-                            null
-                        )
-                    ),
-                    'resetpreferences' => new external_value(
-                        PARAM_BOOL,
-                        'Whether the table preferences should be reset',
-                        VALUE_REQUIRED,
-                        null
-                    ),
-                    'pagenumber' => new external_value(
-                        PARAM_INT,
-                        'The page number',
-                        VALUE_DEFAULT,
-                        -1
-                    ),
-                    'pagesize' => new external_value(
-                        PARAM_INT,
-                        'The number of records per page',
-                        VALUE_DEFAULT,
-                        0
-                    )
-                ]
-            )
+                array_merge(
+                        helper::get_table_query_basic_parameters(), [
+                                'hiddencolumns' => new external_multiple_structure(
+                                        new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'Name of column',
+                                                VALUE_REQUIRED,
+                                                null
+                                        )
+                                ),
+                                'resetpreferences' => new external_value(
+                                        PARAM_BOOL,
+                                        'Whether the table preferences should be reset',
+                                        VALUE_REQUIRED,
+                                        null
+                                ),
+                                'pagenumber' => new external_value(
+                                        PARAM_INT,
+                                        'The page number',
+                                        VALUE_DEFAULT,
+                                        -1
+                                ),
+                                'pagesize' => new external_value(
+                                        PARAM_INT,
+                                        'The number of records per page',
+                                        VALUE_DEFAULT,
+                                        0
+                                )
+                        ]
+                )
         );
     }
 
@@ -202,12 +203,11 @@ class get_rows extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
-            'data' => new external_multiple_structure(
-                new external_value(PARAM_RAW, 'JSON encoded values in return.')
-            )
+                'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
+                'data' => new external_multiple_structure(
+                        new external_value(PARAM_RAW, 'JSON encoded values in return.')
+                )
         ]);
     }
 }
-
 

@@ -14,9 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\field\adapter;
+
 use core\persistent;
 use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
+use ReflectionException;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -35,7 +38,7 @@ trait form_adapter_default {
      * @param mixed ...$additionalargs
      * @return mixed
      */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
     }
@@ -73,9 +76,9 @@ trait form_adapter_default {
     /**
      * Callback for this field, so data can be converted before form submission
      *
-     * @param \stdClass $itemdata
+     * @param stdClass $itemdata
      * @param persistent $persistent
-     * @return \stdClass
+     * @return stdClass
      */
     public function form_prepare_files($itemdata, persistent $persistent) {
         return $itemdata;
@@ -84,13 +87,14 @@ trait form_adapter_default {
     /**
      * Callback for this field, so data can be saved after form submission
      *
-     * @param \stdClass $itemdata
+     * @param stdClass $itemdata
      * @param persistent $persistent
-     * @return \stdClass
+     * @return stdClass
      */
     public function form_save_files($itemdata, persistent $persistent) {
         return $itemdata;
     }
+
     /**
      * Is in persistent
      *
@@ -110,17 +114,18 @@ trait form_adapter_default {
 
     /**
      * Get context for file creation/saving
+     *
      * @param persistent $persistent
      * @param string $fieldname
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function get_file_info_context(persistent $persistent, string $fieldname) {
         if ($persistent) {
             $context = $persistent->get_context();
             $component = entity_utils::get_component(get_class($persistent));
             $filearearoot = entity_utils::get_persistent_prefix(get_class($persistent));
-            $itemid = $persistent && $persistent->get('id') >0 ? $persistent->get('id') : null;
+            $itemid = $persistent && $persistent->get('id') > 0 ? $persistent->get('id') : null;
         }
         return [$context, $component, "{$filearearoot}_{$fieldname}", $itemid];
     }

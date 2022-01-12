@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\filter;
+
+use advanced_testcase;
 use core_table\local\filter\filter;
 
 defined('MOODLE_INTERNAL') || die;
@@ -25,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filter_helper_test extends \advanced_testcase {
+class filter_helper_test extends advanced_testcase {
     /**
      * Map join types to corresponding SQL values
      *

@@ -63,6 +63,7 @@ interface tabulator_adapter {
 
     /**
      * Can we sort the column ?
+     *
      * @return bool
      */
     public function can_sort();

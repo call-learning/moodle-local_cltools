@@ -19,6 +19,7 @@ defined('MOODLE_INTERNAL') || die;
 
 use context;
 use core_table\local\filter\filterset;
+use dml_exception;
 use local_cltools\local\filter\enhanced_filterset;
 use moodle_url;
 use table_default_export_format_parent;
@@ -77,7 +78,6 @@ interface dynamic_table_interface {
      */
     public function sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC);
 
-
     /**
      * Is the column sortable?
      *
@@ -135,12 +135,14 @@ interface dynamic_table_interface {
 
     /**
      * Is paged
+     *
      * @return bool
      */
     public function is_pageable(): bool;
 
     /**
      * Total row
+     *
      * @return int
      */
     public function get_total_rows(): int;
@@ -162,6 +164,7 @@ interface dynamic_table_interface {
 
     /**
      * Get uniqueid for this table
+     *
      * @return mixed
      */
     public function get_unique_id();
@@ -222,7 +225,7 @@ interface dynamic_table_interface {
      * (such as for example a filter needs to be set in order not to return data a user should not see).
      *
      *
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function validate_access($writeaccess = false);
 

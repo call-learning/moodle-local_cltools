@@ -25,13 +25,9 @@
 namespace local_cltools\simple;
 
 use local_cltools\local\crud\entity_table;
-use local_cltools\local\crud\entity_utils;
-use local_cltools\utils;
-use moodle_url;
-use pix_icon;
-use popup_action;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Entity table/list
  *
@@ -44,14 +40,14 @@ class table extends entity_table {
     protected static $persistentclass = entity::class;
 
     public function __construct($uniqueid = null,
-        $actionsdefs = null,
-        $editable = false
-    )  {
+            $actionsdefs = null,
+            $editable = false
+    ) {
         $actionsdefs = [
-            'edit' => (object) [
-                'url' => 'edit.php',
-                'icon' => 't/edit'
-            ]
+                'edit' => (object) [
+                        'url' => 'edit.php',
+                        'icon' => 't/edit'
+                ]
         ];
         parent::__construct($uniqueid, $actionsdefs, $editable);
     }

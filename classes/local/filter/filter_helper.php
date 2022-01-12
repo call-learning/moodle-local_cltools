@@ -42,8 +42,8 @@ class filter_helper {
      */
     public static function get_jointype_to_sql_join(int $jointtype) {
         $jointtypetosql = [
-            filter::JOINTYPE_ALL => 'AND',
-            filter::JOINTYPE_ANY => 'OR',
+                filter::JOINTYPE_ALL => 'AND',
+                filter::JOINTYPE_ANY => 'OR',
         ];
         return empty($jointtypetosql[$jointtype]) ? 'AND' : $jointtypetosql[$jointtype];
     }
@@ -58,3 +58,4 @@ class filter_helper {
         return trim(strtolower($name));
     }
 }
+

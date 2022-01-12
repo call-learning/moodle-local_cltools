@@ -63,15 +63,15 @@ class crud_add extends base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null,
+            $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation, $pagesrooturl);
+                $exporterclassname, $persistentnavigation, $pagesrooturl);
         $this->actionurl = $this->persistentnavigation->get_add_url();
     }
 
@@ -88,30 +88,34 @@ class crud_add extends base {
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
         // Add a new entity or edit it.
-        $entity = null;
         $mform = $this->instanciate_related_form();
-        $mform->prepare_for_files();
-        if ($mform->is_cancelled()) {
-            redirect($this->persistentnavigation->get_list_url());
-        } else if ($data = $mform->get_data()) {
-            try {
-                $entity = $mform->save_data();
+        if ($mform) {
+            $mform->prepare_for_files();
+            if ($mform->is_cancelled()) {
+                redirect($this->persistentnavigation->get_list_url());
+            } else if ($data = $mform->get_data()) {
+                try {
+                    $entity = $mform->save_data();
 
-                if ($postprocesscb && is_callable($postprocesscb)) {
-                    $postprocesscb($entity, $data);
+                    if ($postprocesscb && is_callable($postprocesscb)) {
+                        $postprocesscb($entity, $data);
+                    }
+                    $this->trigger_event($entity);
+                    redirect(
+                            new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
+                            $this->get_action_event_description(),
+                            null,
+                            $messagetype = notification::NOTIFY_SUCCESS);
+                } catch (moodle_exception $e) {
+                    $returnedtext .= $this->renderer->notification($e->getMessage(), 'notifyfailure');
                 }
-                $this->trigger_event($entity);
-                redirect(
-                    new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
-                    $this->get_action_event_description(),
-                    null,
-                    $messagetype = notification::NOTIFY_SUCCESS);
-            } catch (moodle_exception $e) {
-                $returnedtext .= $this->renderer->notification($e->getMessage(), 'notifyfailure');
             }
+            $returnedtext .= $mform->render();
+        } else {
+            $returnedtext .=
+                    $this->renderer->notification(get_string('cannotaddentity:formmissing', 'local_cltools'), 'notifyfailure')
+                    . $this->renderer->continue_button($this->persistentnavigation->get_list_url());
         }
-        $returnedtext .= $mform->render();
-
         return $returnedtext;
     }
 }

@@ -33,6 +33,8 @@ use local_cltools\local\crud\helper\crud_edit;
 use local_cltools\local\crud\helper\crud_list;
 use local_cltools\simple\entity;
 use local_cltools\test\base_crud_test;
+use moodle_page;
+use moodle_url;
 
 /**
  * Persistent utils test case
@@ -67,7 +69,7 @@ class base_test extends base_crud_test {
         $this->assertNotNull($form);
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user); // Make sure we have a logged in user.
-        $PAGE->set_url(new \moodle_url('/'));
+        $PAGE->set_url(new moodle_url('/'));
         $formdisplay = $form->render();
         $this->assertStringContainsString('input', $formdisplay);
     }
@@ -76,16 +78,16 @@ class base_test extends base_crud_test {
         global $PAGE;
         // Create a couple of entities.
         $entitiesdata = [
-            (object) [
-                'shortname' => 'Shortname 1',
-                'idnumber' => 'Idnumber 1',
-                'sortorder' => 0,
-            ],
-            (object) [
-                'shortname' => 'Shortname 2',
-                'idnumber' => 'Idnumber 2',
-                'sortorder' => 0,
-            ]
+                (object) [
+                        'shortname' => 'Shortname 1',
+                        'idnumber' => 'Idnumber 1',
+                        'sortorder' => 0,
+                ],
+                (object) [
+                        'shortname' => 'Shortname 2',
+                        'idnumber' => 'Idnumber 2',
+                        'sortorder' => 0,
+                ]
         ];
         foreach ($entitiesdata as $entityrecord) {
             $entity = new entity(0, $entityrecord);
@@ -95,7 +97,7 @@ class base_test extends base_crud_test {
         $crudmgmt = base::create(entity::class);
         $persistentlist = $crudmgmt->instanciate_related_persistent_list();
         $this->assertNotNull($persistentlist);
-        $PAGE->set_url(new \moodle_url('/'));
+        $PAGE->set_url(new moodle_url('/'));
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user); // Make sure we have a logged in user.
         $persistentlist->define_baseurl($PAGE->url);
@@ -111,7 +113,7 @@ class base_test extends base_crud_test {
      * @dataProvider action_data_provider
      */
     public function test_setup_page($action, $expected) {
-        $page = new \moodle_page();
+        $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
         $this->assertEquals($expected['title'], $page->title);
@@ -121,7 +123,7 @@ class base_test extends base_crud_test {
      * @dataProvider action_data_provider
      */
     public function test_page_header($action, $expected) {
-        $page = new \moodle_page();
+        $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
         $this->assertEquals($expected['header'], $page->heading);
@@ -131,7 +133,7 @@ class base_test extends base_crud_test {
      * @dataProvider action_data_provider
      */
     public function test_get_action_event_description($action, $expected) {
-        $page = new \moodle_page();
+        $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
         $this->assertEquals($expected['eventdescription'], $page->title);
@@ -145,11 +147,11 @@ class base_test extends base_crud_test {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
         $existingentity = new entity(0, (object) [
-            'shortname' => 'Entity Test',
-            'idnumber' => 'ETEST',
-            'description' => 'Description',
-            'descriptionformat' => FORMAT_HTML,
-            'sortorder' => 0
+                'shortname' => 'Entity Test',
+                'idnumber' => 'ETEST',
+                'description' => 'Description',
+                'descriptionformat' => FORMAT_HTML,
+                'sortorder' => 0
         ]);
         $existingentity->create();
         $crudmgmt = base::create(entity::class, $action);
@@ -172,54 +174,54 @@ class base_test extends base_crud_test {
      */
     public function action_data_provider() {
         return [
-            'add' => [
-                'action' => crud_add::ACTION,
-                'expected' => [
-                    'title' => 'Add Simple entity',
-                    'header' => 'Add Simple entity',
-                    'eventdescription' => 'Add Simple entity',
-                    'eventclass' => ''
+                'add' => [
+                        'action' => crud_add::ACTION,
+                        'expected' => [
+                                'title' => 'Add Simple entity',
+                                'header' => 'Add Simple entity',
+                                'eventdescription' => 'Add Simple entity',
+                                'eventclass' => ''
+                        ],
+                        'formdata' => [
+                                'shortname' => 'Entity Test Added',
+                                'idnumber' => 'ETEST1',
+                                'description' => 'Description',
+                                'descriptionformat' => FORMAT_HTML,
+                        ],
                 ],
-                'formdata' => [
-                    'shortname' => 'Entity Test Added',
-                    'idnumber' => 'ETEST1',
-                    'description' => 'Description',
-                    'descriptionformat' => FORMAT_HTML,
+                'delete' => [
+                        'action' => crud_delete::ACTION,
+                        'expected' => [
+                                'title' => 'Delete Simple entity',
+                                'header' => 'Delete Simple entity',
+                                'eventdescription' => 'Delete Simple entity',
+                                'eventclass' => ''
+                        ],
                 ],
-            ],
-            'delete' => [
-                'action' => crud_delete::ACTION,
-                'expected' => [
-                    'title' => 'Delete Simple entity',
-                    'header' => 'Delete Simple entity',
-                    'eventdescription' => 'Delete Simple entity',
-                    'eventclass' => ''
+                'edit' => [
+                        'action' => crud_edit::ACTION,
+                        'expected' => [
+                                'title' => 'Edit Simple entity',
+                                'header' => 'Edit Simple entity',
+                                'eventdescription' => 'Edit Simple entity',
+                                'eventclass' => ''
+                        ],
+                        'formdata' => [
+                                'shortname' => 'Entity Test Modified',
+                                'idnumber' => 'ETEST1',
+                                'description' => 'Description',
+                                'descriptionformat' => FORMAT_HTML,
+                        ]
                 ],
-            ],
-            'edit' => [
-                'action' => crud_edit::ACTION,
-                'expected' => [
-                    'title' => 'Edit Simple entity',
-                    'header' => 'Edit Simple entity',
-                    'eventdescription' => 'Edit Simple entity',
-                    'eventclass' => ''
-                ],
-                'formdata' => [
-                    'shortname' => 'Entity Test Modified',
-                    'idnumber' => 'ETEST1',
-                    'description' => 'Description',
-                    'descriptionformat' => FORMAT_HTML,
+                'list' => [
+                        'action' => crud_list::ACTION,
+                        'expected' => [
+                                'title' => 'List Simple entity',
+                                'header' => 'List Simple entity',
+                                'eventdescription' => 'List Simple entity',
+                                'eventclass' => ''
+                        ]
                 ]
-            ],
-            'list' => [
-                'action' => crud_list::ACTION,
-                'expected' => [
-                    'title' => 'List Simple entity',
-                    'header' => 'List Simple entity',
-                    'eventdescription' => 'List Simple entity',
-                    'eventclass' => ''
-                ]
-            ]
         ];
     }
 

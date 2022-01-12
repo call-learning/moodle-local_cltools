@@ -25,10 +25,8 @@
 
 namespace local_cltools\local\forms;
 
-use coding_exception;
 use core\output\mustache_template_finder;
 use Exception;
-use HTML_QuickForm_group;
 use templatable;
 
 defined('MOODLE_INTERNAL') || die;
@@ -127,13 +125,13 @@ trait form_element_accept {
                 }
 
                 $context = array(
-                    'element' => $elementcontext,
-                    'label' => $label,
-                    'text' => $text,
-                    'required' => $required,
-                    'advanced' => $advanced,
-                    'helpbutton' => $helpbutton,
-                    'error' => $error
+                        'element' => $elementcontext,
+                        'label' => $label,
+                        'text' => $text,
+                        'required' => $required,
+                        'advanced' => $advanced,
+                        'helpbutton' => $helpbutton,
+                        'error' => $error
                 );
                 return $localrenderer->render_from_template($templatename, $context);
             }

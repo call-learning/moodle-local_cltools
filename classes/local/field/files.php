@@ -15,13 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
-use context_system;
+
 use core\persistent;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\entity_utils;
+use moodle_url;
 use MoodleQuickForm;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * File field
  *
@@ -32,6 +35,10 @@ defined('MOODLE_INTERNAL') || die();
 class files extends persistent_field {
 
     /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'filemanager';
+    /**
      * File manager options
      *
      * @var array
@@ -40,10 +47,10 @@ class files extends persistent_field {
 
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_INT,
-            'filemanageroptions' => [],
-            'default' => 0 // No default if not it makes it required
+                'required' => false,
+                'rawtype' => PARAM_INT,
+                'filemanageroptions' => [],
+                'default' => 0 // No default if not it makes it required
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         if ($fielddef->filemanageroptions) {
@@ -52,20 +59,30 @@ class files extends persistent_field {
     }
 
     /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'filemanager';
-    /**
      * Add element onto the form
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $persistent = $additionalargs[0]?? null;
+    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+        $persistent = $additionalargs[0] ?? null;
         $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(),
-            $this->get_filemanager_options($persistent));
+                $this->get_filemanager_options($persistent));
         parent::internal_form_add_element($mform);
+    }
+
+    /**
+     * Get file options
+     *
+     * @param enhanced_persistent|null $persistent
+     * @return array
+     */
+    protected function get_filemanager_options(?enhanced_persistent $persistent) {
+        $filemanageroptions = $this->filemanageroptions;
+        if ($persistent) {
+            $filemanageroptions['context'] = $persistent->get_context();
+        }
+        return $filemanageroptions;
     }
 
     /**
@@ -102,20 +119,20 @@ class files extends persistent_field {
     /**
      * Callback for this field, so data can be converted before form submission
      *
-     * @param \stdClass $itemdata
+     * @param stdClass $itemdata
      * @param persistent $persistent
-     * @return \stdClass
+     * @return stdClass
      */
     public function form_prepare_files($itemdata, persistent $persistent) {
-        $fieldname= $this->get_name();
+        $fieldname = $this->get_name();
         [$context, $component, $filearea, $itemid] = $this->get_file_info_context($persistent, $fieldname);
         $draftitemid = file_get_submitted_draft_itemid($fieldname);
         file_prepare_draft_area($draftitemid,
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->get_filemanager_options($persistent));
+                $context->id,
+                $component,
+                $filearea,
+                $itemid,
+                $this->get_filemanager_options($persistent));
         $itemdata->$fieldname = $draftitemid;
         return $itemdata;
     }
@@ -123,23 +140,22 @@ class files extends persistent_field {
     /**
      * Callback for this field, so data can be saved after form submission
      *
-     * @param \stdClass $itemdata
+     * @param stdClass $itemdata
      * @param persistent $persistent
-     * @return \stdClass
+     * @return stdClass
      */
     public function form_save_files($itemdata, persistent $persistent) {
-        $fieldname= $this->get_name();
+        $fieldname = $this->get_name();
         [$context, $component, $filearea, $itemid] = $this->get_file_info_context($persistent, $fieldname);
 
         file_save_draft_area_files($itemdata->$fieldname,
-            $context->id,
-            $component,
-            $filearea,
-            $itemid,
-            $this->get_filemanager_options($persistent));
+                $context->id,
+                $component,
+                $filearea,
+                $itemid,
+                $this->get_filemanager_options($persistent));
         return $itemdata;
     }
-
 
     /**
      * Is in persistent table ?
@@ -160,37 +176,23 @@ class files extends persistent_field {
         $filesurl = [];
         if (!empty($additionalcontext['persistent'])) {
             $persistent = !empty($additionalcontext['persistent']) ? $additionalcontext['persistent'] : null;
-            $fieldname= $this->get_name();
+            $fieldname = $this->get_name();
             [$context, $component, $filearea, $itemid] = $this->get_file_info_context($persistent, $fieldname);
             $files = entity_utils::get_files($itemid, $filearea, $component, $context);
             foreach ($files as $index => $f) {
                 if (!$f->is_directory() &&
-                    file_mimetype_in_typegroup($f->get_mimetype(), ['web_image', 'document'])) {
-                    $filesurl[] = \moodle_url::make_pluginfile_url(
-                        $context->id,
-                        $component,
-                        $filearea,
-                        $itemid,
-                        $f->get_filepath(),
-                        $f->get_filename()
+                        file_mimetype_in_typegroup($f->get_mimetype(), ['web_image', 'document'])) {
+                    $filesurl[] = moodle_url::make_pluginfile_url(
+                            $context->id,
+                            $component,
+                            $filearea,
+                            $itemid,
+                            $f->get_filepath(),
+                            $f->get_filename()
                     );
                 }
             }
         }
         return $filesurl;
-    }
-
-    /**
-     * Get file options
-     *
-     * @param enhanced_persistent|null $persistent
-     * @return array
-     */
-    protected function get_filemanager_options(?enhanced_persistent $persistent) {
-        $filemanageroptions = $this->filemanageroptions;
-        if ($persistent) {
-            $filemanageroptions['context'] = $persistent->get_context();
-        }
-        return $filemanageroptions;
     }
 }

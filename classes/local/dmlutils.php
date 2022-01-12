@@ -23,6 +23,7 @@
  */
 
 namespace local_cltools\local;
+
 use mysqli_native_moodle_database;
 use oci_native_moodle_database;
 use pgsql_native_moodle_database;

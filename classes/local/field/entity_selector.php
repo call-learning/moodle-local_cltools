@@ -22,6 +22,7 @@ use MoodleQuickForm;
 use ReflectionException;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Entity selector field
  *
@@ -31,6 +32,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class entity_selector extends persistent_field {
 
+    /**
+     * Form field type for this field, used in default implementation of form_add_element
+     */
+    const FORM_FIELD_TYPE = 'searchableselector';
     /**
      * @var string|null $entityclass
      */
@@ -42,18 +47,104 @@ class entity_selector extends persistent_field {
 
     /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_INT,
-            'default' => null
+                'required' => false,
+                'rawtype' => PARAM_INT,
+                'default' => null
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
         $this->displayfield = empty($fielddef->displayfield) ? "" : $fielddef->displayfield;
+    }
+
+    /**
+     * Get the matching formatter type to be used for display
+     *
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
+     *
+     */
+    public function get_column_formatter() {
+        $format = parent::get_column_formatter();
+        $format->formatter = 'entity_lookup';
+        $format->formatterParams = (object) [
+                'entityclass' => $this->entityclass,
+                'displayfield' => $this->displayfield
+        ];
+        return $format;
+    }
+
+    /**
+     * Get the matching editor type to be used in the table
+     *
+     * @link  http://tabulator.info/docs/4.9/editor
+     * @return object|null return the parameters (or null if no matching editor)
+     *
+     */
+    public function get_column_editor() {
+        return (object) [
+                'editor' => 'entity_lookup',
+                'editorParams' => (object) [
+                        'entityclass' => $this->entityclass,
+                        'displayfield' => $this->displayfield
+                ]
+        ];
+    }
+
+    /**
+     * Get addional joins and fields
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     * @throws ReflectionException
+     */
+    public function get_additional_sql($entityalias) {
+        $table = ($this->entityclass)::TABLE;
+        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
+        return [
+                "",
+                "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
+        ];
+
+    }
+
+    /**
+     * Get addional additional invisible sort field
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return string
+     */
+    public function get_additional_util_field() {
+        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
+        $fieldname = $aliasname . $this->displayfield;
+        $field = persistent_field::get_instance_from_def($fieldname, [
+                        "fullname" => $fieldname,
+                        "rawtype" => PARAM_RAW,
+                        "type" => "hidden"
+                ]
+        );
+        return $field;
+    }
+
+    /**
+     * Add element onto the form
+     *
+     * @param MoodleQuickForm $mform
+     * @param mixed ...$additionalargs
+     */
+    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+        $choices = static::entity_lookup($this->entityclass, $this->displayfield);
+        $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(), $choices);
+        parent::internal_form_add_element($mform);
     }
 
     /**
@@ -71,7 +162,7 @@ class entity_selector extends persistent_field {
         if ($entityclass && class_exists($entityclass)) {
             $fields = entity_utils::get_defined_fields($entityclass);
             if (empty($displayfield)) {
-                foreach($fields as $field) {
+                foreach ($fields as $field) {
                     if (in_array($field->get_name(), ['shortname', 'idnumber'])) {
                         $displayfield = $field->get_name();
                     }
@@ -82,94 +173,5 @@ class entity_selector extends persistent_field {
         } else {
             return [];
         }
-    }
-
-    /**
-     * Get the matching formatter type to be used for display
-     *
-     * @link  http://tabulator.info/docs/4.9/format
-     * @return object|null return the parameters (or null if no matching formatter)
-     *
-     */
-    public function get_column_formatter() {
-        $format = parent::get_column_formatter();
-        $format->formatter = 'entity_lookup';
-        $format->formatterParams = (object) [
-            'entityclass' => $this->entityclass,
-            'displayfield' => $this->displayfield
-        ];
-        return $format;
-    }
-
-    /**
-     * Get the matching editor type to be used in the table
-     *
-     * @link  http://tabulator.info/docs/4.9/editor
-     * @return object|null return the parameters (or null if no matching editor)
-     *
-     */
-    public function get_column_editor() {
-        return (object) [
-            'editor' => 'entity_lookup',
-            'editorParams' => (object) [
-                'entityclass' => $this->entityclass,
-                'displayfield' => $this->displayfield
-            ]
-        ];
-    }
-
-    /**
-     * Get addional joins and fields
-     *
-     * Not necessary most of the time
-     *
-     * @param $entityalias
-     * @return string
-     * @throws ReflectionException
-     */
-    public function get_additional_sql($entityalias) {
-        $table = ($this->entityclass)::TABLE;
-        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        return [
-            "",
-            "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
-        ];
-
-    }
-
-    /**
-     * Get addional additional invisible sort field
-     *
-     * Not necessary most of the time
-     *
-     * @param $entityalias
-     * @return string
-     */
-    public function get_additional_util_field() {
-        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        $fieldname = $aliasname . $this->displayfield;
-        $field = persistent_field::get_instance_from_def($fieldname, [
-                "fullname" => $fieldname,
-                "rawtype" => PARAM_RAW,
-                "type" => "hidden"
-            ]
-        );
-        return $field;
-    }
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'searchableselector';
-    /**
-     * Add element onto the form
-     *
-     * @param MoodleQuickForm $mform
-     * @param mixed ...$additionalargs
-     */
-    public function form_add_element(MoodleQuickForm $mform,  ...$additionalargs) {
-        $choices = static::entity_lookup($this->entityclass, $this->displayfield);
-        $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(), $choices);
-        parent::internal_form_add_element($mform);
     }
 }

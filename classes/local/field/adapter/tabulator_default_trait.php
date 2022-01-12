@@ -36,8 +36,8 @@ trait tabulator_default_trait {
         $editor = $this->get_column_editor();
         if ($editor) {
             return (object) [
-                'headerFilter' => $editor->editor,
-                'headerFilterParams' => $editor->editorParams ?? ''
+                    'headerFilter' => $editor->editor,
+                    'headerFilterParams' => $editor->editorParams ?? ''
             ];
         }
         return null;
@@ -63,7 +63,7 @@ trait tabulator_default_trait {
      */
     public function get_column_formatter() {
         return (object) [
-            'headerSort' => $this->can_sort()
+                'headerSort' => $this->can_sort()
         ];
     }
 
@@ -80,6 +80,7 @@ trait tabulator_default_trait {
 
     /**
      * Can we sort the column ?
+     *
      * @return bool
      */
     public function can_sort() {

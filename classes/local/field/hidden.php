@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_cltools\local\field;
-use MoodleQuickForm;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Hidden field
  *
@@ -26,20 +26,22 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hidden extends persistent_field {
-    public function __construct($fielnameordef) {
-        $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_RAW,
-            'default' => false,
-            'visible' => false
-        ];
-        $fielddef = $this->init($fielnameordef, $standarddefaults);
-        $this->visible = false;
-    }
     /**
      * Form field type for this field, used in default implementation of form_add_element
      */
     const FORM_FIELD_TYPE = 'hidden';
+
+    public function __construct($fielnameordef) {
+        $standarddefaults = [
+                'required' => false,
+                'rawtype' => PARAM_RAW,
+                'default' => false,
+                'visible' => false,
+                'editable' => false
+        ];
+        $fielddef = $this->init($fielnameordef, $standarddefaults);
+        $this->visible = false;
+    }
 
     /**
      * Check if the field is visible or not

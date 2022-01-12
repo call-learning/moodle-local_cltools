@@ -18,8 +18,12 @@ namespace local_cltools\local\table;
 
 use coding_exception;
 use context;
+use core\dml\recordset_walk;
+use core_table\dynamic;
 use html_writer;
+use moodle_recordset;
 use moodle_url;
+use stdClass;
 use table_dataformat_export_format;
 use table_default_export_format_parent;
 
@@ -58,66 +62,6 @@ trait table_sql_trait {
     protected $download;
     protected $countsql;
     protected $sql;
-    /**
-     * Call this to pass the download type. Use :
-     *         $download = optional_param('download', '', PARAM_ALPHA);
-     * To get the download type. We assume that if you call this function with
-     * params that this table's data is downloadable, so we call is_downloadable
-     * for you (even if the param is '', which means no download this time.
-     * Also you can call this method with no params to get the current set
-     * download type.
-     *
-     * @param string $download dataformat type. One of csv, xhtml, ods, etc
-     * @param string $filename filename for downloads without file extension.
-     * @param string $sheettitle title for downloaded data.
-     * @return string download dataformat type. One of csv, xhtml, ods, etc
-     */
-    public function is_downloading($download = null, $filename = '', $sheettitle = '') {
-        if ($download !== null) {
-            $this->sheettitle = $sheettitle;
-            $this->is_downloadable(true);
-            $this->download = $download;
-            $this->filename = clean_filename($filename);
-            $this->export_class_instance();
-        }
-        return $this->download;
-    }
-
-    /**
-     * Get, and optionally set, the export class.
-     *
-     * @param $exportclass (optional) if passed, set the table to use this export class.
-     * @return table_default_export_format_parent the export class in use (after any set).
-     */
-    public function export_class_instance($exportclass = null): table_default_export_format_parent {
-        if (!is_null($exportclass)) {
-            $this->started_output = true;
-            $this->exportclass = $exportclass;
-            $this->exportclass->table = $this;
-        } else if (is_null($this->exportclass) && !empty($this->download)) {
-            $this->exportclass = new table_dataformat_export_format($this, $this->download);
-            if (!$this->exportclass->document_started()) {
-                $this->exportclass->start_document($this->filename, $this->sheettitle);
-            }
-        }
-        return $this->exportclass;
-    }
-
-    /**
-     * Probably don't need to call this directly. Calling is_downloading with a
-     * param automatically sets table as downloadable.
-     *
-     * @param bool $downloadable optional param to set whether data from
-     * table is downloadable. If ommitted this function can be used to get
-     * current state of table.
-     * @return bool whether table data is set to be downloadable.
-     */
-    public function is_downloadable($downloadable = null) {
-        if ($downloadable !== null) {
-            $this->downloadable = $downloadable;
-        }
-        return $this->downloadable;
-    }
 
     /**
      * Sets the issortable variable to the given boolean, sort_default_column to
@@ -180,15 +124,7 @@ trait table_sql_trait {
         $this->useinitials = $bool;
     }
 
-    /**
-     * Sets the pagesize variable to the given integer, the totalrows variable
-     * to the given integer, and the use_pages variable to true.
-     *
-     * @param int $perpage
-     * @param int $total
-     * @return void
-     */
-    // phpcs:ignore Squiz.Scope.MethodScope.Missing
+
     function pagesize($perpage, $total) {
         if ($this->usepages) {
             $this->pagesize = $perpage;
@@ -215,12 +151,74 @@ trait table_sql_trait {
     }
 
     /**
-     * Get uniqueid for this table
+     * Sets the pagesize variable to the given integer, the totalrows variable
+     * to the given integer, and the use_pages variable to true.
      *
-     * @return mixed
+     * @param int $perpage
+     * @param int $total
+     * @return void
      */
-    public function get_unique_id() {
-        return $this->uniqueid;
+    // phpcs:ignore Squiz.Scope.MethodScope.Missing
+    /**
+     * Mark the table preferences to be reset.
+     */
+    public function mark_table_to_reset(): void {
+        $this->resetting = true;
+    }
+
+    /**
+     * @return int the offset for LIMIT clause of SQL
+     */
+    public function get_page_start() {
+        if (!$this->usepages) {
+            return '';
+        }
+        return $this->currpage * $this->pagesize;
+    }
+
+    /**
+     * @return int the pagesize for LIMIT clause of SQL
+     */
+    public function get_page_size() {
+        if (!$this->usepages) {
+            return '';
+        }
+        return $this->pagesize;
+    }
+
+    /**
+     * Get the html for the download buttons
+     *
+     * Usually only use internally
+     */
+    public function download_buttons() {
+
+    }
+
+    /**
+     * Set the list of hidden columns.
+     *
+     * @param array $columns The list of hidden columns.
+     */
+    public function set_hidden_columns(array $columns): void {
+        $this->hiddencolumns = $columns;
+    }
+
+    /**
+     * Set the page number.
+     *
+     * @param int $pagenumber The page number.
+     */
+    public function set_page_number(int $pagenumber): void {
+        $this->currpage = $pagenumber - 1;
+    }
+
+    public function is_pageable(): bool {
+        return $this->usepages;
+    }
+
+    public function get_total_rows(): int {
+        return $this->totalrows ?? 0;
     }
 
     /**
@@ -242,13 +240,6 @@ trait table_sql_trait {
      */
     protected function define_headers($headers) {
         $this->headers = $headers;
-    }
-
-    /**
-     * Mark the table preferences to be reset.
-     */
-    public function mark_table_to_reset(): void {
-        $this->resetting = true;
     }
 
     /**
@@ -287,6 +278,15 @@ trait table_sql_trait {
     }
 
     /**
+     * Get uniqueid for this table
+     *
+     * @return mixed
+     */
+    public function get_unique_id() {
+        return $this->uniqueid;
+    }
+
+    /**
      * Prepare an an order by clause from the list of columns to be sorted.
      *
      * @param array $cols column name => SORT_ASC or SORT_DESC
@@ -308,26 +308,6 @@ trait table_sql_trait {
         }
 
         return implode(', ', $bits);
-    }
-
-    /**
-     * @return int the offset for LIMIT clause of SQL
-     */
-    public function get_page_start() {
-        if (!$this->usepages) {
-            return '';
-        }
-        return $this->currpage * $this->pagesize;
-    }
-
-    /**
-     * @return int the pagesize for LIMIT clause of SQL
-     */
-    public function get_page_size() {
-        if (!$this->usepages) {
-            return '';
-        }
-        return $this->pagesize;
     }
 
     /**
@@ -354,8 +334,8 @@ trait table_sql_trait {
         }
 
         return [
-            implode(" AND ", $conditions),
-            $params,
+                implode(" AND ", $conditions),
+                $params,
         ];
     }
 
@@ -390,6 +370,81 @@ trait table_sql_trait {
     }
 
     /**
+     * You can override this method in a child class. See the description of
+     * build_table which calls this method.
+     */
+    protected function other_cols($column, $row) {
+        if (isset($row->$column) && ($column === 'email' || $column === 'idnumber') &&
+                (!$this->is_downloading() || $this->export_class_instance()->supports_html())) {
+            // Columns email and idnumber may potentially contain malicious characters, escape them by default.
+            // This function will not be executed if the child class implements col_email() or col_idnumber().
+            return s($row->$column);
+        }
+        return null;
+    }
+
+    /**
+     * Call this to pass the download type. Use :
+     *         $download = optional_param('download', '', PARAM_ALPHA);
+     * To get the download type. We assume that if you call this function with
+     * params that this table's data is downloadable, so we call is_downloadable
+     * for you (even if the param is '', which means no download this time.
+     * Also you can call this method with no params to get the current set
+     * download type.
+     *
+     * @param string $download dataformat type. One of csv, xhtml, ods, etc
+     * @param string $filename filename for downloads without file extension.
+     * @param string $sheettitle title for downloaded data.
+     * @return string download dataformat type. One of csv, xhtml, ods, etc
+     */
+    public function is_downloading($download = null, $filename = '', $sheettitle = '') {
+        if ($download !== null) {
+            $this->sheettitle = $sheettitle;
+            $this->is_downloadable(true);
+            $this->download = $download;
+            $this->filename = clean_filename($filename);
+            $this->export_class_instance();
+        }
+        return $this->download;
+    }
+
+    /**
+     * Probably don't need to call this directly. Calling is_downloading with a
+     * param automatically sets table as downloadable.
+     *
+     * @param bool $downloadable optional param to set whether data from
+     * table is downloadable. If ommitted this function can be used to get
+     * current state of table.
+     * @return bool whether table data is set to be downloadable.
+     */
+    public function is_downloadable($downloadable = null) {
+        if ($downloadable !== null) {
+            $this->downloadable = $downloadable;
+        }
+        return $this->downloadable;
+    }
+
+    /**
+     * Get, and optionally set, the export class.
+     *
+     * @param $exportclass (optional) if passed, set the table to use this export class.
+     * @return table_default_export_format_parent the export class in use (after any set).
+     */
+    public function export_class_instance($exportclass = null): table_default_export_format_parent {
+        if (!is_null($exportclass)) {
+            $this->started_output = true;
+            $this->exportclass = $exportclass;
+            $this->exportclass->table = $this;
+        } else if (is_null($this->exportclass) && !empty($this->download)) {
+            $this->exportclass = new table_dataformat_export_format($this, $this->download);
+            if (!$this->exportclass->document_started()) {
+                $this->exportclass->start_document($this->filename, $this->sheettitle);
+            }
+        }
+        return $this->exportclass;
+    }
+
+    /**
      * Fullname is treated as a special columname in tablelib and should always
      * be treated the same as the fullname of a user.
      *
@@ -415,23 +470,27 @@ trait table_sql_trait {
             $profileurl = new moodle_url('/user/profile.php', array('id' => $userid));
         } else {
             $profileurl = new moodle_url('/user/view.php',
-                array('id' => $userid, 'course' => $COURSE->id));
+                    array('id' => $userid, 'course' => $COURSE->id));
         }
         return html_writer::link($profileurl, $name);
     }
 
     /**
-     * You can override this method in a child class. See the description of
-     * build_table which calls this method.
+     * Get the context for the table.
+     *
+     * Note: This function _must_ be overridden by dynamic tables to ensure that the context is correctly determined
+     * from the filterset parameters.
+     *
+     * @return context
      */
-    protected function other_cols($column, $row) {
-        if (isset($row->$column) && ($column === 'email' || $column === 'idnumber') &&
-            (!$this->is_downloading() || $this->export_class_instance()->supports_html())) {
-            // Columns email and idnumber may potentially contain malicious characters, escape them by default.
-            // This function will not be executed if the child class implements col_email() or col_idnumber().
-            return s($row->$column);
+    public function get_context(): context {
+        global $PAGE;
+
+        if (is_a($this, dynamic::class)) {
+            throw new coding_exception('The get_context function must be defined for a dynamic table');
         }
-        return null;
+
+        return $PAGE->context;
     }
 
     /**
@@ -444,7 +503,7 @@ trait table_sql_trait {
     protected function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseid = null) {
         if (!$this->is_downloading()) {
             if (is_null($options)) {
-                $options = new \stdClass;
+                $options = new stdClass;
             }
             if (!isset($options->para)) {
                 $options->para = false;
@@ -466,38 +525,11 @@ trait table_sql_trait {
     }
 
     /**
-     * Get the html for the download buttons
-     *
-     * Usually only use internally
-     */
-    public function download_buttons() {
-
-    }
-
-    /**
-     * Set the list of hidden columns.
-     *
-     * @param array $columns The list of hidden columns.
-     */
-    public function set_hidden_columns(array $columns): void {
-        $this->hiddencolumns = $columns;
-    }
-
-    /**
-     * Set the page number.
-     *
-     * @param int $pagenumber The page number.
-     */
-    public function set_page_number(int $pagenumber): void {
-        $this->currpage = $pagenumber - 1;
-    }
-
-    /**
      * Closes recordset (for use after building the table).
      */
     protected function close_recordset() {
-        if ($this->rawdata && ($this->rawdata instanceof \core\dml\recordset_walk ||
-                $this->rawdata instanceof \moodle_recordset)) {
+        if ($this->rawdata && ($this->rawdata instanceof recordset_walk ||
+                        $this->rawdata instanceof moodle_recordset)) {
             $this->rawdata->close();
             $this->rawdata = [];
         }
@@ -524,10 +556,10 @@ trait table_sql_trait {
      * appropriate clause of the query.
      */
     protected function set_sql($fields, $from, $where, array $params = array()) {
-        $this->sql = new \stdClass();
+        $this->sql = new stdClass();
         $this->sql->fields = $fields;
         $this->sql->from = $from;
-        $this->sql->where = empty($where) ? ' 1=1 ': $where;
+        $this->sql->where = empty($where) ? ' 1=1 ' : $where;
         $this->sql->params = $params;
     }
 
@@ -550,7 +582,7 @@ trait table_sql_trait {
                 continue; // This column is OK.
             }
             if (in_array($column, get_all_user_name_fields()) &&
-                isset($this->columns['fullname'])) {
+                    isset($this->columns['fullname'])) {
                 continue; // This column is OK.
             }
             // This column is not OK.
@@ -558,31 +590,5 @@ trait table_sql_trait {
         }
 
         return $this->prefs['sortby'];
-    }
-
-    public function is_pageable(): bool {
-        return $this->usepages;
-    }
-
-    public function get_total_rows(): int {
-        return $this->totalrows ?? 0;
-    }
-
-    /**
-     * Get the context for the table.
-     *
-     * Note: This function _must_ be overridden by dynamic tables to ensure that the context is correctly determined
-     * from the filterset parameters.
-     *
-     * @return context
-     */
-    public function get_context(): context {
-        global $PAGE;
-
-        if (is_a($this, \core_table\dynamic::class)) {
-            throw new coding_exception('The get_context function must be defined for a dynamic table');
-        }
-
-        return $PAGE->context;
     }
 }

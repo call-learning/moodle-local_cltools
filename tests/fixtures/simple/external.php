@@ -25,6 +25,7 @@
 namespace local_cltools\simple;
 
 use external_api;
+use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use local_cltools\local\crud\entity_utils;
@@ -32,7 +33,6 @@ use local_cltools\local\crud\entity_utils;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-
 
 /**
  * Class rotation
@@ -42,26 +42,18 @@ global $CFG;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external extends external_api {
-    public static function get_rotations_parameters() {
-        return entity_utils::external_get_filter_generic_parameters();
-    }
-
     public static function get_rotations($filters) {
         $inputparams = compact($filters);
         $params = self::validate_parameters(self::get_rotations_parameters(), $inputparams);
     }
 
-    public static function get_rotations_returns() {
-        return new external_multiple_structure(
-            exporter::get_read_structure()
-        );
+    public static function get_rotations_parameters() {
+        return entity_utils::external_get_filter_generic_parameters();
     }
 
-    public static function create_rotation_parameters() {
-        return new \external_function_parameters(
-            [
-                'rotation' => exporter::get_create_structure()
-            ]
+    public static function get_rotations_returns() {
+        return new external_multiple_structure(
+                exporter::get_read_structure()
         );
     }
 
@@ -76,9 +68,17 @@ class external extends external_api {
         return (new exporter($rotation))->export($output);
     }
 
+    public static function create_rotation_parameters() {
+        return new external_function_parameters(
+                [
+                        'rotation' => exporter::get_create_structure()
+                ]
+        );
+    }
+
     public static function create_rotation_returns() {
         return new external_single_structure(
-            ['rotation' => exporter::get_read_structure()]
+                ['rotation' => exporter::get_read_structure()]
         );
     }
 }

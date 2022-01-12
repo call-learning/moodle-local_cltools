@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 namespace local_cltools\local\field;
 
+use moodle_exception;
+
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Field exception
  *
@@ -26,13 +28,14 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class field_exception extends \moodle_exception {
+class field_exception extends moodle_exception {
     /**
      * Constructor
+     *
      * @param string $errorcode The name of the string from error.php to print
      * @param mixed $a Extra words and phrases that might be required in the error string
      */
-    function __construct($errorcode, $a=NULL) {
-        parent::__construct($errorcode,  'local_cltools', $a);
+    function __construct($errorcode, $a = null) {
+        parent::__construct($errorcode, 'local_cltools', $a);
     }
 }

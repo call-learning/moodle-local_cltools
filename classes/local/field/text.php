@@ -30,17 +30,19 @@ defined('MOODLE_INTERNAL') || die();
 class text extends persistent_field {
     /**
      * Construct the field from its definition
+     *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
      * definiton
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
-            'required' => false,
-            'rawtype' => PARAM_TEXT,
-            'default' => ''
+                'required' => false,
+                'rawtype' => PARAM_TEXT,
+                'default' => ''
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
+
     /**
      * Get the matching editor type to be used in the table
      *
@@ -50,7 +52,7 @@ class text extends persistent_field {
      */
     public function get_column_editor() {
         return (object) [
-            'editor' => 'input'
+                'editor' => 'input'
         ];
     }
 
@@ -63,7 +65,7 @@ class text extends persistent_field {
      */
     public function get_column_formatter() {
         $format = parent::get_column_formatter();
-        $format->formatter ='textarea';
+        $format->formatter = 'textarea';
     }
 
     /**
@@ -74,7 +76,7 @@ class text extends persistent_field {
      */
     public function get_column_validator() {
         return (object) [
-            'validator' => 'string'
+                'validator' => 'string'
         ];
     }
 

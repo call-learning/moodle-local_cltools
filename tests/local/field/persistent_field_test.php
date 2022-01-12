@@ -19,6 +19,7 @@ namespace local_cltools\local\field;
 use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
+
 /**
  * Base field test
  *
@@ -61,6 +62,7 @@ class base_test extends advanced_testcase {
      */
     public function test_get_column_editor() {
     }
+
     /**
      * Get the matching formatter type and parameters to be used for display
      *

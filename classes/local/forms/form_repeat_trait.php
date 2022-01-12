@@ -59,12 +59,12 @@ trait form_repeat_trait {
      * @throws coding_exception
      */
     public function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname,
-        $addfieldsname,
-        $addfieldsno = 5,
-        $addstring = null,
-        $addbuttoninside = false,
-        $deletefieldsname = null,
-        $deletestring = null
+            $addfieldsname,
+            $addfieldsno = 5,
+            $addstring = null,
+            $addbuttoninside = false,
+            $deletefieldsname = null,
+            $deletestring = null
     ) {
         $repeats = $this->optional_param($repeathiddenname, $repeats, PARAM_INT);
         if ($deletefieldsname) {
@@ -183,3 +183,4 @@ trait form_repeat_trait {
         return $repeats;
     }
 }
+

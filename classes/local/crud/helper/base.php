@@ -88,11 +88,11 @@ abstract class base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null
     ) {
         $this->refpersistentclass = new ReflectionClass($entityclassname);
         $entitynamespace = $this->refpersistentclass->getNamespaceName();
@@ -102,7 +102,7 @@ abstract class base {
         $this->refpersistentlistclassname = $listclassname;
         $this->refpersistentexporterclassname = $exporterclassname;
         $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
-            new flat_navigation($entityclassname);
+                new flat_navigation($entityclassname);
     }
 
     /**
@@ -115,20 +115,20 @@ abstract class base {
      * @throws ReflectionException
      */
     public static function create(string $entityclassname,
-        $action = crud_add::ACTION,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null
+            $action = crud_add::ACTION,
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null
     ) {
         $actionclass = "\\local_cltools\\local\\crud\\helper\\crud_$action";
         return new $actionclass($entityclassname,
-            $entityprefix,
-            $formclassname,
-            $listclassname,
-            $exporterclassname,
-            $persistentnavigation
+                $entityprefix,
+                $formclassname,
+                $listclassname,
+                $exporterclassname,
+                $persistentnavigation
         );
     }
 
@@ -142,24 +142,6 @@ abstract class base {
     }
 
     /**
-     * @param $persistentclassname
-     * @param $reflectionclassname
-     * @return ReflectionClass
-     * @throws ReflectionException
-     */
-    protected function get_related_persistent_reflectionclass($persistentclassname, $reflectionclassname) {
-        if ($persistentclassname) {
-            return  new ReflectionClass($persistentclassname);
-        } else {
-            $entitynamespace = $this->refpersistentclass->getNamespaceName();
-            $classname = $entitynamespace . "\\$reflectionclassname";
-            if (class_exists($classname)) {
-                return new ReflectionClass($entitynamespace . "\\$reflectionclassname");
-            }
-        }
-        return null;
-    }
-    /**
      * Get related form
      *
      * @param $formparameters
@@ -172,11 +154,42 @@ abstract class base {
             $entity = $this->refpersistentclass->newInstance($persistentid);
         }
         $formentity = null;
-        $reflectionclass = $this->get_related_persistent_reflectionclass($this->refpersistentformclassname, "form");
+        $reflectionclass = $this->get_related_class('form');
         if ($reflectionclass) {
             $formentity = $reflectionclass->newInstanceArgs([$this->actionurl, ['persistent' => $entity]] + $formparameters);
         }
         return $formentity;
+    }
+
+    /**
+     * Get related form, exporter, list class
+     *
+     * @param $type
+     * @return object
+     */
+    protected function get_related_class($type) {
+        $propertyname = "refpersistent{$type}classname";
+        $reflectionclass = $this->get_related_persistent_reflectionclass($this->$propertyname, $type);
+        return $reflectionclass;
+    }
+
+    /**
+     * @param $persistentclassname
+     * @param $reflectionclassname
+     * @return ReflectionClass
+     * @throws ReflectionException
+     */
+    protected function get_related_persistent_reflectionclass($persistentclassname, $reflectionclassname) {
+        if ($persistentclassname) {
+            return new ReflectionClass($persistentclassname);
+        } else {
+            $entitynamespace = $this->refpersistentclass->getNamespaceName();
+            $classname = $entitynamespace . "\\$reflectionclassname";
+            if (class_exists($classname)) {
+                return new ReflectionClass($entitynamespace . "\\$reflectionclassname");
+            }
+        }
+        return null;
     }
 
     /**
@@ -188,7 +201,7 @@ abstract class base {
      */
     public function instanciate_related_exporter(persistent $entity) {
         $exporterentity = null;
-        $reflectionclass = $this->get_related_persistent_reflectionclass($this->refpersistentexporterclassname, "exporter");
+        $reflectionclass = $this->get_related_class('exporter');
         if ($reflectionclass) {
             $exporterentity = $reflectionclass->newInstance($entity);
         }
@@ -205,23 +218,23 @@ abstract class base {
     public function instanciate_related_persistent_list() {
         $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
-            'edit' => (object) [
-                'icon' => 't/edit',
-                'url' => $this->persistentnavigation->get_edit_url($this->refpersistentclass)
-            ],
-            'view' => (object) [
-                'icon' => 'e/search',
-                'url' => $this->persistentnavigation->get_view_url($this->refpersistentclass),
-            ],
-            'delete' => (object) [
-                'icon' => 't/delete',
-                'url' => $this->persistentnavigation->get_delete_url($this->refpersistentclass)
-            ]
+                'edit' => (object) [
+                        'icon' => 't/edit',
+                        'url' => $this->persistentnavigation->get_edit_url($this->refpersistentclass)
+                ],
+                'view' => (object) [
+                        'icon' => 'e/search',
+                        'url' => $this->persistentnavigation->get_view_url($this->refpersistentclass),
+                ],
+                'delete' => (object) [
+                        'icon' => 't/delete',
+                        'url' => $this->persistentnavigation->get_delete_url($this->refpersistentclass)
+                ]
         ];
         $listentity = null;
-        $reflectionclass = $this->get_related_persistent_reflectionclass($this->refpersistentlistclassname, "table");
+        $reflectionclass = $this->get_related_class('list');
         if ($reflectionclass) {
-            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false , $this->refpersistentclass->getName());
+            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false, $this->refpersistentclass->getName());
         } else {
             // Default list boilerplate.
             $listentity = new generic_entity_table(null, null, false, $this->refpersistentclass->getName());
@@ -284,7 +297,7 @@ abstract class base {
         $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
         return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
-            'entity:' . static::ACTION_DONE, $entityname));
+                'entity:' . static::ACTION_DONE, $entityname));
     }
 
     /**
@@ -296,15 +309,11 @@ abstract class base {
      * @throws moodle_exception
      */
     protected function setup_page_navigation($page) {
-        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
-
-        $entities = entity_utils::get_string_for_entity($this->refpersistentclass, $stringprefix . ':plural');
         $header = $this->get_page_header();
         $listpageurl = $this->persistentnavigation->get_list_url();
         $page->navbar->add(
-            $entities,
-            new moodle_url($listpageurl));
-        $page->navbar->add($header, null);
+                $header,
+                new moodle_url($listpageurl));
     }
 
     /**
@@ -316,7 +325,7 @@ abstract class base {
      */
     protected function trigger_event(persistent $entity) {
         $eventparams = array('objectid' => $entity->get('id'),
-            'context' => context_system::instance());
+                'context' => context_system::instance());
         $eventclass = $this->get_action_event_class();
         if (class_exists($eventclass)) {
             $event = $eventclass::create($eventparams);

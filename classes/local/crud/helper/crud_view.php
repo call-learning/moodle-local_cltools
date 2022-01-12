@@ -65,15 +65,15 @@ class crud_view extends base {
      * @throws ReflectionException
      */
     public function __construct(string $entityclassname,
-        $entityprefix = null,
-        $formclassname = null,
-        $listclassname = null,
-        $exporterclassname = null,
-        $persistentnavigation = null,
-        $pagesrooturl = null
+            $entityprefix = null,
+            $formclassname = null,
+            $listclassname = null,
+            $exporterclassname = null,
+            $persistentnavigation = null,
+            $pagesrooturl = null
     ) {
         parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-            $exporterclassname, $persistentnavigation, $pagesrooturl);
+                $exporterclassname, $persistentnavigation, $pagesrooturl);
         $this->actionurl = $this->persistentnavigation->get_view_url();
     }
 
@@ -88,8 +88,8 @@ class crud_view extends base {
         parent::setup_page($page);
         $id = required_param('id', PARAM_INT);
         $buttonedit = new single_button(
-            new moodle_url($this->persistentnavigation->get_edit_url($this->refpersistentclass), ['id' => $id]),
-            get_string('edit'));
+                new moodle_url($this->persistentnavigation->get_edit_url($this->refpersistentclass), ['id' => $id]),
+                get_string('edit'));
         $page->set_button($this->renderer->render($buttonedit));
         $this->setup_page_navigation($page);
     }
@@ -113,8 +113,8 @@ class crud_view extends base {
         $returnedtext .= $this->renderer->container_start();
         $relatedexporter = $this->instanciate_related_exporter($entity);
         $returnedtext .= $this->renderer->render_from_template(
-            "$persistentcomponent/$persistentprefix",
-            $relatedexporter->export($this->renderer)
+                "$persistentcomponent/$persistentprefix",
+                $relatedexporter->export($this->renderer)
         );
         $returnedtext .= $this->renderer->container_end();
         $this->trigger_event($entity);
