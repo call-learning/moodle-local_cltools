@@ -115,6 +115,7 @@ class get_columns extends external_api {
                                 'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
                                 'filter' => new external_value(PARAM_RAW, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
                                 'filterParams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
+                                'headerSort' => new external_value(PARAM_BOOL, 'Sort header ?',VALUE_OPTIONAL),
                                 'formatter' => new external_value(PARAM_RAW, 'Formatter: image, html, datetime ....',
                                         VALUE_OPTIONAL),
                                 'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....',

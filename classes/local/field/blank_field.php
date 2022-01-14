@@ -43,6 +43,7 @@ class blank_field extends persistent_field {
                 'editable' => false
         ];
         $this->init($fielnameordef, $standarddefaults);
+        $this->sortable = false; // Not sortable for now.
     }
 
     /**
