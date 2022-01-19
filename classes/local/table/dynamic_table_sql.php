@@ -160,7 +160,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     public function set_filterset(enhanced_filterset $filterset): void {
         // If there existing filters we replace them.
         if ($this->filterset) {
-            foreach ($filterset as $filter) {
+            foreach ($filterset->get_filters() as $filter) {
                 $this->filterset->add_filter($filter);
             }
         } else {
