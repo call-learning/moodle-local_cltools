@@ -22,7 +22,7 @@
 import {validateRemote} from './tabulator-edition';
 import {entityLookup} from "./tabulator-entity-lookup";
 
-export const columnSetup = async (columndefs, tableHandler, tableUniqueId) => {
+export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
         'formatter': {},
         'filter': {
@@ -48,7 +48,7 @@ export const columnSetup = async (columndefs, tableHandler, tableUniqueId) => {
         'validator': {
             'remote': {
                 to: (cell, value) =>
-                    validateRemote(cell, value, tableHandler, tableUniqueId)
+                    validateRemote(cell, value, tableHandler, tableHandlerParams, tableUniqueId)
             }
         },
         'editor': {}

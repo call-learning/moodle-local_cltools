@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use coding_exception;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Boolean field
  *
@@ -28,12 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class boolean extends persistent_field {
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'advcheckbox';
-
     /**
      * Construct the field from its definition
      *
@@ -141,5 +133,12 @@ class boolean extends persistent_field {
                 'false',
                 '0'
         ], true);
+    }
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "advcheckbox";
     }
 }

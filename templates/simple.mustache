@@ -18,6 +18,8 @@
     @template local_cltools/simple
 
 
+    This is for behat test only and left as an example.
+
     Example context (json):
     {
         "starttime": <int timestamp>,
@@ -29,6 +31,9 @@
 <div>
     <h3>{{title}}</h3>
     <p>{{{description}}}</p>
+    <p>{{{idnumber}}}</p>
+    <p>{{{shortname}}}</p>
+    <img src="{{image}}" alt="image" class="image"/>
     <span class="starttime">{{#userdate}} {{starttime}}, {{#str}} strftimedate {{/str}} {{/userdate}}</span>
     <span class="endtime">{{#userdate}} {{endtime}}, {{#str}} strftimedate {{/str}} {{/userdate}}</span>
     <span class="mineval">{{mineval}}</span>

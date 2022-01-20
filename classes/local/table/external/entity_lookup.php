@@ -23,9 +23,10 @@ use external_single_structure;
 use external_value;
 use external_warnings;
 use invalid_parameter_exception;
+use local_cltools\local\crud\entity_utils;
 use local_cltools\local\field\entity_selector;
+use local_cltools\utils;
 use moodle_exception;
-use ReflectionException;
 use restricted_context_exception;
 
 global $CFG;
@@ -45,18 +46,13 @@ class entity_lookup extends external_api {
     /**
      * Entity lookup value
      *
-     * @param $handler
-     * @param $uniqueid
-     * @param $id
-     * @param $field
-     * @param $value
-     * @param $oldvalue
+     * @param string $entityclass persistent class name.
+     * @param string $displayfield display field
      * @return array
-     * @throws ReflectionException
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function execute($entityclass, $displayfield) {
+    public static function execute(string $entityclass, string $displayfield) {
         [
                 'entityclass' => $entityclass,
                 'displayfield' => $displayfield,
@@ -66,6 +62,12 @@ class entity_lookup extends external_api {
         ]);
         $values = [];
         $warnings = [];
+        $context = helper::get_current_context();
+        self::validate_context($context);
+        // If entity class has a validate_access() method, then use it.
+        if (!entity_utils::validate_entity_access($entityclass, $context)) {
+            throw new restricted_context_exception();
+        }
         try {
             $values = entity_selector::entity_lookup($entityclass, $displayfield);
             $values[0] = get_string('notavailable', 'local_cltools');

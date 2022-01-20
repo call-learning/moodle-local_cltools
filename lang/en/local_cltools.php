@@ -19,7 +19,7 @@
  *
  * @package     local_cltools
  * @category    string
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -62,8 +62,12 @@ $string['userselector'] = 'Select a user';
 $string['usersearch'] = 'Search';
 $string['id'] = 'Identifier';
 $string['files'] = 'Attached files';
+$string['event:entity:added'] = 'Entity added';
+$string['event:entity:edited'] = 'Entity modified';
+$string['event:entity:deleted'] = 'Entity deleted';
 $string['entity:added'] = 'Entity {$a} added';
 $string['entity:edited'] = 'Entity {$a} modified';
+$string['entity:deleted'] = 'Entity {$a} deleted';
 $string['table:nodata'] = 'No data available';
 $string['momentjsdateformat'] = "dddd, MMMM Do YYYY";
 $string['momentjsdatetimeformat'] = "dddd, MMMM Do YYYY, h:mm:ss a";

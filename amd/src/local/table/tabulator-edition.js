@@ -41,12 +41,15 @@ const formatWarnings = (result) => {
  * Send the value back to server and send an tabulator-cell-edited event
  *
  * @param {String} tableHandler
+ * @param {String} tableHandlerParams
  * @param {String} tableUniqueid
- * @param {CellComponent} data
+ * @param {Object} cell
+ * @param {Object} cell
  */
-export const validateRemote = async (tableHandler, tableUniqueid, cell, value) => {
+export const validateRemote = async (tableHandler, tableHandlerParams, tableUniqueid, cell, value) => {
     const args = {
         handler: tableHandler,
+        handlerparams: tableHandlerParams,
         uniqueid: tableUniqueid,
         id: cell.getData().id,
         field: cell.getField(),
@@ -74,12 +77,14 @@ export const validateRemote = async (tableHandler, tableUniqueid, cell, value) =
  * Send the value back to server and send an tabulator-cell-edited event
  *
  * @param {String} tableHandler
+ * @param {String} tableHandlerParams
  * @param {String} tableUniqueid
- * @param {CellComponent} data
+ * @param {Object} data
  */
-export const cellEdited = (tableHandler, tableUniqueid, data) => {
+export const cellEdited = (tableHandler, tableHandlerParams,tableUniqueid, data) => {
     const args = {
         handler: tableHandler,
+        handlerparams: tableHandlerParams,
         uniqueid: tableUniqueid,
         id: data.getData().id,
         field: data.getField(),

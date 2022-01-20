@@ -69,7 +69,7 @@ abstract class base {
      */
     protected $refpersistentclass = null;
     protected $refpersistentformclassname = null;
-    protected $refpersistentlistclassname = null;
+    protected $refpersistenttableclassname = null;
     protected $refpersistentexporterclassname = null;
     protected $actionurl;
     protected $persistentnavigation = null;
@@ -90,7 +90,7 @@ abstract class base {
     public function __construct(string $entityclassname,
             $entityprefix = null,
             $formclassname = null,
-            $listclassname = null,
+            $tableclassname = null,
             $exporterclassname = null,
             $persistentnavigation = null
     ) {
@@ -99,7 +99,7 @@ abstract class base {
         $namespaceparts = explode('\\', $entitynamespace);
         $this->entityprefix = $entityprefix ? $entityprefix : strtolower(end($namespaceparts));
         $this->refpersistentformclassname = $formclassname;
-        $this->refpersistentlistclassname = $listclassname;
+        $this->refpersistenttableclassname = $tableclassname;
         $this->refpersistentexporterclassname = $exporterclassname;
         $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
                 new flat_navigation($entityclassname);
@@ -118,7 +118,7 @@ abstract class base {
             $action = crud_add::ACTION,
             $entityprefix = null,
             $formclassname = null,
-            $listclassname = null,
+            $tableclassname = null,
             $exporterclassname = null,
             $persistentnavigation = null
     ) {
@@ -126,7 +126,7 @@ abstract class base {
         return new $actionclass($entityclassname,
                 $entityprefix,
                 $formclassname,
-                $listclassname,
+                $tableclassname,
                 $exporterclassname,
                 $persistentnavigation
         );
@@ -215,7 +215,7 @@ abstract class base {
      * @return entity_table|object
      * @throws ReflectionException*
      */
-    public function instanciate_related_persistent_list() {
+    public function instanciate_related_persistent_table() {
         $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
                 'edit' => (object) [
@@ -232,7 +232,7 @@ abstract class base {
                 ]
         ];
         $listentity = null;
-        $reflectionclass = $this->get_related_class('list');
+        $reflectionclass = $this->get_related_class('table');
         if ($reflectionclass) {
             $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false, $this->refpersistentclass->getName());
         } else {
@@ -324,8 +324,11 @@ abstract class base {
      * @throws dml_exception
      */
     protected function trigger_event(persistent $entity) {
-        $eventparams = array('objectid' => $entity->get('id'),
-                'context' => context_system::instance());
+        $eventparams = [
+                'objectid' => $entity->get('id'),
+                'context' => context_system::instance(),
+                'other' => ['objecttable' => $entity::TABLE],
+        ];
         $eventclass = $this->get_action_event_class();
         if (class_exists($eventclass)) {
             $event = $eventclass::create($eventparams);
@@ -339,8 +342,15 @@ abstract class base {
      * @return string
      * @throws ReflectionException
      */
-    protected function get_action_event_class() {
-        return entity_utils::get_persistent_prefix($this->refpersistentclass) . static::ACTION_DONE;
+    private function get_action_event_class() {
+        $globaleventclass = entity_utils::get_component($this->refpersistentclass)
+                . '\\event\\'
+                . entity_utils::get_persistent_prefix($this->refpersistentclass)
+                . '_' . static::ACTION_DONE;
+        if (class_exists($globaleventclass)) {
+            return $globaleventclass;
+        }
+        return '\local_cltools\\event\\crud_event'. '_' . static::ACTION_DONE;
     }
 
 }

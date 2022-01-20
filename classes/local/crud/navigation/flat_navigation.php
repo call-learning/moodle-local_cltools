@@ -65,13 +65,12 @@ class flat_navigation implements persistent_navigation {
             }
             $filepath = str_replace($CFG->dirroot, '', $filepath);
             while ($filepath != '.' || empty($filepath)) {
-
                 if (file_exists("{$CFG->dirroot}{$filepath}/pages/")) {
-                    $rooturl = new moodle_url("{$filepath}/pages/$foldername", $rooturl->params());
+                    $rooturl = new moodle_url("{$filepath}/pages/$foldername");
                     break;
                 }
                 if (file_exists("{$CFG->dirroot}{$filepath}/pages/$foldername")) {
-                    $rooturl = new moodle_url("{$filepath}/pages/$foldername", $rooturl->params());
+                    $rooturl = new moodle_url("{$filepath}/pages/$foldername");
                     break;
                 }
                 $filepath = dirname($filepath);
@@ -89,7 +88,7 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_list_url() {
         $rooturl = $this->get_root_url();
-        return new moodle_url($rooturl->get_path(true) . 'index.php', $rooturl->params());
+        return new moodle_url($rooturl->get_path(true) . '/index.php', $rooturl->params());
     }
 
     /**
@@ -105,9 +104,6 @@ class flat_navigation implements persistent_navigation {
      */
     protected function set_root_url($rooturl) {
         global $CFG;
-        if (!file_exists("{$CFG->dirroot}{$rooturl->get_path()}")) {
-            throw new moodle_exception('pagesdirectorydoesnotexist', 'local_cltools', '', $rooturl);
-        }
         $this->rooturl = $rooturl;
     }
 
@@ -117,7 +113,7 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_add_url() {
         $rooturl = $this->get_root_url();
-        return new moodle_url($rooturl->get_path(true) . 'add.php', $rooturl->params());
+        return new moodle_url($rooturl->get_path() . '/add.php', $rooturl->params());
     }
 
     /**
@@ -126,12 +122,12 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_delete_url() {
         $rooturl = $this->get_root_url();
-        return new moodle_url($rooturl->get_path(true) . 'delete.php', $rooturl->params());
+        return new moodle_url($rooturl->get_path() . '/delete.php', $rooturl->params());
     }
 
     public function get_edit_url() {
         $rooturl = $this->get_root_url();
-        return new moodle_url($rooturl->get_path(true) . 'edit.php', $rooturl->params());
+        return new moodle_url($rooturl->get_path() . '/edit.php', $rooturl->params());
     }
 
     /**
@@ -140,7 +136,7 @@ class flat_navigation implements persistent_navigation {
      */
     public function get_view_url() {
         $rooturl = $this->get_root_url();
-        return new moodle_url($rooturl->get_path(true) . 'view.php', $rooturl->params());
+        return new moodle_url($rooturl->get_path() . '/view.php', $rooturl->params());
     }
 }
 

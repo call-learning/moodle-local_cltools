@@ -152,11 +152,11 @@ class enhanced_filterset_test extends advanced_testcase {
                         'jointype' => filter::JOINTYPE_ALL,
                         'tableprefix' => null,
                         'excludedfiltersname' => null,
-                        'expectedwhere' => "( stringfilter1 LIKE :strp_stringfilter10  ESCAPE '\\\\'  OR"
-                                .
-                                "  stringfilter1 LIKE :strp_stringfilter11  ESCAPE '\\\\' ) AND ( integerfilter1  =  :intg_integerfilter10  OR"
-                                .
-                                "  integerfilter1  =  :intg_integerfilter11 ) AND ( COALESCE(numericfilter1,0)  <  :nump_numericfilter10  OR"
+                        'expectedwhere' => "( stringfilter1 LIKE :strp_stringfilter10  ESCAPE '\\\\'  OR" .
+                                "  stringfilter1 LIKE :strp_stringfilter11  ESCAPE '\\\\' ) AND"
+                                ." ( integerfilter1  =  :intg_integerfilter10  OR" .
+                                "  integerfilter1  =  :intg_integerfilter11 )"
+                                ." AND ( COALESCE(numericfilter1,0)  <  :nump_numericfilter10  OR"
                                 . "  COALESCE(numericfilter1,0)  >  :nump_numericfilter11 )",
                         'expectedparams' => [
                                 'strp_stringfilter10' => '%A%',

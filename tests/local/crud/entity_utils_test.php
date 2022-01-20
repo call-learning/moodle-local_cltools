@@ -18,7 +18,7 @@
  * Persistent utils test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * Persistent utils test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entity_utils_test extends base_crud_test {
@@ -133,5 +133,26 @@ class entity_utils_test extends base_crud_test {
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/1/icon2',
                 $files[1]->out());
         $this->delete_files('testfilearea', 'local_cltools');
+    }
+
+    public function test_validate_entity_access() {
+        global $CFG;
+        $this->resetAfterTest();
+        include_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+        $context = context_system::instance();
+        $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
+        $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));
+        $this->setAdminUser();
+        $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
+        $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
+        $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));
+        $roleid = $this->getDataGenerator()->create_role();
+        assign_capability('local/cltools:entitylookup', CAP_ALLOW, $roleid, $context->id);
+        role_assign($roleid, $user->id, $context->id);
+        $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
+        $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));
     }
 }

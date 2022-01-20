@@ -113,7 +113,7 @@ class enhanced_filterset extends filterset {
      * @param array $forcedaliases
      * @return array
      */
-    function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null, $forcedaliases = []) {
+    public function get_sql_for_filter($tableprefix = null, $excludedfiltersname = null, $forcedaliases = []) {
 
         $joinsql = filter_helper::get_jointype_to_sql_join($this->get_join_type());
         $filtesetwheres = [];

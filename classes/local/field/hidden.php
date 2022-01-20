@@ -16,7 +16,6 @@
 
 namespace local_cltools\local\field;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Hidden field
@@ -26,11 +25,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hidden extends persistent_field {
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'hidden';
-
     public function __construct($fielnameordef) {
         $standarddefaults = [
                 'required' => false,
@@ -71,5 +65,12 @@ class hidden extends persistent_field {
      */
     public function get_column_editor() {
         return null;
+    }
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "hidden";
     }
 }

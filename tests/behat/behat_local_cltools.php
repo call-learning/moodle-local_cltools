@@ -68,11 +68,11 @@ class behat_local_cltools extends behat_base {
                 $entitytype = trim($parts[0]);
                 $entityid = trim($parts[1]);
                 $entity = $entitytype::get_record(['idnumber' => $entityid]);
-                return new moodle_url("/local/cltools/crudpages/{$identifier}/edit.php", ['id' => $entity->get('id')]);
+                return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/edit.php", ['id' => $entity->get('id')]);
             case 'Entity add':
-                return new moodle_url("/local/cltools/crudpages/{$identifier}/add.php");
+                return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/add.php");
             case 'Entity list':
-                return new moodle_url("/local/cltools/crudpages/{$identifier}/list.php");
+                return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/list.php");
         }
         throw new Exception('Unrecognised page type "' . $type . '."');
     }

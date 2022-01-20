@@ -18,6 +18,7 @@ namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
 
 use coding_exception;
+use core_table\local\filter\filter;
 use dml_exception;
 use external_api;
 use external_function_parameters;
@@ -49,36 +50,33 @@ class get_rows extends external_api {
      * External function to get the table view content.
      *
      * @param string $handler Dynamic table class name.
+     * @param string $handlerparams Handler params
      * @param string $uniqueid Unique ID for the container.
-     * @param array $sortdata The columns and order to sort by
+     * @param array|null $sortdata The columns and order to sort by
      * @param array|null $filters The filters that will be applied in the request.
      * @param string|null $jointype The join type.
-     * @param array|null $hiddencolumns
-     * @param bool $resetpreferences Whether it is resetting table preferences or not.
-     *
+     * @param bool|null $editable
+     * @param array|null $hiddencolumns*
      * @param int|null $pagenumber The page number.
      * @param int|null $pagesize The number of records.
+     *
      * @return array
-     * @throws ReflectionException
-     * @throws coding_exception
+     * @throws \invalid_parameter_exception
      * @throws dml_exception
-     * @throws restricted_context_exception
      */
     public static function execute(
             string $handler,
             string $handlerparams,
             string $uniqueid,
-            array $sortdata,
-            ?array $filters = null,
-            ?string $jointype = null,
+            ?array $sortdata = [],
+            ?array $filters = [],
+            ?int $jointype = filter::JOINTYPE_NONE,
             ?bool $editable = false,
-            ?array $hiddencolumns = null,
-            ?bool $resetpreferences = null,
+            ?array $hiddencolumns = [],
             ?int $pagenumber = null,
             ?int $pagesize = null
     ) {
-        global $PAGE, $CFG;
-
+        global $PAGE;
         [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
@@ -89,8 +87,7 @@ class get_rows extends external_api {
                 'editable' => $editable,
                 'pagenumber' => $pagenumber,
                 'pagesize' => $pagesize,
-                'hiddencolumns' => $hiddencolumns,
-                'resetpreferences' => $resetpreferences,
+                'hiddencolumns' => $hiddencolumns
         ] = self::validate_parameters(self::execute_parameters(), [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
@@ -101,41 +98,30 @@ class get_rows extends external_api {
                 'editable' => $editable,
                 'pagenumber' => $pagenumber,
                 'pagesize' => $pagesize,
-                'hiddencolumns' => $hiddencolumns,
-                'resetpreferences' => $resetpreferences,
+                'hiddencolumns' => $hiddencolumns
         ]);
 
         /* @var $instance dynamic_table_interface the dynamic table itself */
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid);
 
         helper::setup_filters($instance, $filters, $jointype);
-        if ($resetpreferences === true) {
-            $instance->mark_table_to_reset();
-        }
-
-        $PAGE->set_url($instance->get_baseurl());
 
         /* @var dynamic_table_sql $instance instance */
         // TODO : correct this, we should be able to rely on the default value.
         if ($pagesize === 0 || $pagenumber < 0 || empty($pagenumber)) {
-            $instance->pageable(false);
+            $instance->set_pageable(false);
         } else {
-            $instance->pageable(true);
+            $instance->set_pageable(true);
             $instance->set_page_number($pagenumber);
         }
         // Convert from an array of sort definition to column => sortorder.
         if (!empty($sortdata)) {
-            //$sortdef = [];
-            //foreach ($sortdata as $def) {
-            //    $def = (object) $def;
-            //    $sortdef[$def->sortby] = ($def->sortorder === 'ASC') ? SORT_ASC : SORT_DESC;
-            //}
             $instance->set_sortdata($sortdata);
         }
+        $context = helper::get_current_context();
+        $instance->validate_access($context);
 
-        $instance->validate_access();
-
-        $rows = $instance->retrieve_raw_data($pagesize);
+        $rows = $instance->get_rows($pagesize);
         if (!empty($rows) && empty($rows[0]->id)) {
             throw new UnexpectedValueException("The table handler class {$handler} must be return an id column
              that will then be hidden but keep reference to the row unique identifier.");
@@ -170,13 +156,9 @@ class get_rows extends external_api {
                                                 'Name of column',
                                                 VALUE_REQUIRED,
                                                 null
-                                        )
-                                ),
-                                'resetpreferences' => new external_value(
-                                        PARAM_BOOL,
-                                        'Whether the table preferences should be reset',
-                                        VALUE_REQUIRED,
-                                        null
+                                        ),
+                                        VALUE_DEFAULT,
+                                        []
                                 ),
                                 'pagenumber' => new external_value(
                                         PARAM_INT,

@@ -27,14 +27,13 @@
  */
 
 namespace local_cltools\local\table;
-defined('MOODLE_INTERNAL') || die;
 
 use coding_exception;
-use context_system;
+use context;
 use core_table\local\filter\filterset;
-use dml_exception;
 use html_writer;
-use local_cltools\local\field\html;
+use local_cltools\local\field\blank_field;
+use local_cltools\local\field\hidden;
 use local_cltools\local\field\persistent_field;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\external\helper;
@@ -56,7 +55,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      */
     protected $filterset = null;
     /**
-     * @var array field defintions
+     * @var array<persistent_field> field defintions
      */
     protected $fields = [];
     /**
@@ -74,8 +73,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      */
     protected $fieldaliases = [];
 
-    private string $sheettitle;
-
     /**
      * Sets up the page_table parameters.
      *
@@ -92,16 +89,8 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         list($cols, $headers) = $this->get_table_columns_definitions();
         $this->define_columns($cols);
         $this->define_headers($headers);
-        $this->collapsible(false);
-        $this->sortable(true);
-        $this->pageable(true);
-        $this->sql = (object) [
-                'where' => '',
-                'from' => '',
-                'params' => [],
-                'sort' => ''
-        ];
-        $this->set_initial_sql();
+        $this->set_sortable(true);
+        $this->set_pageable(true);
     }
 
     /**
@@ -117,19 +106,24 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
 
         $this->setup_fields();
         if ($this->actionsdefs) {
-            $this->fields[] = new html([
+            $this->fields[] = new blank_field([
                     'fieldname' => 'actions',
                     'fullname' => get_string('actions', 'local_cltools')
             ]);
+        }
+        $hasidfield = false;
+        foreach ($this->fields as $f) {
+            if ($f->get_name() == 'id') {
+                $hasidfield = true;
+            }
+        }
+        if (!$hasidfield) {
+            $this->fields[] = new hidden('id');
         }
         foreach ($this->fields as $field) {
             $cols[] = $field->get_name();
             $headers[] = $field->get_display_name();
         }
-        if (!in_array('id', $cols)) {
-            $cols[] = 'id';
-        }
-        $headers[] = get_string('id', 'local_cltools');
         return [$cols, $headers];
     }
 
@@ -137,10 +131,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * Setup the fields for this table
      */
     abstract protected function setup_fields();
-
-    protected function set_initial_sql() {
-        // Empty in this class but used in subclasses.
-    }
 
     /**
      * Get the currently defined filterset.
@@ -175,22 +165,24 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * setup to be done in order to make sure we validated against the right information
      * (such as for example a filter needs to be set in order not to return data a user should not see).
      *
-     *
-     * @throws dml_exception
+     * @param context $context
+     * @param bool $writeaccess
+     * @return mixed
      */
-    public function validate_access($writeaccess = false) {
-        helper::validate_context(context_system::instance());
+    public function validate_access(context $context, $writeaccess = false) {
+        helper::validate_context($context);
     }
 
     /**
      * Retrieve data from the database and return a row set
+     * This can be a superset or a modified of what actual is in the table.
      *
      * @return array
      */
-    public function retrieve_raw_data($pagesize) {
+    public function get_rows($pagesize) {
         $rows = [];
         if ($this->setup()) {
-            $this->query_db($pagesize, false);
+            $this->query_db($pagesize);
             foreach ($this->rawdata as $row) {
                 $formattedrow = $this->format_row($row);
                 $rows[] = (object) $formattedrow;
@@ -201,78 +193,135 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Get sql fields
+     *
+     * Overridable sql query
+     *
+     * @param string $tablealias
+     */
+    protected function internal_get_sql_fields($tablealias = 'e') {
+        $fieldlist = [];
+        foreach ($this->fields as $field) {
+            $fieldname = $field->get_name();
+            $this->fieldaliases[$fieldname] = "entity.{$fieldname}";
+            $fieldlist[] = $this->internal_get_sql_for_field($field, $tablealias);
+            list($additionalfields, $additionalfrom) = $field->get_additional_sql('entity');
+            foreach ($additionalfields as $f) {
+                $fieldlist[] = $f;
+            }
+            $this->fieldaliases[$field->get_name()] = "{$tablealias}.{$field->get_name()}";
+        }
+        return "DISTINCT " . join(',', $fieldlist) . " ";
+    }
+
+    /**
+     * Get SQL for field
+     *
+     * @param persistent_field $field
+     * @param string $tablealias
+     * @return string
+     */
+    protected function internal_get_sql_for_field($field, $tablealias) {
+        $fieldname = $field->get_name();
+        if ($field->is_persistent()) {
+            $fieldsql = "{$tablealias}.{$fieldname} AS {$fieldname}";
+        } else {
+            $emptyvalue = "''";
+            switch ($field->get_raw_param_type()) {
+                case PARAM_INT:
+                case PARAM_BOOL:
+                    $emptyvalue = "0";
+                    break;
+                case PARAM_FLOAT:
+                    $emptyvalue = "0.0";
+                    break;
+            }
+            $fieldsql = "$emptyvalue AS {$fieldname}";
+        }
+        return $fieldsql;
+    }
+
+    /**
+     * Get sql sort
+     * Overridable sql query
+     */
+    protected function internal_get_sql_sort() {
+        $sort = $this->construct_order_by($this->get_sort_columns());
+        if ($sort) {
+            $sort = "ORDER BY $sort";
+        }
+        return $sort;
+    }
+
+    /**
+     * Get where
+     *
+     * @param bool $disablefilters
+     * @return array
+     */
+    protected function internal_get_sql_where($disablefilters = false) {
+        $sqlwhere = "1=1";
+        $sqlparams = [];
+        if (!empty($this->filterset) && !$disablefilters) {
+            list($additionalsqlwhere, $additionalsqlparams) = $this->filterset->get_sql_for_filter(null, null, $this->fieldaliases);
+            if (trim($additionalsqlwhere)) {
+                $sqlwhere = "$sqlwhere AND $additionalsqlwhere";
+                $sqlparams = $sqlparams ?? [];
+                $sqlparams += $additionalsqlparams;
+            }
+        }
+        return [$sqlwhere, $sqlparams];
+    }
+
+    /**
+     * Overridable sql query
+     *
+     * @param string $tablealias
+     */
+    abstract protected function internal_get_sql_from($tablealias = 'e');
+
+    /**
+     * Get SQL query parts for this table
+     *
+     * This is mainly a helper used to get the same or similar info as we would get through
+     * the get_rows but in a raw format
+     *
+     * @param bool $disablefilters disable filters
+     * @return array with [$fields, $from, $where, $sort]
+     */
+    public function get_sql_query($disablefilters = false) {
+        $fields = $this->internal_get_sql_fields();
+        $sqlfrom = $this->internal_get_sql_from();
+        [$sqlwhere, $sqlparams] = $this->internal_get_sql_where($disablefilters);
+        $sqlsort = $this->internal_get_sql_sort();
+        return [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort];
+    }
+
+    /**
      * Main method to create the underlying query (SQL)
      *
      * @param int $pagesize
      * @param bool $useinitialsbar
      * @param bool $disablefilters disable filters
      */
-    public function query_db($pagesize, $useinitialsbar = true, $disablefilters = false) {
-        $additionalwhere = null;
-        $additionalparams = [];
-        if (!empty($this->filterset) && !$disablefilters) {
-            list($additionalwhere, $additionalparams) = $this->filterset->get_sql_for_filter(null, null, $this->fieldaliases);
-        }
-        if ($additionalwhere) {
-            if (!empty($this->sql->where)) {
-                $this->sql->where .= " AND ($additionalwhere)";
-            } else {
-                $this->sql->where = "$additionalwhere";
-            }
-            $this->sql->params += $additionalparams;
-        }
-        $this->sql->fields = "DISTINCT " . $this->sql->fields;
-        if ($this->countsql === null) {
-            $this->countsql = "SELECT COUNT(1) FROM (SELECT {$this->sql->fields}
-            FROM {$this->sql->from}
-            WHERE {$this->sql->where}) squery";
-            $this->countparams = $this->sql->params;
-        }
-
+    public function query_db($pagesize, $disablefilters = false) {
         global $DB;
-        if (!$this->is_downloading()) {
-            if ($this->countsql === null) {
-                $this->countsql = 'SELECT COUNT(1) FROM ' . $this->sql->from . ' WHERE ' . $this->sql->where;
-                $this->countparams = $this->sql->params;
-            }
-            $grandtotal = $DB->count_records_sql($this->countsql, $this->countparams);
-            if ($useinitialsbar && !$this->is_downloading()) {
-                $this->initialbars(true);
-            }
+        [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort] =
+                $this->get_sql_query($disablefilters);
 
-            list($wsql, $wparams) = $this->get_sql_where();
-            if ($wsql) {
-                $this->countsql .= ' AND ' . $wsql;
-                $this->countparams = array_merge($this->countparams, $wparams);
+        $countsql = "SELECT COUNT(1) FROM (SELECT {$fields}
+            FROM {$sqlfrom}
+            WHERE {$sqlwhere}) squery";
+        $countparams = $sqlparams;
+        $grandtotal = $DB->count_records_sql($countsql, $countparams);
 
-                $this->sql->where .= ' AND ' . $wsql;
-                $this->sql->params = array_merge($this->sql->params, $wparams);
-
-                $total = $DB->count_records_sql($this->countsql, $this->countparams);
-            } else {
-                $total = $grandtotal;
-            }
-
-            $this->pagesize($pagesize, $total);
-        }
-
-        // Fetch the attempts.
-        $sort = $this->construct_order_by($this->get_sort_columns());
-        if ($sort) {
-            $sort = "ORDER BY $sort";
-        }
+        $this->set_pagesize($pagesize ?? $grandtotal, $grandtotal);
         $sql = "SELECT
-                {$this->sql->fields}
-                FROM {$this->sql->from}
-                WHERE {$this->sql->where}
-                {$sort}";
-
-        if (!$this->is_downloading()) {
-            $this->rawdata = $DB->get_records_sql($sql, $this->sql->params, $this->get_page_start(), $this->get_page_size());
-        } else {
-            $this->rawdata = $DB->get_records_sql($sql, $this->sql->params);
-        }
-
+                {$fields}
+                FROM {$sqlfrom}
+                WHERE {$sqlwhere}
+                {$sqlsort}";
+        $this->rawdata = $DB->get_recordset_sql($sql, $sqlparams);
     }
 
     /**
@@ -425,7 +474,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @throws moodle_exception
      */
     protected function col_actions($row) {
-        // TODO : replace this by a column typed html_template for example
         // That will render a template from a json instead.
         global $OUTPUT;
         $actions = [];

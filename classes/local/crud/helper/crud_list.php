@@ -105,7 +105,7 @@ class crud_list extends base {
      */
     public function action_process($postprocesscb = null) {
         $returnedtext = '';
-        $entitylist = $this->instanciate_related_persistent_list();
+        $entitylist = $this->instanciate_related_persistent_table();
         // Here the form is just the filter form.
         $renderable = new entity_table_renderable($entitylist);
 

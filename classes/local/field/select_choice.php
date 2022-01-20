@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use MoodleQuickForm;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Select field
  *
@@ -29,9 +27,8 @@ defined('MOODLE_INTERNAL') || die();
  */
 class select_choice extends persistent_field {
     /**
-     * Form field type for this field
+     * List of choices
      */
-    const FORM_FIELD_TYPE = 'select';
     protected $choices = [];
 
     /**
@@ -45,7 +42,7 @@ class select_choice extends persistent_field {
                 'required' => false,
                 'rawtype' => PARAM_INT,
                 'choices' => [],
-                'default' => null
+                'default' => 0
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->choices = empty($fielddef->choices) ? [] : $fielddef->choices;
@@ -112,8 +109,16 @@ class select_choice extends persistent_field {
      * @param mixed ...$additionalargs
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
-        $mform->addElement('select', $this->get_name(), $this->get_display_name(), $this->choices);
+        $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name(), $this->choices);
         parent::internal_form_add_element($mform);
+    }
+
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "select";
     }
 
 }

@@ -15,48 +15,49 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * CRUD Helper class tests.
+ * Persistent form test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools;
+namespace local_cltools\local\crud\form;
 // See https://docs.moodle.org/dev/Coding_style#Namespaces_within_.2A.2A.2Ftests_directories.
 defined('MOODLE_INTERNAL') || die();
-
-use local_cltools\local\crud\helper\base as crud_helper;
 global $CFG;
 require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+
+use coding_exception;
 use local_cltools\simple\entity;
+use local_cltools\simple\form;
+use local_cltools\test\base_crud_test;
+use moodle_url;
 
 /**
- * CRUD Helper class tests.
+ * Persistent form test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_cltools_crud_helper_test extends \advanced_testcase {
+class form_test extends base_crud_test {
     /**
-     * Setup persistent table
+     * A smoke check to see if all fields are represented
+     *
+     * @return void
+     * @throws coding_exception
      */
-    public function setUp() {
-        parent::setUp();
-        $this->resetAfterTest();
-        entity::delete_table();
-        entity::create_table();
+    public function test_simple_form_has_all_entity_fields() {
+        global $PAGE;
+        $this->setAdminUser();
+        $PAGE->set_url(new moodle_url('/'));
+        $form = new form();
+
+        $renderableform = $form->render();
+        foreach (entity::define_fields() as $field) {
+            $this->assertContains('id_' . $field->get_name(), $renderableform);
+        }
     }
-
-    /**
-     * Remove persistent table
-     */
-    public function tearDown() {
-        entity::delete_table();
-        parent::tearDown();
-    }
-
-
-
 }
+

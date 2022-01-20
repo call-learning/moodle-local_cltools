@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use advanced_testcase;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Base field test
  *
@@ -125,7 +123,7 @@ class base_test extends advanced_testcase {
     }
 
     /**
-     * Get addional joins
+     * Get additional joins
      *
      * Not necessary most of the time
      *
@@ -136,7 +134,7 @@ class base_test extends advanced_testcase {
     }
 
     /**
-     * Get addional additional invisible sort field
+     * Get additional additional invisible sort field
      *
      * Not necessary most of the time
      *

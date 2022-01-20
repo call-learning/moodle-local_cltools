@@ -22,10 +22,9 @@ use ddl_exception;
 use ddl_table_missing_exception;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\enhanced_persistent_impl;
+use local_cltools\local\field\number;
 use local_cltools\local\field\text;
 use xmldb_table;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Other simple entity
@@ -49,6 +48,8 @@ class entity extends persistent implements enhanced_persistent {
     public static function define_fields(): array {
         return array(
                 new text('shortname'),
+                new text('idnumber'),
+                new number('sortorder'),
         );
     }
 
@@ -75,6 +76,8 @@ class entity extends persistent implements enhanced_persistent {
         }
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('shortname', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+        $table->add_field('idnumber', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
@@ -93,5 +96,9 @@ class entity extends persistent implements enhanced_persistent {
         if ($dbman->table_exists($table)) {
             $dbman->drop_table($table);
         }
+    }
+
+    public static function validate_access(\context $context) {
+        return has_capability('local/cltools:entitylookup', $context);
     }
 }

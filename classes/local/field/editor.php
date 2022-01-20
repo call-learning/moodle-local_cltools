@@ -32,11 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class editor extends persistent_field {
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'editor';
     /**
      * Editor options
      *
@@ -200,8 +195,15 @@ class editor extends persistent_field {
         $persistent = $additionalargs[0] ?? null;
         $editoroptions = $this->get_editor_options($persistent);
 
-        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name(), null, $editoroptions);
+        $mform->addElement($this->get_form_field_type(), $elementname, $this->get_display_name(), null, $editoroptions);
         parent::internal_form_add_element($mform, $elementname);
         $mform->setType($this->get_name(), PARAM_RAW);
+    }
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "editor";
     }
 }

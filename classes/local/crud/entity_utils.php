@@ -37,6 +37,7 @@ use lang_string;
 use moodle_url;
 use ReflectionClass;
 use ReflectionException;
+use restricted_context_exception;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -71,7 +72,6 @@ class entity_utils {
         $entityprefix = self::get_persistent_prefix($persistentclass);
         $component = self::get_component($persistentclass);
         $stringmanager = get_string_manager();
-        $label = '';
         if ($stringmanager->string_exists($entityprefix . ':' . $stringname, $component)) {
             $label = get_string($entityprefix . ':' . $stringname, $component, $args);
         } else if ($stringmanager->string_exists($stringname, $component, $args)) {
@@ -256,11 +256,25 @@ class entity_utils {
      * @return mixed
      * @throws coding_exception
      */
-    public static function get_defined_fields($persistentclassname) {
+    public static function get_defined_fields($persistentclassname, $nonpersistentfields = false) {
         $interfaces = class_implements($persistentclassname);
         if (empty($interfaces[enhanced_persistent::class])) {
             throw new coding_exception('This class should implemented enhanced_persistent interface');
         }
         return $persistentclassname::define_fields();
+    }
+
+    /**
+     * Validate entity context
+     *
+     * @param $entityclass
+     * @param $context
+     * @return false|mixed
+     */
+    public static function validate_entity_access($entityclass, $context) {
+        if (class_exists($entityclass) && method_exists($entityclass, 'validate_access')) {
+            return $entityclass::validate_access($context);
+        }
+        return has_capability('local/cltools:entitylookup', $context);
     }
 }

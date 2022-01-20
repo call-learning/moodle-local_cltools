@@ -21,8 +21,6 @@ use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
 use ReflectionException;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Entity selector field
  *
@@ -31,11 +29,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entity_selector extends persistent_field {
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'searchableselector';
     /**
      * @var string|null $entityclass
      */
@@ -55,7 +48,7 @@ class entity_selector extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_INT,
-                'default' => null
+                'default' => 0
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
@@ -97,26 +90,26 @@ class entity_selector extends persistent_field {
     }
 
     /**
-     * Get addional joins and fields
+     * Get additional joins and fields
      *
      * Not necessary most of the time
      *
      * @param $entityalias
-     * @return string
+     * @return array
      * @throws ReflectionException
      */
     public function get_additional_sql($entityalias) {
         $table = ($this->entityclass)::TABLE;
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
         return [
-                "",
+                [],
                 "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
         ];
 
     }
 
     /**
-     * Get addional additional invisible sort field
+     * Get additional invisible sort field
      *
      * Not necessary most of the time
      *
@@ -143,7 +136,7 @@ class entity_selector extends persistent_field {
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $choices = static::entity_lookup($this->entityclass, $this->displayfield);
-        $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(), $choices);
+        $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name(), $choices);
         parent::internal_form_add_element($mform);
     }
 
@@ -173,5 +166,12 @@ class entity_selector extends persistent_field {
         } else {
             return [];
         }
+    }
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "searchableselector";
     }
 }

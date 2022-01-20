@@ -35,10 +35,6 @@ abstract class persistent_field {
     use form_adapter_default;
 
     /**
-     * Form field type for this field
-     */
-    const FORM_FIELD_TYPE = 'text';
-    /**
      * @var bool $required
      */
     protected $required = false;
@@ -127,19 +123,19 @@ abstract class persistent_field {
     }
 
     /**
-     * Get addional joins
+     * Get additional joins
      *
      * Not necessary most of the time
      *
      * @param $entityalias
-     * @return array
+     * @return array [[string], string]
      */
     public function get_additional_sql($entityalias) {
-        return ["", ""];
+        return [[], ""];
     }
 
     /**
-     * Get addional additional invisible sort field
+     * Get additional invisible sort field
      *
      * Not necessary most of the time
      *
@@ -238,7 +234,7 @@ abstract class persistent_field {
                     'fieldname' => $fielddef
             ];
         }
-        // Get default values
+        // Get default values.
         $fielddef = array_merge($defaultvalues, $fielddef);
         $fielddef = (object) $fielddef;
         $this->required = !isset($fielddef->required) ? false : $fielddef->required;

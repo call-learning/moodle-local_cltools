@@ -18,15 +18,15 @@
  * Persistent utils base test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_cltools\test;
-defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
 use local_cltools\simple\entity;
+use local_cltools\othersimple\entity as otherentity;
 
 /**
  * Persistent utils test case
@@ -34,7 +34,7 @@ use local_cltools\simple\entity;
  * This will add autoloading for the simple entity class
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base_crud_test extends advanced_testcase {
@@ -46,15 +46,23 @@ class base_crud_test extends advanced_testcase {
         parent::setUp();
         spl_autoload_register(function() {
             global $CFG;
-            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
-            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
-            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
-            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
-            require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/simple/entity.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/simple/table.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/simple/exporter.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/simple/external.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/simple/form.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/entity.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/exporter.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/form.php');
+            // Events.
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/event/simple_added.php');
+            require_once($CFG->dirroot . '/local/cltools/tests/fixtures/event/simple_edited.php');
         });
         $this->resetAfterTest();
         entity::delete_table();
         entity::create_table();
+        otherentity::delete_table();
+        otherentity::create_table();
     }
 
     /**

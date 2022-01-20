@@ -19,8 +19,6 @@ namespace local_cltools\local\field;
 use advanced_testcase;
 use moodleform;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Standard test for different field types
  *
@@ -29,7 +27,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class field_types_test extends advanced_testcase {
-    public function expectedTypesValue() {
+    /**
+     * Test data
+     *
+     * @return array[]
+     */
+    public function expected_types_values() {
         return [
                 'boolean' => [
                         'field' => new boolean('fieldname'),
@@ -76,7 +79,7 @@ class field_types_test extends advanced_testcase {
                                 'format' => [
                                         ['<p>Test</p>', '<p>Test</p>']
                                 ],
-                                'type' => PARAM_TEXT,
+                                'type' => PARAM_RAW,
                                 'isvalid' => [
                                         ['ABCDEF', true],
                                 ]
@@ -84,14 +87,6 @@ class field_types_test extends advanced_testcase {
                 ],
                 'entity_selector' => [
                         'field' => new entity_selector('fieldname'),
-                        'expectations' => [
-                                'format' => [],
-                                'type' => PARAM_INT,
-                                'isvalid' => []
-                        ]
-                ],
-                'file_manager' => [
-                        'field' => new file_manager('fieldname'),
                         'expectations' => [
                                 'format' => [],
                                 'type' => PARAM_INT,
@@ -125,14 +120,24 @@ class field_types_test extends advanced_testcase {
                                 'isvalid' => []
                         ]
                 ],
-                'number' => [
-                        'field' => new number('fieldname'),
+                'number float' => [
+                        'field' => new number('fieldname', true),
                         'expectations' => [
                                 'format' => [
                                         [1, '1'],
                                         [1.1, '1.1']
                                 ],
                                 'type' => PARAM_FLOAT,
+                                'isvalid' => []
+                        ]
+                ],
+                'number' => [
+                        'field' => new number('fieldname'),
+                        'expectations' => [
+                                'format' => [
+                                        [1, '1'],
+                                ],
+                                'type' => PARAM_INT,
                                 'isvalid' => []
                         ]
                 ],
@@ -167,7 +172,7 @@ class field_types_test extends advanced_testcase {
     /**
      * Return a printable version of the current value
      *
-     * @dataProvider expectedTypesValue
+     * @dataProvider expected_types_values
      */
     public function test_format_string($field, $expectations) {
         foreach ($expectations['format'] as $expectation) {
@@ -179,20 +184,18 @@ class field_types_test extends advanced_testcase {
     /**
      * Get an identifier for this type of format
      *
-     * @dataProvider expectedTypesValue
+     * @dataProvider expected_types_values
      */
     public function test_get_raw_type($field, $expectations) {
-        /* @var $field persistent_field */
         $this->assertEquals($expectations['type'], $field->get_raw_param_type());
     }
 
     /**
      * Get an identifier for this type of format
      *
-     * @dataProvider expectedTypesValue
+     * @dataProvider expected_types_values
      */
     public function test_get_type($field, $expectations) {
-        /* @var $field persistent_field */
         $namespaceparts = explode('\\', get_class($field));
         $this->assertEquals(end($namespaceparts), $field->get_type());
     }
@@ -200,7 +203,7 @@ class field_types_test extends advanced_testcase {
     /**
      * Check if the provided value is valid for this field.
      *
-     * @dataProvider expectedTypesValue
+     * @dataProvider expected_types_values
      *
      */
     public function test_validate_value($field, $expectations) {
@@ -229,7 +232,7 @@ class field_types_test extends advanced_testcase {
      * Add element onto the form
      *
      *
-     * @dataProvider expectedTypesValue
+     * @dataProvider expected_types_values
      */
     public function test_add_form_element($field, $expectations) {
         global $CFG;
@@ -249,7 +252,7 @@ class field_types_test extends advanced_testcase {
                 function($e) use ($field) {
                     return (in_array($e->getName(), [$field->get_name(), $field->get_name() . '_editor']));
                 });
-        $expectedtype = $field::FORM_FIELD_TYPE == 'searchableselector' ? 'autocomplete' : $field::FORM_FIELD_TYPE;
+        $expectedtype = $field->get_form_field_type() == 'searchableselector' ? 'autocomplete' : $field->get_form_field_type();
         $this->assertContains(
                 $expectedtype,
                 array_map(

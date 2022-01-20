@@ -101,11 +101,13 @@ class crud_add extends base {
                         $postprocesscb($entity, $data);
                     }
                     $this->trigger_event($entity);
-                    redirect(
-                            new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
-                            $this->get_action_event_description(),
-                            null,
-                            $messagetype = notification::NOTIFY_SUCCESS);
+                    if (!(defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+                        redirect(
+                                new moodle_url($this->persistentnavigation->get_view_url(), ['id' => $entity->get('id')]),
+                                $this->get_action_event_description(),
+                                null,
+                                $messagetype = notification::NOTIFY_SUCCESS);
+                    }
                 } catch (moodle_exception $e) {
                     $returnedtext .= $this->renderer->notification($e->getMessage(), 'notifyfailure');
                 }

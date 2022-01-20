@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use coding_exception;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Date time field
  *
@@ -28,11 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class datetime extends persistent_field {
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'date_time_selector';
-
     /**
      * Construct the field from its definition
      *
@@ -90,5 +83,12 @@ class datetime extends persistent_field {
             throw new field_exception('valuecannotbechecked', $value);
         }
         return true;
+    }
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "date_time_selector";
     }
 }

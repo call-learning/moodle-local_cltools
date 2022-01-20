@@ -13,16 +13,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+/**
+ * This is the pure dynamic table interface without the unnecessary methods from older moodle table (table_sql, flextable)
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace local_cltools\local\table;
-defined('MOODLE_INTERNAL') || die;
-
 use context;
 use core_table\local\filter\filterset;
 use dml_exception;
 use local_cltools\local\filter\enhanced_filterset;
 use moodle_url;
-use table_default_export_format_parent;
 
 /**
  * This is the pure dynamic table interface without the unnecessary methods from older moodle table (table_sql, flextable)
@@ -33,41 +36,6 @@ use table_default_export_format_parent;
  */
 interface dynamic_table_interface {
     /**
-     * Call this to pass the download type. Use :
-     *         $download = optional_param('download', '', PARAM_ALPHA);
-     * To get the download type. We assume that if you call this function with
-     * params that this table's data is downloadable, so we call is_downloadable
-     * for you (even if the param is '', which means no download this time.
-     * Also you can call this method with no params to get the current set
-     * download type.
-     *
-     * @param string $download dataformat type. One of csv, xhtml, ods, etc
-     * @param string $filename filename for downloads without file extension.
-     * @param string $sheettitle title for downloaded data.
-     * @return string download dataformat type. One of csv, xhtml, ods, etc
-     */
-    public function is_downloading($download = null, $filename = '', $sheettitle = '');
-
-    /**
-     * Get, and optionally set, the export class.
-     *
-     * @param $exportclass (optional) if passed, set the table to use this export class.
-     * @return table_default_export_format_parent the export class in use (after any set).
-     */
-    public function export_class_instance($exportclass = null): table_default_export_format_parent;
-
-    /**
-     * Probably don't need to call this directly. Calling is_downloading with a
-     * param automatically sets table as downloadable.
-     *
-     * @param bool $downloadable optional param to set whether data from
-     * table is downloadable. If ommitted this function can be used to get
-     * current state of table.
-     * @return bool whether table data is set to be downloadable.
-     */
-    public function is_downloadable($downloadable = null);
-
-    /**
      * Sets the is_sortable variable to the given boolean, sort_default_column to
      * the given string, and the sort_default_order to the given integer.
      *
@@ -76,7 +44,7 @@ interface dynamic_table_interface {
      * @param int $defaultorder
      * @return void
      */
-    public function sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC);
+    public function set_sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC);
 
     /**
      * Is the column sortable?
@@ -87,28 +55,12 @@ interface dynamic_table_interface {
     public function is_sortable($column = null);
 
     /**
-     * Sets the is_collapsible variable to the given boolean.
-     *
-     * @param bool $bool
-     * @return void
-     */
-    public function collapsible($bool);
-
-    /**
      * Sets the use_pages variable to the given boolean.
      *
      * @param bool $bool
      * @return void
      */
-    public function pageable($bool);
-
-    /**
-     * Sets the use_initials variable to the given boolean.
-     *
-     * @param bool $bool
-     * @return void
-     */
-    public function initialbars($bool);
+    public function set_pageable($bool);
 
     /**
      * Sets the pagesize variable to the given integer, the totalrows variable
@@ -118,20 +70,7 @@ interface dynamic_table_interface {
      * @param int $total
      * @return void
      */
-    public function pagesize($perpage, $total);
-
-    /**
-     * Sets $this->baseurl.
-     *
-     * @param moodle_url|string $url the url with params needed to call up this page
-     */
-    public function define_baseurl($url);
-
-    /**
-     * Get base URL
-     *
-     */
-    public function get_baseurl();
+    public function set_pagesize($perpage, $total);
 
     /**
      * Is paged
@@ -146,11 +85,6 @@ interface dynamic_table_interface {
      * @return int
      */
     public function get_total_rows(): int;
-
-    /**
-     * Mark the table preferences to be reset.
-     */
-    public function mark_table_to_reset(): void;
 
     /**
      * @return int the offset for LIMIT clause of SQL
@@ -224,9 +158,10 @@ interface dynamic_table_interface {
      * setup to be done in order to make sure we validated against the right information
      * (such as for example a filter needs to be set in order not to return data a user should not see).
      *
-     *
-     * @throws dml_exception
+     * @param context $context
+     * @param bool $writeaccess
+     * @return mixed
      */
-    public function validate_access($writeaccess = false);
+    public function validate_access(context $context, $writeaccess = false);
 
 }

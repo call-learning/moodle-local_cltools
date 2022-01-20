@@ -44,6 +44,19 @@ trait enhanced_persistent_impl {
     // TODO: define fields from table XML definition.
 
     /**
+     * Return defined properties from
+     *
+     * @return array
+     */
+    protected static function get_all_properties(): array {
+        $properties = [];
+        foreach (static::define_fields() as $field) {
+            $properties = array_merge($properties, $field->get_persistent_properties());
+        }
+        return $properties;
+    }
+
+    /**
      * Get persistent context
      *
      * @return mixed

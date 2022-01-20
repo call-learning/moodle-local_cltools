@@ -23,8 +23,6 @@ use moodle_url;
 use MoodleQuickForm;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * File field
  *
@@ -33,11 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class files extends persistent_field {
-
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'filemanager';
     /**
      * File manager options
      *
@@ -50,7 +43,7 @@ class files extends persistent_field {
                 'required' => false,
                 'rawtype' => PARAM_INT,
                 'filemanageroptions' => [],
-                'default' => 0 // No default if not it makes it required
+                'default' => 0 // No default if not it makes it required.
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         if ($fielddef->filemanageroptions) {
@@ -66,7 +59,7 @@ class files extends persistent_field {
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $persistent = $additionalargs[0] ?? null;
-        $mform->addElement(static::FORM_FIELD_TYPE, $this->get_name(), $this->get_display_name(),
+        $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name(),
                 $this->get_filemanager_options($persistent));
         parent::internal_form_add_element($mform);
     }
@@ -194,5 +187,13 @@ class files extends persistent_field {
             }
         }
         return $filesurl;
+    }
+
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "filemanager";
     }
 }

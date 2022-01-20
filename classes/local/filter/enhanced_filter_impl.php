@@ -23,8 +23,6 @@
 
 namespace local_cltools\local\filter;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Additional methods for filters
  *
@@ -33,6 +31,7 @@ defined('MOODLE_INTERNAL') || die;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 trait enhanced_filter_impl {
+    // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseFunction
     /**
      * Serialize filter.
      *

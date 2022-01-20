@@ -42,43 +42,5 @@ global $CFG;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external extends external_api {
-    public static function get_rotations($filters) {
-        $inputparams = compact($filters);
-        $params = self::validate_parameters(self::get_rotations_parameters(), $inputparams);
-    }
 
-    public static function get_rotations_parameters() {
-        return entity_utils::external_get_filter_generic_parameters();
-    }
-
-    public static function get_rotations_returns() {
-        return new external_multiple_structure(
-                exporter::get_read_structure()
-        );
-    }
-
-    public static function create_rotation($rotation) {
-        global $PAGE;
-        $inputparams = compact($rotation);
-        $params = self::validate_parameters(self::create_rotation_parameters(), $inputparams);
-        $rotation = $params['rotation'];
-        $rotation = new entity(0, $rotation);
-        $rotation->save();
-        $output = $PAGE->get_renderer('local_cltools');
-        return (new exporter($rotation))->export($output);
-    }
-
-    public static function create_rotation_parameters() {
-        return new external_function_parameters(
-                [
-                        'rotation' => exporter::get_create_structure()
-                ]
-        );
-    }
-
-    public static function create_rotation_returns() {
-        return new external_single_structure(
-                ['rotation' => exporter::get_read_structure()]
-        );
-    }
 }

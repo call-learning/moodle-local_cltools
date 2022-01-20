@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use MoodleQuickForm;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Number field
  *
@@ -113,8 +111,16 @@ class number extends persistent_field {
      * @return mixed
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
-        $mform->addElement($this->isfloat ? 'float' : 'text', $this->get_name(), $this->get_display_name());
+        $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
     }
 
+    /**
+     * Get form field type
+     *
+     * @return string
+     */
+    public function get_form_field_type() {
+        return $this->isfloat ? 'float' : 'text';
+    }
 }

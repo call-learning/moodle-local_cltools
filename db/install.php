@@ -19,7 +19,7 @@
  *
  * @package     local_cltools
  * @category    upgrade
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

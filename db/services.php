@@ -18,7 +18,7 @@
  *
  * @package     local_cltools
  * @category    services
- * @copyright   2021 CALL Learning <contact@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();

@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use MoodleQuickForm;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Full html text field
  *
@@ -28,11 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class html extends persistent_field {
-    /**
-     * Form field type for this field, used in default implementation of form_add_element
-     */
-    const FORM_FIELD_TYPE = 'editor';
-
     /**
      * Construct the field from its definition
      *
@@ -69,8 +62,16 @@ class html extends persistent_field {
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $elementname = $this->get_name() . '_editor';
-        $mform->addElement(static::FORM_FIELD_TYPE, $elementname, $this->get_display_name());
+        $mform->addElement($this->get_form_field_type(), $elementname, $this->get_display_name());
         parent::internal_form_add_element($mform, $elementname);
         $mform->setType($this->get_name(), PARAM_RAW);
+    }
+
+    /**
+     * Get form field type
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "editor";
     }
 }

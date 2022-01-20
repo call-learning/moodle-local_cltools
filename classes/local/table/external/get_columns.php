@@ -17,11 +17,13 @@
 namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
 
+use core_table\local\filter\filter;
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+use local_cltools\local\table\dynamic_table_sql;
 
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
@@ -40,33 +42,31 @@ class get_columns extends external_api {
     /**
      * External function to get the table view content.
      *
-     * @param string $component The component.
      * @param string $handler Dynamic table class name.
+     * @param string $handlerparams Handler params
      * @param string $uniqueid Unique ID for the container.
-     * @param array $sortdata The columns and order to sort by
-     * @param array $filters The filters that will be applied in the request.
-     * @param string $jointype The join type.
-     * @param string $firstinitial The first name initial to filter on
-     * @param string $lastinitial The last name initial to filter on
-     * @param int $pagenumber The page number.
-     * @param int $pagesize The number of records.
-     * @param string $jointype The join type.
-     * @param bool $resetpreferences Whether it is resetting table preferences or not.
+     * @param array|null $sortdata The columns and order to sort by
+     * @param array|null $filters The filters that will be applied in the request.
+     * @param int|null $jointype The join type.
+     * @param bool|false $editable editable ?
      *
      * @return array
+     * @throws \invalid_parameter_exception
      */
     public static function execute(
             string $handler,
             string $handlerparams,
             string $uniqueid,
-            ?array $filters = null,
-            ?string $jointype = null,
-            ?bool $editable = null
+            ?array $sortdata = [],
+            ?array $filters = [],
+            ?int $jointype = filter::JOINTYPE_NONE,
+            ?bool $editable = false
     ) {
         [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
                 'uniqueid' => $uniqueid,
+                'sortdata' => $sortdata,
                 'filters' => $filters,
                 'jointype' => $jointype,
                 'editable' => $editable,
@@ -74,13 +74,14 @@ class get_columns extends external_api {
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
                 'uniqueid' => $uniqueid,
+                'sortdata' => $sortdata,
                 'filters' => $filters,
                 'jointype' => $jointype,
                 'editable' => $editable,
         ]);
-
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable);
-        $instance->validate_access();
+        $context = helper::get_current_context();
+        $instance->validate_access($context);
         helper::setup_filters($instance, $filters, $jointype);
         /* @var $instance dynamic_table_sql instance */
         $columndefs = array_values($instance->get_fields_definition());
@@ -115,7 +116,7 @@ class get_columns extends external_api {
                                 'visible' => new external_value(PARAM_BOOL, 'Is visible ?.'),
                                 'filter' => new external_value(PARAM_RAW, 'Filter: image, html, datetime ....', VALUE_OPTIONAL),
                                 'filterParams' => new external_value(PARAM_RAW, 'Filter parameter as JSON, ....', VALUE_OPTIONAL),
-                                'headerSort' => new external_value(PARAM_BOOL, 'Sort header ?',VALUE_OPTIONAL),
+                                'headerSort' => new external_value(PARAM_BOOL, 'Sort header ?', VALUE_OPTIONAL),
                                 'formatter' => new external_value(PARAM_RAW, 'Formatter: image, html, datetime ....',
                                         VALUE_OPTIONAL),
                                 'formatterParams' => new external_value(PARAM_RAW, 'Formatter parameter as JSON, ....',

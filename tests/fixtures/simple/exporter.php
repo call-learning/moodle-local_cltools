@@ -42,9 +42,9 @@ class exporter extends entity_exporter {
 
     protected function get_other_values(renderer_base $output) {
         $values = parent::get_other_values($output);
-        $exportedimage = $this->export_file('image', null, 'web_image');
+        $exportedimage = $this->export_file('simple_image', null, 'web_image');
         if ($exportedimage) {
-            $values['image'] = $exportedimage;
+            $values['image'] = $exportedimage->out();
         }
         return $values;
     }

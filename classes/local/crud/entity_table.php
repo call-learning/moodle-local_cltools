@@ -23,12 +23,12 @@
  */
 
 namespace local_cltools\local\crud;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use core\persistent;
 use dml_exception;
 use html_writer;
+use local_cltools\local\field\hidden;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_exception;
 use ReflectionException;
@@ -118,29 +118,29 @@ class entity_table extends dynamic_table_sql {
     public function define_class() {
         return static::$persistentclass;
     }
-
     /**
-     * Set SQL parameters (where, from,....) from the entity
+     * Get sql fields
      *
-     * This can be overridden when we are looking at linked entities.
+     * Overridable sql query
+     *
+     * @param string $tablealias
      */
-    protected function set_initial_sql() {
+    protected function internal_get_sql_fields($tablealias = 'e') {
+        return parent::internal_get_sql_fields('entity');
+    }
+    /**
+     * Overridable sql query
+     */
+    protected function internal_get_sql_from($tablealias = 'entity') {
         $persistentclass = $this->define_class();
-        $sqlfields = forward_static_call([$persistentclass, 'get_sql_fields'], 'entity', '');
         $from = $persistentclass::TABLE;
         $from = '{' . $from . '} entity';
         // Add joins.
-        // Set sorts (additional column).
         foreach ($this->fields as $field) {
             list($fields, $additionalfrom) = $field->get_additional_sql('entity');
             $from .= " " . $additionalfrom;
-            if ($fields) {
-                $sqlfields .= (!empty($sqlfields) ? ', ' : '') . $fields;
-            }
-            $this->fieldaliases[$field->get_name()] = "entity.{$field->get_name()}";
         }
-        $this->set_sql($sqlfields, $from, '1=1', []);
-
+        return $from;
     }
 
     /**
@@ -175,5 +175,4 @@ class entity_table extends dynamic_table_sql {
         }
         return $imageshtml;
     }
-
 }

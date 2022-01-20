@@ -18,13 +18,11 @@
  * Persistent utils test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_cltools\local\crud;
-
-defined('MOODLE_INTERNAL') || die();
 
 use local_cltools\local\crud\helper\base;
 use local_cltools\local\crud\helper\crud_add;
@@ -40,7 +38,7 @@ use moodle_url;
  * Persistent utils test case
  *
  * @package     local_cltools
- * @copyright   2020 CALL Learning <contact@call-learning.fr>
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base_test extends base_crud_test {
@@ -81,12 +79,22 @@ class base_test extends base_crud_test {
                 (object) [
                         'shortname' => 'Shortname 1',
                         'idnumber' => 'Idnumber 1',
+                        'description' => 'Description',
+                        'descriptionformat' => FORMAT_HTML,
                         'sortorder' => 0,
+                        'othersimpleid' => 0,
+                        'scaleid' => 0,
+                        'parentid' => 0
                 ],
                 (object) [
                         'shortname' => 'Shortname 2',
                         'idnumber' => 'Idnumber 2',
+                        'description' => 'Description',
+                        'descriptionformat' => FORMAT_HTML,
                         'sortorder' => 0,
+                        'othersimpleid' => 0,
+                        'scaleid' => 0,
+                        'parentid' => 0
                 ]
         ];
         foreach ($entitiesdata as $entityrecord) {
@@ -95,18 +103,15 @@ class base_test extends base_crud_test {
         }
 
         $crudmgmt = base::create(entity::class);
-        $persistentlist = $crudmgmt->instanciate_related_persistent_list();
-        $this->assertNotNull($persistentlist);
+        $persistenttable = $crudmgmt->instanciate_related_persistent_table();
+        $this->assertNotNull($persistenttable);
         $PAGE->set_url(new moodle_url('/'));
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user); // Make sure we have a logged in user.
-        $persistentlist->define_baseurl($PAGE->url);
-        ob_start();
-        $persistentlist->out(1000, true);
-        $listdisplay = ob_get_contents();
-        ob_end_clean();
-        $this->assertStringContainsString('Shortname 1', $listdisplay);
-        $this->assertStringContainsString('Shortname 2', $listdisplay);
+        $rows = $persistenttable->get_rows(1000, true);
+        $this->assertStringContainsString('Shortname 1', $rows[0]->shortname);
+        $this->assertStringContainsString('Shortname 2', $rows[1]->shortname);
+        $this->assertTrue(!empty($rows[0]->actions)); // This should be actually included in the table.
     }
 
     /**
@@ -145,13 +150,17 @@ class base_test extends base_crud_test {
     public function test_get_action_event_class($action, $expected, $formdata = null) {
         global $PAGE;
         $user = $this->getDataGenerator()->create_user();
+        $eventsink = $this->redirectEvents();
         $this->setUser($user);
         $existingentity = new entity(0, (object) [
                 'shortname' => 'Entity Test',
                 'idnumber' => 'ETEST',
                 'description' => 'Description',
                 'descriptionformat' => FORMAT_HTML,
-                'sortorder' => 0
+                'sortorder' => 0,
+                'othersimpleid' => 0,
+                'scaleid' => 0,
+                'parentid' => 0
         ]);
         $existingentity->create();
         $crudmgmt = base::create(entity::class, $action);
@@ -162,11 +171,25 @@ class base_test extends base_crud_test {
                 $formdata = $formdata + ['id' => $existingentity->get('id')];
             }
             $form = $crudmgmt->instanciate_related_form($entityid);
-            forward_static_call([get_class($form), 'mock_submit'], [$formdata]);
+            forward_static_call([get_class($form), 'mock_submit'], $formdata);
+        } else {
+            if ($action == crud_delete::ACTION) {
+                $simulatedsubmitteddata = [];
+                $simulatedsubmitteddata['id'] = $existingentity->get('id');
+                $simulatedsubmitteddata['confirm'] = true;
+                $simulatedsubmitteddata['sesskey'] = sesskey();
+                $_POST = $simulatedsubmitteddata;
+            }
         }
         $crudmgmt->setup_page($PAGE);
         $crudmgmt->action_process();
-
+        if (empty($expected['eventclass'])) {
+            $this->assertEmpty($eventsink->get_events());
+        } else {
+            $this->assertNotEmpty($eventsink->get_events());
+            $event = $eventsink->get_events()[0];
+            $this->assertEquals($expected['eventclass'], get_class($event));
+        }
     }
 
     /**
@@ -180,13 +203,16 @@ class base_test extends base_crud_test {
                                 'title' => 'Add Simple entity',
                                 'header' => 'Add Simple entity',
                                 'eventdescription' => 'Add Simple entity',
-                                'eventclass' => ''
+                                'eventclass' => 'local_cltools\\event\\simple_added'
                         ],
                         'formdata' => [
                                 'shortname' => 'Entity Test Added',
                                 'idnumber' => 'ETEST1',
                                 'description' => 'Description',
                                 'descriptionformat' => FORMAT_HTML,
+                                'parentid' => "",
+                                'otherentityid' => "",
+                                'scaleid' => ""
                         ],
                 ],
                 'delete' => [
@@ -195,7 +221,7 @@ class base_test extends base_crud_test {
                                 'title' => 'Delete Simple entity',
                                 'header' => 'Delete Simple entity',
                                 'eventdescription' => 'Delete Simple entity',
-                                'eventclass' => ''
+                                'eventclass' => 'local_cltools\\event\\crud_event_deleted'
                         ],
                 ],
                 'edit' => [
@@ -204,13 +230,16 @@ class base_test extends base_crud_test {
                                 'title' => 'Edit Simple entity',
                                 'header' => 'Edit Simple entity',
                                 'eventdescription' => 'Edit Simple entity',
-                                'eventclass' => ''
+                                'eventclass' => 'local_cltools\\event\\simple_edited'
                         ],
                         'formdata' => [
                                 'shortname' => 'Entity Test Modified',
                                 'idnumber' => 'ETEST1',
                                 'description' => 'Description',
                                 'descriptionformat' => FORMAT_HTML,
+                                'parentid' => "",
+                                'otherentityid' => "",
+                                'scaleid' => ""
                         ]
                 ],
                 'list' => [
@@ -223,9 +252,5 @@ class base_test extends base_crud_test {
                         ]
                 ]
         ];
-    }
-
-    protected function create_fake_form_payload() {
-
     }
 }

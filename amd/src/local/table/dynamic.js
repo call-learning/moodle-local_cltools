@@ -30,7 +30,7 @@ import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 import {columnSetup} from './tabulator-converters';
 import {cellEdited} from './tabulator-edition';
-import {convertInitialFilter, convertFiltersToMoodle} from './moodle-filter-converters';
+import {convertFiltersToMoodle, convertInitialFilter} from './moodle-filter-converters';
 import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 import {TABULATOR_EDITORS} from "./tabulator-editors";
 
@@ -53,7 +53,6 @@ const rowQuery = (tableHandler, tableHandlerParams, tableUniqueid, pageSize, par
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
-        resetpreferences: false,
         editable: tableEditable
     };
     return Promise.race(
@@ -124,7 +123,7 @@ export const tableInit = async (
     Tabulator.prototype.extendModule("format", "formatters", TABULATOR_FORMATTERS);
     Tabulator.prototype.extendModule("edit", "editors", TABULATOR_EDITORS);
 
-    columns = await columnSetup(columns, tableHandler, tableUniqueId);
+    columns = await columnSetup(columns, tableHandler, tableHandlerParams, tableUniqueId);
 
     let options = {
         ajaxRequestFunc: function (url, config, params) {
@@ -138,7 +137,7 @@ export const tableInit = async (
         ajaxSorting: true,
         dataFiltered: function () {
             $(document).trigger('tabulator-filter-changed', [
-                    tableHandler, tableUniqueId, this.getFilters(true)
+                    tableHandler, tableHandlerParams, tableUniqueId, this.getFilters(true)
                 ]
             );
         },
@@ -147,7 +146,7 @@ export const tableInit = async (
         },
         ajaxResponse: ajaxResponseProcessor,
         cellEdited: function (data) {
-            cellEdited(tableHandler, tableUniqueId, data);
+            cellEdited(tableHandler, tableHandlerParams, tableUniqueId, data);
         },
         validationMode: "highlight",
         columns: columns,

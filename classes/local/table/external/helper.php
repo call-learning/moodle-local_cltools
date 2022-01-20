@@ -17,6 +17,9 @@
 namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
 
+use context;
+use context_system;
+use core_table\local\filter\filter;
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
@@ -51,7 +54,7 @@ class helper extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function get_table_query_basic_parameters(): array {
+    public static function get_query_basic_parameters(): array {
         return [
                 'handler' => new external_value(
                 // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
@@ -65,48 +68,68 @@ class helper extends external_api {
                 // For now we will have to check manually.
                         PARAM_RAW,
                         'Handler parameters',
-                        VALUE_OPTIONAL
+                        VALUE_DEFAULT,
+                        ''
                 ),
                 'uniqueid' => new external_value(
                         PARAM_ALPHANUMEXT,
                         'Unique ID for the container',
                         VALUE_REQUIRED
                 ),
-                'sortdata' => new external_multiple_structure(
-                        new external_single_structure([
-                                'sortby' => new external_value(
-                                        PARAM_ALPHANUMEXT,
-                                        'The name of a sortable column',
-                                        VALUE_REQUIRED
-                                ),
-                                'sortorder' => new external_value(
-                                        PARAM_ALPHANUMEXT,
-                                        'The direction that this column should be sorted by',
-                                        VALUE_REQUIRED
-                                ),
-                        ]),
-                        'The combined sort order of the table. Multiple fields can be specified.',
-                        VALUE_OPTIONAL,
-                        []
-                ),
-                'filters' => new external_multiple_structure(
-                        new external_single_structure([
-                                'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
-                                'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
-                                'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
-                                'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL, false),
-                                'values' => new external_multiple_structure(
-                                        new external_value(PARAM_RAW, 'Filter value'),
-                                        'The value to filter on',
-                                        VALUE_REQUIRED
-                                )
-                        ]),
-                        'The filters that will be applied in the request',
-                        VALUE_OPTIONAL
-                ),
-                'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
-                'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
         ];
+    }
+
+    /**
+     * Basic parameters for any query related to the table
+     *
+     * Note that we include filters as they can somewhat have an influcence on columns
+     * selected too.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_table_query_basic_parameters(): array {
+        return array_merge(
+                self::get_query_basic_parameters(), [
+                        'sortdata' => new external_multiple_structure(
+                                new external_single_structure([
+                                        'sortby' => new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'The name of a sortable column',
+                                                VALUE_REQUIRED
+                                        ),
+                                        'sortorder' => new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'The direction that this column should be sorted by',
+                                                VALUE_REQUIRED
+                                        ),
+                                ]),
+                                'The combined sort order of the table. Multiple fields can be specified.',
+                                VALUE_DEFAULT,
+                                []
+                        ),
+                        'filters' => new external_multiple_structure(
+                                new external_single_structure([
+                                        'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
+                                        'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
+                                        'jointype' => new external_value(PARAM_INT, 'Type of join for filter values',
+                                                VALUE_REQUIRED),
+                                        'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL,
+                                                false),
+                                        'values' => new external_multiple_structure(
+                                                new external_value(PARAM_RAW, 'Filter value'),
+                                                'The value to filter on',
+                                                VALUE_REQUIRED
+                                        )
+                                ]),
+                                'The filters that will be applied in the request',
+                                VALUE_DEFAULT,
+                                []
+                        ),
+                        'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_DEFAULT,
+                                filter::JOINTYPE_NONE),
+                        'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
+                ]
+        );
     }
 
     /**
@@ -184,5 +207,23 @@ class helper extends external_api {
         $instance->set_filterset($filterset);
     }
 
+    /**
+     * Get current context or global system context
+     *
+     * @return context|context_system
+     */
+    public static function get_current_context() {
+        global $PAGE;
+        $context = null;
+        try {
+            $context = $PAGE->context;
+            return $context;
+        } finally {
+            if (empty($context)) {
+                $context = \context_system::instance();
+            }
+            return $context;
+        }
+    }
 }
 

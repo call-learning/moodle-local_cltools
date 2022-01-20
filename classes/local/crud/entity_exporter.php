@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use context_system;
-use core\external\persistent_exporter;
+use core\external\exporter;
 use core\persistent;
 use dml_exception;
 use moodle_url;
@@ -37,12 +37,16 @@ use renderer_base;
 /**
  * Class persistent_exporter
  *
+ * This is like persistent_exporter but for entity
+ *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entity_exporter extends persistent_exporter {
+abstract class entity_exporter extends exporter {
 
+    /** @var \core\persistent The persistent object we will export. */
+    protected $persistent = null;
     /**
      * Persistent component
      *
@@ -74,7 +78,19 @@ class entity_exporter extends persistent_exporter {
                         'itemid' => (int) $persistent->get('id')
                 ]
         );
-        parent::__construct($persistent, $related);
+        $classname = static::define_class();
+        if (!$persistent instanceof $classname) {
+            throw new coding_exception('Invalid type for persistent. ' .
+                    'Expected: ' . $classname . ' got: ' . get_class($persistent));
+        }
+        $this->persistent = $persistent;
+
+        if (method_exists($this->persistent, 'get_context') && !isset($this->related['context'])) {
+            $this->related['context'] = $this->persistent->get_context();
+        }
+
+        $data = $persistent->to_record();
+        parent::__construct($data, $related);
     }
 
     protected static function define_related() {
@@ -128,4 +144,25 @@ class entity_exporter extends persistent_exporter {
                 $returnedfiled->get_filename()
         );
     }
+
+    /**
+     * Persistent exporters get their standard properties from the persistent class.
+     *
+     * @return array Keys are the property names, and value their definition.
+     */
+    protected static function define_properties() {
+        $fields = entity_utils::get_defined_fields(static::define_class());
+        $properties = [];
+        foreach ($fields as $field) {
+            $properties = array_merge($properties, $field->get_persistent_properties());
+        }
+        return $properties;
+    }
+
+    /**
+     * Returns the specific class the persistent should be an instance of.
+     *
+     * @return string
+     */
+    abstract protected static function define_class();
 }

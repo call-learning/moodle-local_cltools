@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * This helps to make dynamic_table a drop in replacement for table_sql via duck-typing
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+
 namespace local_cltools\local\table;
 
 use coding_exception;
@@ -24,15 +33,11 @@ use html_writer;
 use moodle_recordset;
 use moodle_url;
 use stdClass;
-use table_dataformat_export_format;
-use table_default_export_format_parent;
-
-defined('MOODLE_INTERNAL') || die;
 
 /**
- * This trait fills the gap between table_sql and the dynamic table implementation
+ * This traits fill part of the gap between table_sql but implementation is progressively distancing itself from
+ * the original implementation
  *
- * This helps to make dynamic_table a drop in replacement for table_sql via duck-typing
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -40,28 +45,21 @@ defined('MOODLE_INTERNAL') || die;
  */
 trait table_sql_trait {
 
-    protected bool $issortable;
+    protected $issortable;
     protected $sortdefaultcolumn;
     protected $sortdefaultorder;
     protected $columnnosort;
     protected $iscollapsible;
     protected $usepages;
-    protected $useinitials;
     protected $pagesize;
     protected $totalrows;
-    protected $baseurl;
     protected $columns;
     protected $headers;
-    protected $resetting;
     protected $currpage;
     protected $issetup;
-    protected array $rawdata = [];
-    protected string $uniqueid;
+    protected $rawdata = [];
+    protected $uniqueid;
     protected $userfieldid;
-
-    protected $download;
-    protected $countsql;
-    protected $sql;
 
     /**
      * Sets the issortable variable to the given boolean, sort_default_column to
@@ -72,7 +70,7 @@ trait table_sql_trait {
      * @param int $defaultorder
      * @return void
      */
-    public function sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC) {
+    public function set_sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC) {
         $this->issortable = $bool;
         $this->sortdefaultcolumn = $defaultcolumn;
         $this->sortdefaultorder = $defaultorder;
@@ -95,75 +93,28 @@ trait table_sql_trait {
     }
 
     /**
-     * Sets the is_collapsible variable to the given boolean.
-     *
-     * @param bool $bool
-     * @return void
-     */
-    public function collapsible($bool) {
-        $this->iscollapsible = $bool;
-    }
-
-    /**
      * Sets the use_pages variable to the given boolean.
      *
      * @param bool $bool
      * @return void
      */
-    public function pageable($bool) {
+    public function set_pageable($bool) {
         $this->usepages = $bool;
     }
 
     /**
-     * Sets the use_initials variable to the given boolean.
-     *
-     * @param bool $bool
-     * @return void
-     */
-    public function initialbars($bool) {
-        $this->useinitials = $bool;
-    }
-
-
-    function pagesize($perpage, $total) {
-        if ($this->usepages) {
-            $this->pagesize = $perpage;
-            $this->totalrows = $total;
-            $this->usepages = true;
-        }
-    }
-
-    /**
-     * Sets $this->baseurl.
-     *
-     * @param moodle_url|string $url the url with params needed to call up this page
-     */
-    public function define_baseurl($url) {
-        $this->baseurl = new moodle_url($url);
-    }
-
-    /**
-     * Get base URL
-     *
-     */
-    public function get_baseurl() {
-        return $this->baseurl;
-    }
-
-    /**
-     * Sets the pagesize variable to the given integer, the totalrows variable
-     * to the given integer, and the use_pages variable to true.
+     * Set page size
      *
      * @param int $perpage
      * @param int $total
      * @return void
      */
-    // phpcs:ignore Squiz.Scope.MethodScope.Missing
-    /**
-     * Mark the table preferences to be reset.
-     */
-    public function mark_table_to_reset(): void {
-        $this->resetting = true;
+    public function set_pagesize($perpage, $total) {
+        if ($this->usepages) {
+            $this->pagesize = $perpage;
+            $this->totalrows = $total;
+            $this->usepages = true;
+        }
     }
 
     /**
@@ -186,14 +137,6 @@ trait table_sql_trait {
         return $this->pagesize;
     }
 
-    /**
-     * Get the html for the download buttons
-     *
-     * Usually only use internally
-     */
-    public function download_buttons() {
-
-    }
 
     /**
      * Set the list of hidden columns.
@@ -255,16 +198,6 @@ trait table_sql_trait {
         if (empty($this->columns) || empty($this->uniqueid)) {
             return false;
         }
-        if (empty($this->baseurl)) {
-            debugging('You should set baseurl when using flexible_table.');
-            global $PAGE;
-            $this->baseurl = $PAGE->url;
-        }
-
-        if ($this->currpage == null) {
-            $this->currpage = optional_param($this->get_request_var_name('currpage'), 0, PARAM_INT);
-        }
-
         $this->issetup = true;
 
         if ($this->usepages) {
@@ -273,9 +206,6 @@ trait table_sql_trait {
         return $this->issetup;
     }
 
-    protected function get_request_var_name($requestvarname) {
-        return $requestvarname . md5($this->get_unique_id());
-    }
 
     /**
      * Get uniqueid for this table
@@ -308,35 +238,6 @@ trait table_sql_trait {
         }
 
         return implode(', ', $bits);
-    }
-
-    /**
-     * @return array sql to add to where statement and params.
-     */
-    protected function get_sql_where() {
-        global $DB;
-
-        $conditions = array();
-        $params = array();
-
-        if (isset($this->columns['fullname'])) {
-            static $i = 0;
-            $i++;
-
-            if (!empty($this->prefs['i_first'])) {
-                $conditions[] = $DB->sql_like('firstname', ':ifirstc' . $i, false, false);
-                $params['ifirstc' . $i] = $this->prefs['i_first'] . '%';
-            }
-            if (!empty($this->prefs['i_last'])) {
-                $conditions[] = $DB->sql_like('lastname', ':ilastc' . $i, false, false);
-                $params['ilastc' . $i] = $this->prefs['i_last'] . '%';
-            }
-        }
-
-        return [
-                implode(" AND ", $conditions),
-                $params,
-        ];
     }
 
     /**
@@ -374,74 +275,12 @@ trait table_sql_trait {
      * build_table which calls this method.
      */
     protected function other_cols($column, $row) {
-        if (isset($row->$column) && ($column === 'email' || $column === 'idnumber') &&
-                (!$this->is_downloading() || $this->export_class_instance()->supports_html())) {
+        if (isset($row->$column) && ($column === 'email' || $column === 'idnumber')) {
             // Columns email and idnumber may potentially contain malicious characters, escape them by default.
             // This function will not be executed if the child class implements col_email() or col_idnumber().
             return s($row->$column);
         }
         return null;
-    }
-
-    /**
-     * Call this to pass the download type. Use :
-     *         $download = optional_param('download', '', PARAM_ALPHA);
-     * To get the download type. We assume that if you call this function with
-     * params that this table's data is downloadable, so we call is_downloadable
-     * for you (even if the param is '', which means no download this time.
-     * Also you can call this method with no params to get the current set
-     * download type.
-     *
-     * @param string $download dataformat type. One of csv, xhtml, ods, etc
-     * @param string $filename filename for downloads without file extension.
-     * @param string $sheettitle title for downloaded data.
-     * @return string download dataformat type. One of csv, xhtml, ods, etc
-     */
-    public function is_downloading($download = null, $filename = '', $sheettitle = '') {
-        if ($download !== null) {
-            $this->sheettitle = $sheettitle;
-            $this->is_downloadable(true);
-            $this->download = $download;
-            $this->filename = clean_filename($filename);
-            $this->export_class_instance();
-        }
-        return $this->download;
-    }
-
-    /**
-     * Probably don't need to call this directly. Calling is_downloading with a
-     * param automatically sets table as downloadable.
-     *
-     * @param bool $downloadable optional param to set whether data from
-     * table is downloadable. If ommitted this function can be used to get
-     * current state of table.
-     * @return bool whether table data is set to be downloadable.
-     */
-    public function is_downloadable($downloadable = null) {
-        if ($downloadable !== null) {
-            $this->downloadable = $downloadable;
-        }
-        return $this->downloadable;
-    }
-
-    /**
-     * Get, and optionally set, the export class.
-     *
-     * @param $exportclass (optional) if passed, set the table to use this export class.
-     * @return table_default_export_format_parent the export class in use (after any set).
-     */
-    public function export_class_instance($exportclass = null): table_default_export_format_parent {
-        if (!is_null($exportclass)) {
-            $this->started_output = true;
-            $this->exportclass = $exportclass;
-            $this->exportclass->table = $this;
-        } else if (is_null($this->exportclass) && !empty($this->download)) {
-            $this->exportclass = new table_dataformat_export_format($this, $this->download);
-            if (!$this->exportclass->document_started()) {
-                $this->exportclass->start_document($this->filename, $this->sheettitle);
-            }
-        }
-        return $this->exportclass;
     }
 
     /**
@@ -461,11 +300,12 @@ trait table_sql_trait {
         global $COURSE;
 
         $name = fullname($row, has_capability('moodle/site:viewfullnames', $this->get_context()));
-        if ($this->download) {
-            return $name;
-        }
 
-        $userid = $row->{$this->useridfield};
+        if (!empty($this->useridfield)) {
+            $userid = $row->{$this->useridfield};
+        } else {
+            $userid = $row->id;
+        }
         if ($COURSE->id == SITEID) {
             $profileurl = new moodle_url('/user/profile.php', array('id' => $userid));
         } else {
@@ -501,27 +341,22 @@ trait table_sql_trait {
      * options are changed.
      */
     protected function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseid = null) {
-        if (!$this->is_downloading()) {
-            if (is_null($options)) {
-                $options = new stdClass;
-            }
-            if (!isset($options->para)) {
-                $options->para = false;
-            }
-            if (!isset($options->newlines)) {
-                $options->newlines = false;
-            }
-            if (!isset($options->smiley)) {
-                $options->smiley = false;
-            }
-            if (!isset($options->filter)) {
-                $options->filter = false;
-            }
-            return format_text($text, $format, $options);
-        } else {
-            $eci = $this->export_class_instance();
-            return $eci->format_text($text, $format, $options, $courseid);
+        if (is_null($options)) {
+            $options = new stdClass;
         }
+        if (!isset($options->para)) {
+            $options->para = false;
+        }
+        if (!isset($options->newlines)) {
+            $options->newlines = false;
+        }
+        if (!isset($options->smiley)) {
+            $options->smiley = false;
+        }
+        if (!isset($options->filter)) {
+            $options->filter = false;
+        }
+        return format_text($text, $format, $options);
     }
 
     /**
@@ -533,62 +368,5 @@ trait table_sql_trait {
             $this->rawdata->close();
             $this->rawdata = [];
         }
-    }
-
-    /**
-     * This is only needed if you want to use different sql to count rows.
-     * Used for example when perhaps all db JOINS are not needed when counting
-     * records. You don't need to call this function the count_sql
-     * will be generated automatically.
-     *
-     * We need to count rows returned by the db seperately to the query itself
-     * as we need to know how many pages of data we have to display.
-     */
-    protected function set_count_sql($sql, array $params = null) {
-        $this->countsql = $sql;
-        $this->countparams = $params;
-    }
-
-    /**
-     * Set the sql to query the db. Query will be :
-     *      SELECT $fields FROM $from WHERE $where
-     * Of course you can use sub-queries, JOINS etc. by putting them in the
-     * appropriate clause of the query.
-     */
-    protected function set_sql($fields, $from, $where, array $params = array()) {
-        $this->sql = new stdClass();
-        $this->sql->fields = $fields;
-        $this->sql->from = $from;
-        $this->sql->where = empty($where) ? ' 1=1 ' : $where;
-        $this->sql->params = $params;
-    }
-
-    /**
-     * Get the columns to sort by, in the form required by {@link construct_order_by()}.
-     *
-     * @return array column name => SORT_... constant.
-     */
-    protected function get_sort_columns() {
-        if (!$this->issetup) {
-            throw new coding_exception('Cannot call get_sort_columns until you have called setup.');
-        }
-
-        if (empty($this->prefs['sortby'])) {
-            return array();
-        }
-
-        foreach ($this->prefs['sortby'] as $column => $notused) {
-            if (isset($this->columns[$column])) {
-                continue; // This column is OK.
-            }
-            if (in_array($column, get_all_user_name_fields()) &&
-                    isset($this->columns['fullname'])) {
-                continue; // This column is OK.
-            }
-            // This column is not OK.
-            unset($this->prefs['sortby'][$column]);
-        }
-
-        return $this->prefs['sortby'];
     }
 }

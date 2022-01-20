@@ -24,8 +24,6 @@
 
 namespace local_cltools\local\crud;
 
-defined('MOODLE_INTERNAL') || die();
-
 interface enhanced_persistent {
     /**
      * Return defined properties from

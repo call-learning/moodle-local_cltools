@@ -44,33 +44,34 @@ class validate_value extends external_api {
     /**
      * Set a field value
      *
-     * @param $handler
-     * @param $uniqueid
-     * @param $id
-     * @param $field
-     * @param $value
-     * @param $oldvalue
+     * @param string $handler Dynamic table class name.
+     * @param string $handlerparams Handler params
+     * @param string $uniqueid Unique ID for the container.
+     * @param string $field fieldname
+     * @param mixed $value value
      * @return array
      * @throws ReflectionException
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function execute($handler, $uniqueid, $id, $field, $value) {
+    public static function execute($handler, $handlerparams, $uniqueid, $id, $field, $value) {
         [
                 'handler' => $handler,
+                'handlerparams' => $handlerparams,
                 'uniqueid' => $uniqueid,
                 'id' => $id,
                 'field' => $field,
                 'value' => $value,
         ] = self::validate_parameters(self::execute_parameters(), [
                 'handler' => $handler,
+                'handlerparams' => $handlerparams,
                 'uniqueid' => $uniqueid,
                 'id' => $id,
                 'field' => $field,
                 'value' => $value
         ]);
 
-        $instance = helper::get_table_handler_instance($handler, $uniqueid, true);
+        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
         $instance->validate_access();
         $success = false;
         $warnings = array();
@@ -95,39 +96,28 @@ class validate_value extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters (
-                [
-                        'handler' => new external_value(
-                        // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                        // For now we will have to check manually.
-                                PARAM_RAW,
-                                'Handler',
-                                VALUE_REQUIRED
-                        ),
-                        'uniqueid' => new external_value(
-                                PARAM_ALPHANUMEXT,
-                                'Unique ID for the container',
-                                VALUE_REQUIRED
-                        ),
-                        'id' => new external_value(
-                                PARAM_INT,
-                                'Data id',
-                                VALUE_REQUIRED
-                        ),
-                        'field' =>
-                                new external_value(
-                                        PARAM_ALPHANUMEXT,
-                                        'Name of the field',
+                array_merge(helper::get_query_basic_parameters(),
+                        [
+                                'id' => new external_value(
+                                        PARAM_INT,
+                                        'Data id',
                                         VALUE_REQUIRED
                                 ),
-                        'value' =>
-                                new external_value(
-                                        PARAM_RAW,
-                                        'New value',
-                                        VALUE_REQUIRED
-                                )
-                ]
+                                'field' =>
+                                        new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'Name of the field',
+                                                VALUE_REQUIRED
+                                        ),
+                                'value' =>
+                                        new external_value(
+                                                PARAM_RAW,
+                                                'New value',
+                                                VALUE_REQUIRED
+                                        )
+                        ]
+                )
         );
-
     }
 
     /**

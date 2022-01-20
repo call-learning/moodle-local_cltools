@@ -74,23 +74,9 @@ class dynamic_table_sql_renderable implements renderable, templatable {
             $otheroptions = null,
             $perpage = 30
     ) {
-        global $PAGE;
-        $url = new moodle_url($PAGE->url);
         $this->dynamictable = $dynamictable;
         $this->perpage = $perpage;
-        $this->url = $url;
-        $this->dynamictable->define_baseurl($url);
-        $this->dynamictable->is_downloadable(true);
         $this->otheroptions = $otheroptions;
-    }
-
-    /**
-     * Download logs in specified format.
-     */
-    public function download() {
-        $filename = 'page_list' . userdate(time(), get_string('backupnameformat', 'langconfig'), 99, false);
-        $this->dynamictable->is_downloading('csv', $filename);
-        $this->dynamictable->out($this->perpage, false);
     }
 
     public function export_for_template(renderer_base $output) {

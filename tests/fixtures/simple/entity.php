@@ -80,7 +80,7 @@ class entity extends persistent implements enhanced_persistent {
                         'fieldname' => 'scaleid',
                         'choices' => [1 => 'scale1', 2 => 'scale2']
                 ]),
-                new files('files'),
+                new files('image'),
         );
     }
 
