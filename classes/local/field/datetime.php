@@ -59,6 +59,7 @@ class datetime extends persistent_field {
                         'timezone' => usertimezone()
                 ]
         ];
+        return $format;
     }
 
     /**

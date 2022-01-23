@@ -26,19 +26,21 @@ export const TABULATOR_FORMATTERS = {
     uppercase: function (cell) {
         return cell.getValue().toUpperCase();
     },
-    datets: function (cell, formatterParams) {
+    datets: function (cell, params) {
         if (cell.getValue() == 0) {
             return '';
         }
+        const formatterParams = params.formatterParams;
         const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
         moment.locale(currentLang);
         return moment.unix(cell.getValue()).format(formatterParams.outputFormat);
         // From Unix TS to displayable date.
     },
-    datetimets: function (cell, formatterParams) {
+    datetimets: function (cell, params) {
         if (cell.getValue() == 0) {
             return '';
         }
+        const formatterParams = params.formatterParams;
         const currentLang = formatterParams.locale ? formatterParams.locale : 'en';
         const timestamp = Number.parseInt(cell.getValue());
         moment.locale(currentLang);
