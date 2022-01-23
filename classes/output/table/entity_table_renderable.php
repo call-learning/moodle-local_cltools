@@ -34,13 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entity_table_renderable extends dynamic_table_sql_renderable {
-    /**
-     * Download logs in specified format.
-     */
-    public function download() {
-        $filename = 'page_list' . userdate(time(), get_string('backupnameformat', 'langconfig'), 99, false);
-        $this->dynamictable->is_downloading('csv', $filename);
-        $this->dynamictable->out($this->perpage, false);
-    }
+
 }
 

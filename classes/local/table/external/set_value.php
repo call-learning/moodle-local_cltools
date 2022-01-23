@@ -83,11 +83,12 @@ class set_value extends external_api {
         ]);
 
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
-        $instance->validate_access(true);
+        $context = helper::get_current_context();
+        $instance->validate_access($context, true);
         $success = false;
         $warnings = array();
         try {
-            $instance->set_value($id, $field, $value, $oldvalue);
+            $instance->set_value($id, $field, json_decode($value), json_decode($oldvalue));
             $success = true;
         } catch (moodle_exception $e) {
             $warnings[] = (object) [

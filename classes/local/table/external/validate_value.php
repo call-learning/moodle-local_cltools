@@ -48,13 +48,19 @@ class validate_value extends external_api {
      * @param string $handlerparams Handler params
      * @param string $uniqueid Unique ID for the container.
      * @param string $field fieldname
-     * @param mixed $value value
+     * @param string $value value
      * @return array
      * @throws ReflectionException
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function execute($handler, $handlerparams, $uniqueid, $id, $field, $value) {
+    public static function execute(
+            string $handler,
+            string $handlerparams,
+            string $uniqueid,
+            int $id,
+            string $field,
+            string $value) {
         [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
@@ -76,7 +82,7 @@ class validate_value extends external_api {
         $success = false;
         $warnings = array();
         try {
-            $success = $instance->is_valid_value($id, $field, $value);
+            $success = $instance->is_valid_value($id, $field, json_decode($value));
         } catch (moodle_exception $e) {
             $warnings[] = (object) [
                     'item' => $field,

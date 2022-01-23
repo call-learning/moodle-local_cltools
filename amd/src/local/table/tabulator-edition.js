@@ -53,7 +53,7 @@ export const validateRemote = async (tableHandler, tableHandlerParams, tableUniq
         uniqueid: tableUniqueid,
         id: cell.getData().id,
         field: cell.getField(),
-        value: value
+        value: JSON.stringify(value)
     };
     return await Promise.race(
         ajaxCall(
@@ -88,8 +88,8 @@ export const cellEdited = (tableHandler, tableHandlerParams,tableUniqueid, data)
         uniqueid: tableUniqueid,
         id: data.getData().id,
         field: data.getField(),
-        value: data.getValue(),
-        oldvalue: data.getOldValue(),
+        value: JSON.stringify(data.getValue()),
+        oldvalue: JSON.stringify(data.getOldValue()),
 
     };
     return Promise.race(
