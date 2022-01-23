@@ -175,6 +175,17 @@ class editor extends persistent_field {
     }
 
     /**
+     * Get additional joins
+     *
+     * Not necessary most of the time
+     *
+     * @param $entityalias
+     * @return array [[string], []]
+     */
+    public function get_additional_sql($entityalias) {
+        return [["{$entityalias}.{$this->get_name()}format"], []];
+    }
+    /**
      * Check if the provided value is valid for this field.
      *
      * @param mixed $value
