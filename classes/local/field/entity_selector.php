@@ -95,17 +95,13 @@ class entity_selector extends persistent_field {
      * Not necessary most of the time
      *
      * @param $entityalias
-     * @return array
+     * @return string
      * @throws ReflectionException
      */
-    public function get_additional_sql($entityalias) {
+    public function get_additional_from($entityalias = 'e') {
         $table = ($this->entityclass)::TABLE;
         $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        return [
-                [],
-                "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}"
-        ];
-
+        return "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}";
     }
 
     /**

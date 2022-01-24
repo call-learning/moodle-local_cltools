@@ -137,7 +137,7 @@ class entity_table extends dynamic_table_sql {
         $from = '{' . $from . '} entity';
         // Add joins.
         foreach ($this->fields as $field) {
-            list($fields, $additionalfrom) = $field->get_additional_sql('entity');
+            $additionalfrom = $field->get_additional_from('entity');
             $from .= " " . $additionalfrom;
         }
         return $from;

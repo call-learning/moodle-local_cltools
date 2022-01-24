@@ -16,7 +16,12 @@
 
 namespace local_cltools\local\field;
 
+use local_cltools\local\field\adapter\filter_adapter;
+use local_cltools\local\field\adapter\form_adapter;
 use local_cltools\local\field\adapter\form_adapter_default;
+use local_cltools\local\field\adapter\sql_query_adapter;
+use local_cltools\local\field\adapter\sql_query_adapter_default_trait;
+use local_cltools\local\field\adapter\tabulator_adapter;
 use local_cltools\local\field\adapter\tabulator_default_trait;
 
 defined('MOODLE_INTERNAL') || die();
@@ -30,9 +35,10 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class persistent_field {
+abstract class persistent_field implements sql_query_adapter, tabulator_adapter, form_adapter {
     use tabulator_default_trait;
     use form_adapter_default;
+    use sql_query_adapter_default_trait;
 
     /**
      * @var bool $required

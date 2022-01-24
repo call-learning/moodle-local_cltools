@@ -14,35 +14,50 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Filter adapter for field
+ * SQL Query adapter for field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\local\field\adapter;
 
-use core_table\local\filter\filter;
-
 /**
- * Filter adapter for field
+ * SQL Query adapter for field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface filter_adapter {
+trait sql_query_adapter_default_trait {
     /**
-     * Add element onto the form
+     * Get additional fields
      *
-     * @return filter
+     * @param $entityalias
+     *
+     * @return array of SQL fields (['xxx AS yyy', '...])
      */
-    public function get_filter_definition();
-
+    public function get_additional_fields($entityalias = 'e'){
+        return [];
+    }
     /**
-     * Is in persistent
+     * Additional From Query
      *
+     * @param $entityalias
+     *
+     * @return string
      */
-    public function in_persistent_definition();
+    public function get_additional_from($entityalias = 'e'){
+        return "";
+    }
+    /**
+     * Additional WHERE Query
+     *
+     * @param $entityalias
+     *
+     * @return array ["WHERE QUERY",[params]]
+     */
+    public function get_additional_where($entityalias = 'e'){
+        return ["", []];
+    }
 }

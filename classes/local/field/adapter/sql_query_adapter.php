@@ -13,43 +13,48 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-namespace local_cltools\local\field;
-
-use advanced_testcase;
-
 /**
- * Base field test
- *
- * For input and output
+ * SQL Query adapter for field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base_test extends advanced_testcase {
+
+namespace local_cltools\local\field\adapter;
+
+/**
+ * SQL Query adapter for field
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+interface sql_query_adapter {
     /**
-     * Get the name of this field
+     * Get additional fields
+     *
+     * @param $entityalias
+     *
+     * @return array of SQL fields (['xxx AS yyy', '...])
      */
-    public function test_get_name() {
-        $field = new boolean(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
-        $this->assertEquals('fieldname', $field->get_name());
-
-        $field = new editor(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
-        $this->assertEquals('fieldname', $field->get_name());
-    }
+    public function get_additional_fields($entityalias = 'e');
 
     /**
-     * Check if the field is visible or not
+     * Additional From Query
      *
-     * @return boolean visibility
+     * @param $entityalias
      *
+     * @return string
      */
-    public function test_is_visible() {
-        $field = new boolean(['fieldname' => 'fieldname', 'visible' => false]);
-        $this->assertFalse($field->is_visible());
-        $field = new boolean(['fieldname' => 'fieldname', 'visible' => true]);
-        $this->assertTrue($field->is_visible());
-    }
+    public function get_additional_from($entityalias = 'e');
 
+    /**
+     * Additional WHERE Query
+     *
+     * @param $entityalias
+     *
+     * @return array ["WHERE QUERY",[params]]
+     */
+    public function get_additional_where($entityalias = 'e');
 }
