@@ -91,6 +91,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $this->define_headers($headers);
         $this->set_sortable(true);
         $this->set_pageable(true);
+        $this->setup();
     }
 
     /**
