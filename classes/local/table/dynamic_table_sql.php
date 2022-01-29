@@ -151,6 +151,34 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     public function set_filterset(enhanced_filterset $filterset): void {
         // If there existing filters we replace them.
         if ($this->filterset) {
+            $aliases = $filterset->get_aliases();
+            // TODO: refactor this code: we should be able to merge filterdefs.
+            foreach ($filterset->get_required_filters() as $filtername => $filterclass) {
+                $filter = [
+                        'required' => true,
+                        'filterclass' => $filterclass
+                ];
+                if (!empty($aliases[$filtername])) {
+                    $filter['alias'] = $aliases[$filtername];
+                }
+                $this->filterset->add_filter_definition($filtername, (object) $filter);
+            }
+            foreach ($filterset->get_optional_filters() as $filtername => $filterdef) {
+                $filter = [
+                        'optional' => true,
+                        'filterclass' => $filterclass
+                ];
+                if (!empty($aliases[$filtername])) {
+                    $filter['alias'] = $aliases[$filtername];
+                }
+                $this->filterset->add_filter_definition($filtername, (object) $filter);
+            }
+            foreach ($filterset->get_optional_filters() as $filtername => $filterdef) {
+                $this->filterset->add_filter_definition($filtername, (object) [
+                        'optional' => true,
+                        'filterclass' => $filterclass
+                ]);
+            }
             foreach ($filterset->get_filters() as $filter) {
                 $this->filterset->add_filter($filter);
             }
@@ -169,6 +197,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @param context $context
      * @param bool $writeaccess
      * @return mixed
+     * @throws \restricted_context_exception
      */
     public function validate_access(context $context, $writeaccess = false) {
         helper::validate_context($context);

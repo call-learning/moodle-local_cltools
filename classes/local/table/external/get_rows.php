@@ -120,6 +120,7 @@ class get_rows extends external_api {
         }
         $context = helper::get_current_context();
         $instance->validate_access($context);
+        $PAGE->set_context($context);
 
         $rows = $instance->get_rows($pagesize);
         if (!empty($rows) && empty($rows[0]->id)) {

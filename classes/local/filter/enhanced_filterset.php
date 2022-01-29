@@ -25,6 +25,7 @@ namespace local_cltools\local\filter;
 
 use core_table\local\filter\filterset;
 use local_cltools\local\filter\adapter\sql_adapter;
+use phpDocumentor\Reflection\Types\Array_;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -105,6 +106,9 @@ class enhanced_filterset extends filterset {
         return $this->requiredfilters;
     }
 
+    public function get_aliases(): array {
+        return $this->aliases;
+    }
     /**
      * Get the sql where / params used for filtering
      *
