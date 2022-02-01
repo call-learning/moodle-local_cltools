@@ -259,7 +259,7 @@ class entity_utils {
     public static function get_defined_fields($persistentclassname, $nonpersistentfields = false) {
         $interfaces = class_implements($persistentclassname);
         if (empty($interfaces[enhanced_persistent::class])) {
-            throw new coding_exception('This class should implemented enhanced_persistent interface');
+            throw new coding_exception("The class '{$persistentclassname}' should implemented enhanced_persistent interface");
         }
         return $persistentclassname::define_fields();
     }

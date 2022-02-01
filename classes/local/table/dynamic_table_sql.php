@@ -351,7 +351,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
                 FROM {$sqlfrom}
                 WHERE {$sqlwhere}
                 {$sqlsort}";
-        $this->rawdata = $DB->get_recordset_sql($sql, $sqlparams);
+        $this->rawdata = $DB->get_recordset_sql($sql, $sqlparams, $this->get_page_start(), $this->get_page_size());
     }
 
     /**
