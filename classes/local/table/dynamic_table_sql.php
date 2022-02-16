@@ -289,11 +289,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @param bool $disablefilters
      * @return array
      */
-    protected function internal_get_sql_where($disablefilters = false) {
+    protected function internal_get_sql_where($disablefilters = false, $tablealias = 'e') {
         $sqlwhere = "1=1";
         $sqlparams = [];
         if (!empty($this->filterset) && !$disablefilters) {
-            list($additionalsqlwhere, $additionalsqlparams) = $this->filterset->get_sql_for_filter(null, null, $this->fieldaliases);
+            list($additionalsqlwhere, $additionalsqlparams) =
+                    $this->filterset->get_sql_for_filter($tablealias, null, $this->fieldaliases);
             if (trim($additionalsqlwhere)) {
                 $sqlwhere = "$sqlwhere AND $additionalsqlwhere";
                 $sqlparams = $sqlparams ?? [];
@@ -317,12 +318,13 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * the get_rows but in a raw format
      *
      * @param bool $disablefilters disable filters
+     * @param string $tablealias tablealias
      * @return array with [$fields, $from, $where, $sort]
      */
-    public function get_sql_query($disablefilters = false) {
-        $fields = $this->internal_get_sql_fields();
-        $sqlfrom = $this->internal_get_sql_from();
-        [$sqlwhere, $sqlparams] = $this->internal_get_sql_where($disablefilters);
+    public function get_sql_query($disablefilters = false, $tablealias = 'e') {
+        $fields = $this->internal_get_sql_fields($tablealias);
+        $sqlfrom = $this->internal_get_sql_from($tablealias);
+        [$sqlwhere, $sqlparams] = $this->internal_get_sql_where($disablefilters, $tablealias);
         $sqlsort = $this->internal_get_sql_sort();
         return [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort];
     }
