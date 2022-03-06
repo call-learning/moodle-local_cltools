@@ -41,10 +41,12 @@ trait tabulator_default_trait {
     public function get_column_filter() {
         $editor = $this->get_column_editor();
         if ($editor) {
-            return (object) [
-                    'headerFilter' => $editor->editor,
-                    'headerFilterParams' => $editor->editorParams ?? ''
-            ];
+            $params = new \stdClass();
+            $params->filter = $editor->editor;
+            if (!empty($editor->editorParams)) {
+                $params->filterParams = $editor->editorParams;
+            }
+            return $params;
         }
         return null;
     }

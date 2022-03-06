@@ -63,6 +63,27 @@ class select_choice extends persistent_field {
     }
 
     /**
+     * Get the matching filter type and parameters to be used for display
+     *
+     *
+     * @link  http://tabulator.info/docs/4.9/filter
+     * @return object|null return the parameters (or null if no matching filter)
+     *
+     */
+    public function get_column_filter() {
+        $format = $this->get_column_formatter();
+        if ($format) {
+            return (object) [
+                    'filter' => 'select',
+                    'filterParams' => (object) $this->choices,
+                    'editor' => 'select',
+                    'editorParams' => (object) $this->choices
+            ];
+        }
+        return null;
+    }
+
+    /**
      * Get the matching editor type to be used in the table
      *
      * @link  http://tabulator.info/docs/4.9/editor
@@ -72,9 +93,7 @@ class select_choice extends persistent_field {
     public function get_column_editor() {
         return (object) [
                 'editor' => 'select',
-                'editorParams' => (object) [
-                        'values' => (object) $this->choices
-                ]
+                'editorParams' => (object) $this->choices
         ];
     }
 

@@ -33,7 +33,14 @@ class filter_helper {
      * @return array array of two elements - SQL query and named parameters
      */
     public static function get_sql_filter_join(filter $filter, array $wheres, array $params): array {
-        return array("(" . join(" " . static::get_jointype_to_sql_join($filter->get_join_type()) . " ", $wheres) . ")", $params);
+        if (!empty($wheres)) {
+            return ["("
+                    . join(" " . static::get_jointype_to_sql_join($filter->get_join_type())
+                            . " ", $wheres)
+                    . ")",
+                    $params];
+        }
+        return [];
     }
 
     /**
