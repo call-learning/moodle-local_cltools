@@ -28,8 +28,6 @@ namespace local_cltools\local\forms;
 use coding_exception;
 use HTML_QuickForm_group;
 
-defined('MOODLE_INTERNAL') || die;
-
 trait form_repeat_trait {
     /**
      * Method to add a repeating group of elements to a form.

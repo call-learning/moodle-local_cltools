@@ -27,7 +27,7 @@ use advanced_testcase;
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base_test extends advanced_testcase {
+class persistent_field_test extends advanced_testcase {
     /**
      * Get the name of this field
      */

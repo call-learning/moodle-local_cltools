@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\simple;
-defined('MOODLE_INTERNAL') || die();
 
 use context_system;
 use local_cltools\local\crud\entity_exporter;

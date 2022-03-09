@@ -24,8 +24,6 @@
 
 namespace local_cltools\local\crud;
 
-defined('MOODLE_INTERNAL') || die();
-
 trait enhanced_persistent_impl {
     /**
      * Return defined properties from

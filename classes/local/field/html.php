@@ -69,6 +69,7 @@ class html extends persistent_field {
 
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

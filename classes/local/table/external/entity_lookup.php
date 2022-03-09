@@ -25,7 +25,6 @@ use external_warnings;
 use invalid_parameter_exception;
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\field\entity_selector;
-use local_cltools\utils;
 use moodle_exception;
 use restricted_context_exception;
 

@@ -24,8 +24,6 @@
 
 namespace local_cltools\local\crud\navigation;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Interface persistent_navigation
  *

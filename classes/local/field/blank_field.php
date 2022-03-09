@@ -16,8 +16,6 @@
 
 namespace local_cltools\local\field;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Blank html field.
  *

@@ -23,6 +23,7 @@ use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use local_cltools\local\table\dynamic_table_sql;
 
 global $CFG;
@@ -51,7 +52,7 @@ class get_columns extends external_api {
      * @param bool|false $editable editable ?
      *
      * @return array
-     * @throws \invalid_parameter_exception
+     * @throws invalid_parameter_exception
      */
     public static function execute(
             string $handler,

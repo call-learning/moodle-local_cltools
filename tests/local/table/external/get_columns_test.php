@@ -70,15 +70,13 @@ class get_columns_test extends advanced_testcase {
         "title": "shortname",
         "field": "shortname",
         "visible": true,
-        "headerFilter": "input",
-        "headerFilterParams": ""
+        "filter": "input"
     },
     {
         "title": "idnumber",
         "field": "idnumber",
         "visible": true,
-        "headerFilter": "input",
-        "headerFilterParams": ""
+        "filter": "input"
     },
     {
         "title": "description",
@@ -92,15 +90,14 @@ class get_columns_test extends advanced_testcase {
         "headerSort": true,
         "formatter": "entity_lookup",
         "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"\"}",
-        "headerFilter": "entity_lookup",
-        "headerFilterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"\"}"
+        "filter": "entity_lookup",
+        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"\"}"
     },
     {
         "title": "path",
         "field": "path",
         "visible": true,
-        "headerFilter": "input",
-        "headerFilterParams": ""
+        "filter": "input"
     },
     {
         "title": "sortorder",
@@ -108,7 +105,7 @@ class get_columns_test extends advanced_testcase {
         "visible": true,
         "headerSort": true,
         "formatter": "number",
-        "headerFilter": "number"
+        "filter": "number"
     },
     {
         "title": "othersimpleid",
@@ -117,8 +114,8 @@ class get_columns_test extends advanced_testcase {
         "headerSort": true,
         "formatter": "entity_lookup",
         "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"\"}",
-        "headerFilter": "entity_lookup",
-        "headerFilterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"\"}"
+        "filter": "entity_lookup",
+        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"\"}"
     },
     {
         "title": "scaleid",
@@ -127,8 +124,10 @@ class get_columns_test extends advanced_testcase {
         "headerSort": true,
         "formatter": "lookup",
         "formatterParams": "{\"1\":\"scale1\",\"2\":\"scale2\"}",
-        "headerFilter": "select",
-        "headerFilterParams": "{\"values\":{\"1\":\"scale1\",\"2\":\"scale2\"}}"
+        "filter": "select",
+        "filterParams": "{\"1\":\"scale1\",\"2\":\"scale2\"}",
+        "editor": "select",
+        "editorParams" : "{\"1\":\"scale1\",\"2\":\"scale2\"}"
     },
     {
         "title": "image",

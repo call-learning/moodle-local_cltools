@@ -16,7 +16,6 @@
 
 namespace local_cltools\local\field;
 
-
 /**
  * Hidden field
  *
@@ -66,8 +65,10 @@ class hidden extends persistent_field {
     public function get_column_editor() {
         return null;
     }
+
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

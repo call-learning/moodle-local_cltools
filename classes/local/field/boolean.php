@@ -134,8 +134,10 @@ class boolean extends persistent_field {
                 '0'
         ], true);
     }
+
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

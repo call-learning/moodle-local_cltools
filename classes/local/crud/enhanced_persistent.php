@@ -24,6 +24,13 @@
 
 namespace local_cltools\local\crud;
 
+/**
+ * Enhanced entity definition
+ *
+ * @package   local_cltools
+ * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 interface enhanced_persistent {
     /**
      * Return defined properties from

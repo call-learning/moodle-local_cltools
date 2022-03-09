@@ -28,7 +28,6 @@ use coding_exception;
 use core\persistent;
 use dml_exception;
 use html_writer;
-use local_cltools\local\field\hidden;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_exception;
 use ReflectionException;
@@ -118,6 +117,7 @@ class entity_table extends dynamic_table_sql {
     public function define_class() {
         return static::$persistentclass;
     }
+
     /**
      * Get sql fields
      *
@@ -128,6 +128,7 @@ class entity_table extends dynamic_table_sql {
     protected function internal_get_sql_fields($tablealias = 'e') {
         return parent::internal_get_sql_fields('entity');
     }
+
     /**
      * Overridable sql query
      */

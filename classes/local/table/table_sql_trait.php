@@ -22,7 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cltools\local\table;
 
 use coding_exception;
@@ -103,21 +102,6 @@ trait table_sql_trait {
     }
 
     /**
-     * Set page size
-     *
-     * @param int $perpage
-     * @param int $total
-     * @return void
-     */
-    public function set_pagesize($perpage, $total) {
-        if ($this->usepages) {
-            $this->pagesize = $perpage;
-            $this->totalrows = $total;
-            $this->usepages = true;
-        }
-    }
-
-    /**
      * @return int the offset for LIMIT clause of SQL
      */
     public function get_page_start() {
@@ -137,6 +121,20 @@ trait table_sql_trait {
         return $this->pagesize;
     }
 
+    /**
+     * Set page size
+     *
+     * @param int $perpage
+     * @param int $total
+     * @return void
+     */
+    public function set_pagesize($perpage, $total) {
+        if ($this->usepages) {
+            $this->pagesize = $perpage;
+            $this->totalrows = $total;
+            $this->usepages = true;
+        }
+    }
 
     /**
      * Set the list of hidden columns.
@@ -162,6 +160,15 @@ trait table_sql_trait {
 
     public function get_total_rows(): int {
         return $this->totalrows ?? 0;
+    }
+
+    /**
+     * Get uniqueid for this table
+     *
+     * @return mixed
+     */
+    public function get_unique_id() {
+        return $this->uniqueid;
     }
 
     /**
@@ -204,16 +211,6 @@ trait table_sql_trait {
             $this->currpage = $currpage ? $currpage : $this->currpage;
         }
         return $this->issetup;
-    }
-
-
-    /**
-     * Get uniqueid for this table
-     *
-     * @return mixed
-     */
-    public function get_unique_id() {
-        return $this->uniqueid;
     }
 
     /**

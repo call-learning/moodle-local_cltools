@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\local\crud\helper;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use context_system;
@@ -350,7 +349,7 @@ abstract class base {
         if (class_exists($globaleventclass)) {
             return $globaleventclass;
         }
-        return '\local_cltools\\event\\crud_event'. '_' . static::ACTION_DONE;
+        return '\local_cltools\\event\\crud_event' . '_' . static::ACTION_DONE;
     }
 
 }

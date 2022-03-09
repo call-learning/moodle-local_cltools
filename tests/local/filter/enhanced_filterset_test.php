@@ -18,8 +18,6 @@ namespace local_cltools\local\filter;
 use advanced_testcase;
 use core_table\local\filter\filter;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Class representing a set of filters.
  *

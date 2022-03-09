@@ -20,12 +20,12 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_cltools\local\table;
+
 use context;
 use core_table\local\filter\filterset;
-use dml_exception;
 use local_cltools\local\filter\enhanced_filterset;
-use moodle_url;
 
 /**
  * This is the pure dynamic table interface without the unnecessary methods from older moodle table (table_sql, flextable)

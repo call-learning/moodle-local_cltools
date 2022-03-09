@@ -17,7 +17,6 @@
 namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
 
-use coding_exception;
 use core_table\local\filter\filter;
 use dml_exception;
 use external_api;
@@ -25,10 +24,9 @@ use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use local_cltools\local\table\dynamic_table_interface;
 use local_cltools\local\table\dynamic_table_sql;
-use ReflectionException;
-use restricted_context_exception;
 use UnexpectedValueException;
 
 global $CFG;
@@ -56,12 +54,12 @@ class get_rows extends external_api {
      * @param array|null $filters The filters that will be applied in the request.
      * @param string|null $jointype The join type.
      * @param bool|null $editable
-     * @param array|null $hiddencolumns*
+     * @param array|null $hiddencolumns *
      * @param int|null $pagenumber The page number.
      * @param int|null $pagesize The number of records.
      *
      * @return array
-     * @throws \invalid_parameter_exception
+     * @throws invalid_parameter_exception
      * @throws dml_exception
      */
     public static function execute(

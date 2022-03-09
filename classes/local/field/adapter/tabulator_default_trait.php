@@ -20,7 +20,10 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_cltools\local\field\adapter;
+
+use stdClass;
 
 /**
  * Adapter for Tabulator and fields
@@ -41,7 +44,7 @@ trait tabulator_default_trait {
     public function get_column_filter() {
         $editor = $this->get_column_editor();
         if ($editor) {
-            $params = new \stdClass();
+            $params = new stdClass();
             $params->filter = $editor->editor;
             if (!empty($editor->editorParams)) {
                 $params->filterParams = $editor->editorParams;

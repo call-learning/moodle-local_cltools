@@ -25,7 +25,6 @@
  */
 
 namespace local_cltools\local\field;
-defined('MOODLE_INTERNAL') || die();
 
 class text extends persistent_field {
     /**

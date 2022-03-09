@@ -29,7 +29,6 @@ use file_exception;
 use local_cltools\test\base_crud_test;
 use stored_file_creation_exception;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Persistent utils test case

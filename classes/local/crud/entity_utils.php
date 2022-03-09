@@ -37,10 +37,6 @@ use lang_string;
 use moodle_url;
 use ReflectionClass;
 use ReflectionException;
-use restricted_context_exception;
-
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
 
 class entity_utils {
 

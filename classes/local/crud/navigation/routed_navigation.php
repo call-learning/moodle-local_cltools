@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\local\crud\navigation;
-defined('MOODLE_INTERNAL') || die;
 
 use local_cltools\local\crud\helper\crud_add;
 use local_cltools\local\crud\helper\crud_delete;

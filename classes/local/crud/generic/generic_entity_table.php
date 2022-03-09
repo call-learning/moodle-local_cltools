@@ -18,8 +18,6 @@ namespace local_cltools\local\crud\generic;
 
 use local_cltools\local\crud\entity_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Persistent dynamically instanciated
  *

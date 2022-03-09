@@ -24,9 +24,6 @@
 
 namespace local_cltools\utils;
 
-defined('MOODLE_INTERNAL') || die();
-global $CFG;
-
 /**
  * Trait persistent_linktable_trait
  *

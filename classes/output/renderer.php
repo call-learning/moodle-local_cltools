@@ -24,8 +24,6 @@
 
 namespace local_cltools\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use local_cltools\output\table\entity_table_renderable;
 use plugin_renderer_base;
 

@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\output\table;
-defined('MOODLE_INTERNAL') || die();
 
 use dml_exception;
 use local_cltools\local\table\dynamic_table_sql;
@@ -32,8 +31,6 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Renderable for dynamic table

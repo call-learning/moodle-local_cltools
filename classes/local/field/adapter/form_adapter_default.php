@@ -20,7 +20,9 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_cltools\local\field\adapter;
+
 use core\persistent;
 use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
@@ -36,14 +38,6 @@ use stdClass;
  */
 trait form_adapter_default {
     /**
-     * Get form field type
-     * @return string
-     */
-    public function get_form_field_type() {
-        return "text";
-    }
-
-    /**
      * Add element onto the form
      *
      * @param MoodleQuickForm $mform
@@ -53,6 +47,15 @@ trait form_adapter_default {
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
+    }
+
+    /**
+     * Get form field type
+     *
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "text";
     }
 
     /**

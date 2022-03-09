@@ -29,8 +29,6 @@ use core\output\mustache_template_finder;
 use Exception;
 use templatable;
 
-defined('MOODLE_INTERNAL') || die;
-
 trait form_element_accept {
     /**
      * Accepts a renderer, but tweak it to render the right local template

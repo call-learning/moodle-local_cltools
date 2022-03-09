@@ -54,39 +54,6 @@ class helper extends external_api {
      *
      * @return external_function_parameters
      */
-    public static function get_query_basic_parameters(): array {
-        return [
-                'handler' => new external_value(
-                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                // For now we will have to check manually.
-                        PARAM_RAW,
-                        'Handler',
-                        VALUE_REQUIRED
-                ),
-                'handlerparams' => new external_value(
-                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                // For now we will have to check manually.
-                        PARAM_RAW,
-                        'Handler parameters',
-                        VALUE_DEFAULT,
-                        ''
-                ),
-                'uniqueid' => new external_value(
-                        PARAM_ALPHANUMEXT,
-                        'Unique ID for the container',
-                        VALUE_REQUIRED
-                ),
-        ];
-    }
-
-    /**
-     * Basic parameters for any query related to the table
-     *
-     * Note that we include filters as they can somewhat have an influcence on columns
-     * selected too.
-     *
-     * @return external_function_parameters
-     */
     public static function get_table_query_basic_parameters(): array {
         return array_merge(
                 self::get_query_basic_parameters(), [
@@ -130,6 +97,39 @@ class helper extends external_api {
                         'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
                 ]
         );
+    }
+
+    /**
+     * Basic parameters for any query related to the table
+     *
+     * Note that we include filters as they can somewhat have an influcence on columns
+     * selected too.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_query_basic_parameters(): array {
+        return [
+                'handler' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                        PARAM_RAW,
+                        'Handler',
+                        VALUE_REQUIRED
+                ),
+                'handlerparams' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now we will have to check manually.
+                        PARAM_RAW,
+                        'Handler parameters',
+                        VALUE_DEFAULT,
+                        ''
+                ),
+                'uniqueid' => new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'Unique ID for the container',
+                        VALUE_REQUIRED
+                ),
+        ];
     }
 
     /**
@@ -220,7 +220,7 @@ class helper extends external_api {
             return $context;
         } finally {
             if (empty($context)) {
-                $context = \context_system::instance();
+                $context = context_system::instance();
             }
             return $context;
         }

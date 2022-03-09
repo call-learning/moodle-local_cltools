@@ -24,8 +24,6 @@
 
 namespace local_cltools\output\table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Renderable for entities table
  *

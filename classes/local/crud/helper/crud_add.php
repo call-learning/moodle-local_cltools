@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\local\crud\helper;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use core\output\notification;

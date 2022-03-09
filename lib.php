@@ -27,8 +27,6 @@
 use core_table\local\filter\filter;
 use core_table\local\filter\integer_filter;
 
-defined('MOODLE_INTERNAL') || die();
-
 function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     // TODO: add new type of context - one per entity. See custom context in $CFG->custom_context_classes.

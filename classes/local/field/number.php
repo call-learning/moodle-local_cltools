@@ -52,7 +52,7 @@ class number extends persistent_field {
      */
     public function get_column_filter() {
         return (object) [
-                'headerFilter' => $this->get_type()
+                'filter' => $this->get_type()
         ];
     }
 

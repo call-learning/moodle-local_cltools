@@ -85,8 +85,10 @@ class date extends persistent_field {
         }
         return true;
     }
+
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\local\crud\navigation;
-defined('MOODLE_INTERNAL') || die;
 
 use moodle_exception;
 use moodle_url;

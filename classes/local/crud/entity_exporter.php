@@ -23,7 +23,6 @@
  */
 
 namespace local_cltools\local\crud;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use context_system;
@@ -45,7 +44,7 @@ use renderer_base;
  */
 abstract class entity_exporter extends exporter {
 
-    /** @var \core\persistent The persistent object we will export. */
+    /** @var persistent The persistent object we will export. */
     protected $persistent = null;
     /**
      * Persistent component
@@ -93,8 +92,29 @@ abstract class entity_exporter extends exporter {
         parent::__construct($data, $related);
     }
 
+    /**
+     * Returns the specific class the persistent should be an instance of.
+     *
+     * @return string
+     */
+    abstract protected static function define_class();
+
     protected static function define_related() {
         return array('context' => '\\context', 'component' => 'string?', 'itemid' => 'int?');
+    }
+
+    /**
+     * Persistent exporters get their standard properties from the persistent class.
+     *
+     * @return array Keys are the property names, and value their definition.
+     */
+    protected static function define_properties() {
+        $fields = entity_utils::get_defined_fields(static::define_class());
+        $properties = [];
+        foreach ($fields as $field) {
+            $properties = array_merge($properties, $field->get_persistent_properties());
+        }
+        return $properties;
     }
 
     /**
@@ -144,25 +164,4 @@ abstract class entity_exporter extends exporter {
                 $returnedfiled->get_filename()
         );
     }
-
-    /**
-     * Persistent exporters get their standard properties from the persistent class.
-     *
-     * @return array Keys are the property names, and value their definition.
-     */
-    protected static function define_properties() {
-        $fields = entity_utils::get_defined_fields(static::define_class());
-        $properties = [];
-        foreach ($fields as $field) {
-            $properties = array_merge($properties, $field->get_persistent_properties());
-        }
-        return $properties;
-    }
-
-    /**
-     * Returns the specific class the persistent should be an instance of.
-     *
-     * @return string
-     */
-    abstract protected static function define_class();
 }

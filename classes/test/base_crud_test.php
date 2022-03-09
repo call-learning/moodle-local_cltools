@@ -25,8 +25,8 @@
 namespace local_cltools\test;
 
 use advanced_testcase;
-use local_cltools\simple\entity;
 use local_cltools\othersimple\entity as otherentity;
+use local_cltools\simple\entity;
 
 /**
  * Persistent utils test case

@@ -68,6 +68,7 @@ class crud_event_edited extends base {
      * This is called after other has been set
      *
      * Hack here: as we cannot override the create method, we have to find a way to set the objecttable.
+     *
      * @return void
      */
     protected function validate_data() {

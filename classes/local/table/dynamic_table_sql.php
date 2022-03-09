@@ -41,6 +41,7 @@ use moodle_exception;
 use moodle_url;
 use pix_icon;
 use popup_action;
+use restricted_context_exception;
 
 abstract class dynamic_table_sql implements dynamic_table_interface {
     use table_sql_trait;
@@ -197,7 +198,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @param context $context
      * @param bool $writeaccess
      * @return mixed
-     * @throws \restricted_context_exception
+     * @throws restricted_context_exception
      */
     public function validate_access(context $context, $writeaccess = false) {
         helper::validate_context($context);
@@ -220,6 +221,51 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
             $this->close_recordset();
         }
         return $rows;
+    }
+
+    /**
+     * Main method to create the underlying query (SQL)
+     *
+     * @param int $pagesize
+     * @param bool $useinitialsbar
+     * @param bool $disablefilters disable filters
+     */
+    public function query_db($pagesize, $disablefilters = false) {
+        global $DB;
+        [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort] =
+                $this->get_sql_query($disablefilters);
+
+        $countsql = "SELECT COUNT(1) FROM (SELECT {$fields}
+            FROM {$sqlfrom}
+            WHERE {$sqlwhere}) squery";
+        $countparams = $sqlparams;
+        $grandtotal = $DB->count_records_sql($countsql, $countparams);
+
+        $this->set_pagesize($pagesize ?? $grandtotal, $grandtotal);
+        $sql = "SELECT
+                {$fields}
+                FROM {$sqlfrom}
+                WHERE {$sqlwhere}
+                {$sqlsort}";
+        $this->rawdata = $DB->get_recordset_sql($sql, $sqlparams, $this->get_page_start(), $this->get_page_size());
+    }
+
+    /**
+     * Get SQL query parts for this table
+     *
+     * This is mainly a helper used to get the same or similar info as we would get through
+     * the get_rows but in a raw format
+     *
+     * @param bool $disablefilters disable filters
+     * @param string $tablealias tablealias
+     * @return array with [$fields, $from, $where, $sort]
+     */
+    public function get_sql_query($disablefilters = false, $tablealias = 'e') {
+        $fields = $this->internal_get_sql_fields($tablealias);
+        $sqlfrom = $this->internal_get_sql_from($tablealias);
+        [$sqlwhere, $sqlparams] = $this->internal_get_sql_where($disablefilters, $tablealias);
+        $sqlsort = $this->internal_get_sql_sort();
+        return [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort];
     }
 
     /**
@@ -272,16 +318,11 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
-     * Get sql sort
      * Overridable sql query
+     *
+     * @param string $tablealias
      */
-    protected function internal_get_sql_sort() {
-        $sort = $this->construct_order_by($this->get_sort_columns());
-        if ($sort) {
-            $sort = "ORDER BY $sort";
-        }
-        return $sort;
-    }
+    abstract protected function internal_get_sql_from($tablealias = 'e');
 
     /**
      * Get where
@@ -305,55 +346,15 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Get sql sort
      * Overridable sql query
-     *
-     * @param string $tablealias
      */
-    abstract protected function internal_get_sql_from($tablealias = 'e');
-
-    /**
-     * Get SQL query parts for this table
-     *
-     * This is mainly a helper used to get the same or similar info as we would get through
-     * the get_rows but in a raw format
-     *
-     * @param bool $disablefilters disable filters
-     * @param string $tablealias tablealias
-     * @return array with [$fields, $from, $where, $sort]
-     */
-    public function get_sql_query($disablefilters = false, $tablealias = 'e') {
-        $fields = $this->internal_get_sql_fields($tablealias);
-        $sqlfrom = $this->internal_get_sql_from($tablealias);
-        [$sqlwhere, $sqlparams] = $this->internal_get_sql_where($disablefilters, $tablealias);
-        $sqlsort = $this->internal_get_sql_sort();
-        return [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort];
-    }
-
-    /**
-     * Main method to create the underlying query (SQL)
-     *
-     * @param int $pagesize
-     * @param bool $useinitialsbar
-     * @param bool $disablefilters disable filters
-     */
-    public function query_db($pagesize, $disablefilters = false) {
-        global $DB;
-        [$fields, $sqlfrom, $sqlwhere, $sqlparams, $sqlsort] =
-                $this->get_sql_query($disablefilters);
-
-        $countsql = "SELECT COUNT(1) FROM (SELECT {$fields}
-            FROM {$sqlfrom}
-            WHERE {$sqlwhere}) squery";
-        $countparams = $sqlparams;
-        $grandtotal = $DB->count_records_sql($countsql, $countparams);
-
-        $this->set_pagesize($pagesize ?? $grandtotal, $grandtotal);
-        $sql = "SELECT
-                {$fields}
-                FROM {$sqlfrom}
-                WHERE {$sqlwhere}
-                {$sqlsort}";
-        $this->rawdata = $DB->get_recordset_sql($sql, $sqlparams, $this->get_page_start(), $this->get_page_size());
+    protected function internal_get_sql_sort() {
+        $sort = $this->construct_order_by($this->get_sort_columns());
+        if ($sort) {
+            $sort = "ORDER BY $sort";
+        }
+        return $sort;
     }
 
     /**

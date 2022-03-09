@@ -24,8 +24,6 @@ use local_cltools\local\field\adapter\sql_query_adapter_default_trait;
 use local_cltools\local\field\adapter\tabulator_adapter;
 use local_cltools\local\field\adapter\tabulator_default_trait;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Base field
  *

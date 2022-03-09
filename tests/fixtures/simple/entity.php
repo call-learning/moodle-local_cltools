@@ -38,8 +38,6 @@ use local_cltools\local\field\select_choice;
 use local_cltools\local\field\text;
 use xmldb_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class rotation
  *

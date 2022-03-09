@@ -18,8 +18,6 @@ namespace local_cltools\local\field;
 
 use moodle_exception;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Field exception
  *

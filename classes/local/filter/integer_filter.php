@@ -24,7 +24,6 @@
 declare(strict_types=1);
 
 namespace local_cltools\local\filter;
-defined('MOODLE_INTERNAL') || die;
 
 use local_cltools\local\filter\adapter\enhanced_filter_adapter;
 use local_cltools\local\filter\adapter\sql_adapter;

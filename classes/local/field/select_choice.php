@@ -49,20 +49,6 @@ class select_choice extends persistent_field {
     }
 
     /**
-     * Get the matching formatter type to be used for display
-     *
-     * @link  http://tabulator.info/docs/4.9/format
-     * @return object|null return the parameters (or null if no matching formatter)
-     *
-     */
-    public function get_column_formatter() {
-        $format = parent::get_column_formatter();
-        $format->formatter = 'lookup';
-        $format->formatterParams = (object) $this->choices;
-        return $format;
-    }
-
-    /**
      * Get the matching filter type and parameters to be used for display
      *
      *
@@ -81,6 +67,20 @@ class select_choice extends persistent_field {
             ];
         }
         return null;
+    }
+
+    /**
+     * Get the matching formatter type to be used for display
+     *
+     * @link  http://tabulator.info/docs/4.9/format
+     * @return object|null return the parameters (or null if no matching formatter)
+     *
+     */
+    public function get_column_formatter() {
+        $format = parent::get_column_formatter();
+        $format->formatter = 'lookup';
+        $format->formatterParams = (object) $this->choices;
+        return $format;
     }
 
     /**
@@ -134,6 +134,7 @@ class select_choice extends persistent_field {
 
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

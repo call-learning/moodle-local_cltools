@@ -17,8 +17,6 @@ namespace local_cltools\local\filter\adapter;
 
 use MoodleQuickForm;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Form adapter for filter
  *

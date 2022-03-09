@@ -22,8 +22,6 @@ use local_cltools\local\crud\enhanced_persistent;
 use MoodleQuickForm;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Text editor field
  *
@@ -184,6 +182,7 @@ class editor extends persistent_field {
     public function get_additional_fields($entityalias = 'e') {
         return ["{$entityalias}.{$this->get_name()}format"];
     }
+
     /**
      * Check if the provided value is valid for this field.
      *
@@ -209,8 +208,10 @@ class editor extends persistent_field {
         parent::internal_form_add_element($mform, $elementname);
         $mform->setType($this->get_name(), PARAM_RAW);
     }
+
     /**
      * Get form field type
+     *
      * @return string
      */
     public function get_form_field_type() {

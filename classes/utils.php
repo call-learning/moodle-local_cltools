@@ -16,8 +16,6 @@
 
 namespace local_cltools;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Generic utils for cltools
  *

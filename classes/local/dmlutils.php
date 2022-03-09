@@ -29,8 +29,6 @@ use oci_native_moodle_database;
 use pgsql_native_moodle_database;
 use sqlsrv_native_moodle_database;
 
-defined('MOODLE_INTERNAL') || die;
-
 class dmlutils {
     /*
      *

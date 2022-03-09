@@ -65,6 +65,15 @@ class files extends persistent_field {
     }
 
     /**
+     * Get form field type
+     *
+     * @return string
+     */
+    public function get_form_field_type() {
+        return "filemanager";
+    }
+
+    /**
      * Get file options
      *
      * @param enhanced_persistent|null $persistent
@@ -187,13 +196,5 @@ class files extends persistent_field {
             }
         }
         return $filesurl;
-    }
-
-    /**
-     * Get form field type
-     * @return string
-     */
-    public function get_form_field_type() {
-        return "filemanager";
     }
 }
