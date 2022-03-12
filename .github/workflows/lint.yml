@@ -51,40 +51,26 @@ jobs:
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
-      - name: PHP Lint
+      - name: phplint
         if: ${{ always() }}
-        run: moodle-plugin-ci phplint
+        run: moodle-plugin-ci phplint plugin
 
-      - name: PHP Copy/Paste Detector
-        continue-on-error: true # This step will show errors but will not fail
+      - name: phpcpd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd
+        run: moodle-plugin-ci phpcpd plugin || true
 
-      - name: PHP Mess Detector
-        continue-on-error: true # This step will show errors but will not fail
+      - name: phpmd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpmd
+        run: moodle-plugin-ci phpmd plugin
 
-      - name: Moodle Code Checker
+      - name: codechecker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker --max-warnings 0
+        run: moodle-plugin-ci codechecker plugin
 
-      - name: Moodle PHPDoc Checker
+      - name: savepoints
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc
+        run: moodle-plugin-ci savepoints plugin
 
-      - name: Validating
+      - name: phpcpd
         if: ${{ always() }}
-        run: moodle-plugin-ci validate
-
-      - name: Check upgrade savepoints
-        if: ${{ always() }}
-        run: moodle-plugin-ci savepoints
-
-      - name: Mustache Lint
-        if: ${{ always() }}
-        run: moodle-plugin-ci mustache
-
-      - name: Grunt
-        if: ${{ always() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
+        run: moodle-plugin-ci phpdoc plugin || true
