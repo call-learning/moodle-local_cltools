@@ -70,7 +70,7 @@ class boolean extends persistent_field {
                         'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                         'allowEmpty' => true,
                         'allowTruthy' => true,
-                        'tristate' => false
+                        'tristate' => true
                 ]
         ];
     }

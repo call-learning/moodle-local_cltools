@@ -104,8 +104,24 @@ class enhanced_filterset extends filterset {
         return $this->requiredfilters;
     }
 
+    /**
+     * Get filter alias
+     *
+     * @return array
+     */
     public function get_aliases(): array {
         return $this->aliases;
+    }
+
+    /**
+     * Set Alias for given column name.
+     *
+     * @param $columnname
+     * @param $alias sql fragment or column name
+     * @return void
+     */
+    public function set_alias($columnname, $alias): void {
+        $this->aliases[$columnname] = $alias;
     }
 
     /**
