@@ -22,13 +22,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\crud;
+namespace local_cltools\local\crud\helper;
 
-use local_cltools\local\crud\helper\base;
-use local_cltools\local\crud\helper\crud_add;
-use local_cltools\local\crud\helper\crud_delete;
-use local_cltools\local\crud\helper\crud_edit;
-use local_cltools\local\crud\helper\crud_list;
 use local_cltools\simple\entity;
 use local_cltools\test\base_crud_test;
 use moodle_page;

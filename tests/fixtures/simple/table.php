@@ -26,8 +26,6 @@ namespace local_cltools\simple;
 
 use local_cltools\local\crud\entity_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Entity table/list
  *

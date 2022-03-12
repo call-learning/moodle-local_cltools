@@ -22,6 +22,7 @@ use core_table\local\filter\filter;
  *
  * @package   local_cltools
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class filter_helper {
