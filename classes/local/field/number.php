@@ -108,7 +108,6 @@ class number extends persistent_field {
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
-     * @return mixed
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name());

@@ -360,7 +360,7 @@ trait table_sql_trait {
      * Closes recordset (for use after building the table).
      */
     protected function close_recordset() {
-        if ($this->rawdata && ($this->rawdata instanceof recordset_walk ||
+        if ($this->rawdata  && is_object($this->rawdata) && ($this->rawdata instanceof recordset_walk ||
                         $this->rawdata instanceof moodle_recordset)) {
             $this->rawdata->close();
             $this->rawdata = [];

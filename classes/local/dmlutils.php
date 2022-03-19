@@ -65,6 +65,6 @@ class dmlutils {
             $fieldsort = $sort ? "WITHIN GROUP (ORDER BY {$sort})" : '';
             return "STRING_AGG({$field}, '{$separator}') {$fieldsort}";
         }
-
+        return '';
     }
 }

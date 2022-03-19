@@ -149,7 +149,6 @@ class entity_table extends dynamic_table_sql {
      *
      * Add all the fields from persistent class except the reserved ones
      *
-     * @return array
      * @throws ReflectionException
      */
     protected function setup_fields() {

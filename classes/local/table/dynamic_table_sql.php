@@ -197,7 +197,6 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      *
      * @param context $context
      * @param bool $writeaccess
-     * @return mixed
      * @throws restricted_context_exception
      */
     public function validate_access(context $context, $writeaccess = false) {

@@ -42,8 +42,6 @@ class persistent_field_test extends advanced_testcase {
     /**
      * Check if the field is visible or not
      *
-     * @return boolean visibility
-     *
      */
     public function test_is_visible() {
         $field = new boolean(['fieldname' => 'fieldname', 'visible' => false]);
