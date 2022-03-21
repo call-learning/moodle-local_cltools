@@ -70,6 +70,23 @@ class boolean extends persistent_field {
                         'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                         'allowEmpty' => true,
                         'allowTruthy' => true,
+                ]
+        ];
+    }
+
+    /**
+     * Filter must be 3 states
+     *
+     * @return object
+     * @throws coding_exception
+     */
+    public function get_column_filter() {
+        return (object) [
+                'filter' => 'tickCross',
+                'filterParams' => (object) [
+                        'indeterminateValue' => get_string('notavailable', 'local_cltools'),
+                        'allowEmpty' => true,
+                        'allowTruthy' => true,
                         'tristate' => true
                 ]
         ];
