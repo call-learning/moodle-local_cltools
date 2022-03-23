@@ -163,7 +163,7 @@ class helper extends external_api {
             throw new UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
-        if ($handler == generic_entity_table::class) {
+        if ($handler == generic_entity_table::class || is_subclass_of($handler, generic_entity_table::class) ) {
             $instance = new $handler($uniqueid, null, $editable, $handlerparams);
         } else {
             $instance = new $handler($uniqueid, null, $editable);

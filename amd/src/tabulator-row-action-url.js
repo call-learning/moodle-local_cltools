@@ -26,11 +26,13 @@ export const init = (tableuniqueid, baseurl, parameters) => {
         if (uniqueid === tableuniqueid) {
             const data = row.getData();
             if (typeof (data.id) !== "undefined") {
-                let dataparams = {};
-                for(const [key, value] of Object.entries(parameters)) {
-                    dataparams[key] = data[value];
+                let url = new URL(baseurl);
+                let searchParams = url.searchParams;
+                baseurl = baseurl.replace(url.search, '');
+                for (const [key, value] of Object.entries(parameters)) {
+                    searchParams.set(key, data[value]);
                 }
-                const paramurl = $.param(dataparams);
+                let paramurl = searchParams.toString();
                 window.location.href = `${baseurl}?${paramurl}`;
             }
         }
