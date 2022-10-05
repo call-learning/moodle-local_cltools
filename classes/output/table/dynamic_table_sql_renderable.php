@@ -24,7 +24,6 @@
 
 namespace local_cltools\output\table;
 
-use dml_exception;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use renderable;
@@ -57,14 +56,16 @@ class dynamic_table_sql_renderable implements renderable, templatable {
     public $otheroptions;
 
     /**
+     * @var array|mixed|null defined actions
+     */
+    protected $actionsdefs = [];
+
+    /**
      * Constructor
      *
      * @param dynamic_table_sql $dynamictable
-     * @param string $url
-     * @param int $page
+     * @param object $otheroptions
      * @param int $perpage
-     * @param string $order
-     * @throws dml_exception
      */
     public function __construct(
             $dynamictable,
@@ -74,6 +75,7 @@ class dynamic_table_sql_renderable implements renderable, templatable {
         $this->dynamictable = $dynamictable;
         $this->perpage = $perpage;
         $this->otheroptions = $otheroptions;
+        $this->actionsdefs = $dynamictable->get_defined_actions();
     }
 
     public function export_for_template(renderer_base $output) {
@@ -91,6 +93,15 @@ class dynamic_table_sql_renderable implements renderable, templatable {
         $context->editable = $this->dynamictable->is_editable();
         if ($this->otheroptions) {
             $context->otheroptions = json_encode($this->otheroptions);
+        }
+        $context->actionsdefs = json_encode([]);
+        if ($this->dynamictable->get_defined_actions()) {
+            $actions = $this->dynamictable->get_defined_actions();
+            $actions = array_map(function($a) {
+                $a->url = !empty($a->url) ? $a->url->out(false) : '';
+                return $a;
+            }, $actions);
+            $context->actionsdefs = json_encode($actions);
         }
         return $context;
     }

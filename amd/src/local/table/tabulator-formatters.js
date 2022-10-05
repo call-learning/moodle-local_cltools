@@ -21,6 +21,7 @@
  */
 import moment from 'local_cltools/local/moment-lazy';
 import {entityLookup} from "./tabulator-entity-lookup";
+import {genericLookup} from "./tabulator-generic-lookup";
 
 export const TABULATOR_FORMATTERS = {
     uppercase: function (cell) {
@@ -50,5 +51,10 @@ export const TABULATOR_FORMATTERS = {
         const lookup = entityLookup(formatterParams.entityclass, formatterParams.displayfield);
         const value = cell.getValue();
         return lookup[value];
-    }
+    },
+    'generic_lookup':  (cell, formatterParams) => {
+        const lookup = genericLookup(formatterParams.type);
+        const value = cell.getValue();
+        return lookup[value];
+    },
 };

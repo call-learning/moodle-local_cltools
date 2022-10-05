@@ -50,6 +50,7 @@ class get_columns extends external_api {
      * @param array|null $filters The filters that will be applied in the request.
      * @param int|null $jointype The join type.
      * @param bool|false $editable editable ?
+     * @param array|null $actionsdefs Actions definition
      *
      * @return array
      * @throws invalid_parameter_exception
@@ -61,7 +62,8 @@ class get_columns extends external_api {
             ?array $sortdata = [],
             ?array $filters = [],
             ?int $jointype = filter::JOINTYPE_NONE,
-            ?bool $editable = false
+            ?bool $editable = false,
+            ?array $actionsdefs = []
     ) {
         [
                 'handler' => $handler,
@@ -71,6 +73,7 @@ class get_columns extends external_api {
                 'filters' => $filters,
                 'jointype' => $jointype,
                 'editable' => $editable,
+                'actionsdefs' => $actionsdefs,
         ] = self::validate_parameters(self::execute_parameters(), [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
@@ -79,8 +82,9 @@ class get_columns extends external_api {
                 'filters' => $filters,
                 'jointype' => $jointype,
                 'editable' => $editable,
+                'actionsdefs' => $actionsdefs,
         ]);
-        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable);
+        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable, $actionsdefs);
         $context = helper::get_current_context();
         $instance->validate_access($context);
         helper::setup_filters($instance, $filters, $jointype);

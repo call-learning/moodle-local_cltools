@@ -21,9 +21,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-import {call as ajaxCall} from "core/ajax";
 import Notification from 'core/notification';
+import {setTableValue, validateTableValue} from "./repository";
 
 /**
  * Format warning
@@ -55,14 +54,7 @@ export const validateRemote = async (tableHandler, tableHandlerParams, tableUniq
         field: cell.getField(),
         value: JSON.stringify(value)
     };
-    return await Promise.race(
-        ajaxCall(
-            [{
-                methodname: 'cltools_dynamic_table_validate_value',
-                args: args
-            }]
-        )
-    ).catch(Notification.exception).then(
+    return await validateTableValue(args).catch(Notification.exception).then(
         (result) => {
             const message = formatWarnings(result);
             if (message) {
@@ -92,14 +84,7 @@ export const cellEdited = (tableHandler, tableHandlerParams,tableUniqueid, data)
         oldvalue: JSON.stringify(data.getOldValue()),
 
     };
-    return Promise.race(
-        ajaxCall(
-            [{
-                methodname: 'cltools_dynamic_table_set_value',
-                args: args
-            }]
-        )
-    ).catch(Notification.exception).then(
+    return setTableValue(args).catch(Notification.exception).then(
         (result) => {
             if (result && result.success) {
                 document.dispatchEvent(new CustomEvent('tabulator-cell-edited', args));

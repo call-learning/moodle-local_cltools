@@ -59,7 +59,12 @@ class entity_lookup extends external_api {
                 'entityclass' => $entityclass,
                 'displayfield' => $displayfield,
         ]);
-        $values = [];
+        $values = [
+                [
+                        'id' => 0,
+                        'value' => get_string('notavailable', 'local_cltools')
+                ]
+        ];
         $warnings = [];
         $context = helper::get_current_context();
         self::validate_context($context);
@@ -68,8 +73,7 @@ class entity_lookup extends external_api {
             throw new restricted_context_exception();
         }
         try {
-            $values = entity_selector::entity_lookup($entityclass, $displayfield);
-            $values[0] = get_string('notavailable', 'local_cltools');
+            $values = array_merge($values, entity_selector::entity_lookup($entityclass, $displayfield));
         } catch (moodle_exception $e) {
             $warnings[] = (object) [
                     'item' => $entityclass,
@@ -80,7 +84,7 @@ class entity_lookup extends external_api {
             ];
         }
         return [
-                'values' => json_encode($values),
+                'values' => $values,
                 'warnings' => $warnings
         ];
     }
@@ -117,7 +121,14 @@ class entity_lookup extends external_api {
     public static function execute_returns() {
         return new external_single_structure(
                 array(
-                        'values' => new external_value(PARAM_RAW, 'Associative array as json.'),
+                        'values' => new \external_multiple_structure(
+                                new external_single_structure(
+                                        [
+                                                'id' => new external_value(PARAM_INT, 'entity id'),
+                                                'value' => new external_value(PARAM_RAW, 'display value'),
+                                        ]
+                                )
+                        ),
                         'warnings' => new external_warnings()
                 )
         );

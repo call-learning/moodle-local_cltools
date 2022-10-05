@@ -52,8 +52,9 @@ class get_rows extends external_api {
      * @param string $uniqueid Unique ID for the container.
      * @param array|null $sortdata The columns and order to sort by
      * @param array|null $filters The filters that will be applied in the request.
-     * @param string|null $jointype The join type.
+     * @param int|null $jointype The join type.
      * @param bool|null $editable
+     * @param array|null $actionsdefs Actions definition
      * @param array|null $hiddencolumns *
      * @param int|null $pagenumber The page number.
      * @param int|null $pagesize The number of records.
@@ -63,44 +64,47 @@ class get_rows extends external_api {
      * @throws dml_exception
      */
     public static function execute(
-            string $handler,
-            string $handlerparams,
-            string $uniqueid,
-            ?array $sortdata = [],
-            ?array $filters = [],
-            ?int $jointype = filter::JOINTYPE_NONE,
-            ?bool $editable = false,
-            ?array $hiddencolumns = [],
-            ?int $pagenumber = null,
-            ?int $pagesize = null
+        string $handler,
+        string $handlerparams,
+        string $uniqueid,
+        ?array $sortdata = [],
+        ?array $filters = [],
+        ?int $jointype = filter::JOINTYPE_NONE,
+        ?bool $editable = false,
+        ?array $actionsdefs = [],
+        ?array $hiddencolumns = [],
+        ?int $pagenumber = null,
+        ?int $pagesize = null
     ) {
         global $PAGE;
         [
-                'handler' => $handler,
-                'handlerparams' => $handlerparams,
-                'uniqueid' => $uniqueid,
-                'sortdata' => $sortdata,
-                'filters' => $filters,
-                'jointype' => $jointype,
-                'editable' => $editable,
-                'pagenumber' => $pagenumber,
-                'pagesize' => $pagesize,
-                'hiddencolumns' => $hiddencolumns
+            'handler' => $handler,
+            'handlerparams' => $handlerparams,
+            'uniqueid' => $uniqueid,
+            'sortdata' => $sortdata,
+            'filters' => $filters,
+            'jointype' => $jointype,
+            'editable' => $editable,
+            'actionsdefs' => $actionsdefs,
+            'pagenumber' => $pagenumber,
+            'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns
         ] = self::validate_parameters(self::execute_parameters(), [
-                'handler' => $handler,
-                'handlerparams' => $handlerparams,
-                'uniqueid' => $uniqueid,
-                'sortdata' => $sortdata,
-                'filters' => $filters,
-                'jointype' => $jointype,
-                'editable' => $editable,
-                'pagenumber' => $pagenumber,
-                'pagesize' => $pagesize,
-                'hiddencolumns' => $hiddencolumns
+            'handler' => $handler,
+            'handlerparams' => $handlerparams,
+            'uniqueid' => $uniqueid,
+            'sortdata' => $sortdata,
+            'filters' => $filters,
+            'jointype' => $jointype,
+            'editable' => $editable,
+            'actionsdefs' => $actionsdefs,
+            'pagenumber' => $pagenumber,
+            'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns
         ]);
 
         /* @var $instance dynamic_table_interface the dynamic table itself */
-        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid);
+        $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable, $actionsdefs);
 
         helper::setup_filters($instance, $filters, $jointype);
 
@@ -126,12 +130,12 @@ class get_rows extends external_api {
              that will then be hidden but keep reference to the row unique identifier.");
         }
         $returnval = [
-                'data' => array_map(
-                        function($r) {
-                            return json_encode($r);
-                        },
-                        $rows
-                )
+            'data' => array_map(
+                function($r) {
+                    return json_encode($r);
+                },
+                $rows
+            )
         ];
         if ($instance->is_pageable()) {
             $returnval['pagescount'] = floor($instance->get_total_rows() / $instance->get_page_size());
@@ -147,32 +151,32 @@ class get_rows extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
-                array_merge(
-                        helper::get_table_query_basic_parameters(), [
-                                'hiddencolumns' => new external_multiple_structure(
-                                        new external_value(
-                                                PARAM_ALPHANUMEXT,
-                                                'Name of column',
-                                                VALUE_REQUIRED,
-                                                null
-                                        ),
-                                        VALUE_DEFAULT,
-                                        []
-                                ),
-                                'pagenumber' => new external_value(
-                                        PARAM_INT,
-                                        'The page number',
-                                        VALUE_DEFAULT,
-                                        -1
-                                ),
-                                'pagesize' => new external_value(
-                                        PARAM_INT,
-                                        'The number of records per page',
-                                        VALUE_DEFAULT,
-                                        0
-                                )
-                        ]
-                )
+            array_merge(
+                helper::get_table_query_basic_parameters(), [
+                    'hiddencolumns' => new external_multiple_structure(
+                        new external_value(
+                            PARAM_ALPHANUMEXT,
+                            'Name of column',
+                            VALUE_REQUIRED,
+                            null
+                        ),
+                        VALUE_DEFAULT,
+                        []
+                    ),
+                    'pagenumber' => new external_value(
+                        PARAM_INT,
+                        'The page number',
+                        VALUE_DEFAULT,
+                        -1
+                    ),
+                    'pagesize' => new external_value(
+                        PARAM_INT,
+                        'The number of records per page',
+                        VALUE_DEFAULT,
+                        0
+                    )
+                ]
+            )
         );
     }
 
@@ -184,10 +188,10 @@ class get_rows extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-                'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
-                'data' => new external_multiple_structure(
-                        new external_value(PARAM_RAW, 'JSON encoded values in return.')
-                )
+            'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
+            'data' => new external_multiple_structure(
+                new external_value(PARAM_RAW, 'JSON encoded values in return.')
+            )
         ]);
     }
 }

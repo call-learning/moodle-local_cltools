@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * AMD module to store the entity lookup values
+ * AMD module to store the moodle entity lookup values (non persistent, just straight tables)
  *
  * @module   local_cltools/table/tabulator-entity-lookup.js
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -21,40 +21,34 @@
  */
 
 import Notification from 'core/notification';
-import {entityTableLookup} from "./repository";
+import {genericTableLookup} from "./repository";
 
-
-const ENTITY_LOOKUP_PREFIX = "entityLookup";
-
+const GENERIC_LOOKUP_PREFIX = "genericLookup";
 /**
  * Compute Prefix
- * @param {string} entityclass
- * @param {string} displayfield
+ * @param {string} mtype
  */
-const computePrefix = (entityclass, displayfield) => ENTITY_LOOKUP_PREFIX + "_" + entityclass + "_" + displayfield;
+const computePrefix = (mtype) => GENERIC_LOOKUP_PREFIX + "_" + mtype;
 /**
- * Entity Lookup
- * @param {string} entityclass
- * @param {string} displayfield
+ * Moodle Entity Lookup
+ * @param {string} mtype
  * @return {Array}
  */
-export const entityLookup = (entityclass, displayfield) => {
-    const values = sessionStorage.getItem(computePrefix(entityclass, displayfield));
+export const genericLookup = (mtype) => {
+    const values = sessionStorage.getItem(computePrefix(mtype));
     return values ? JSON.parse(values) : [];
 };
 
 /**
- * Entity Lookup preparation
- * @param {string} entityclass
- * @param {string} displayfield
+ * Moodle Entity Lookup preparation
+ * @param {string} mtype
  */
-export const prepareEntityLookup = async (entityclass, displayfield) => {
+export const prepareGenericLookup = async (mtype) => {
     window.onbeforeunload = () => {
-        sessionStorage.removeItem(computePrefix(entityclass, displayfield));
+        sessionStorage.removeItem(computePrefix(mtype));
     };
-    const lookupValues = await entityTableLookup({
-        entityclass: entityclass,
-        displayfield: displayfield,
+    const lookupValues = await  genericTableLookup({
+        type: mtype,
     }).catch(Notification.exception)
         .then(
             (result) => {
@@ -68,5 +62,5 @@ export const prepareEntityLookup = async (entityclass, displayfield) => {
                 }
                 return Object.fromEntries(result.values.map(({id, value}) => ([id, value])));
             });
-    sessionStorage.setItem(computePrefix(entityclass, displayfield), JSON.stringify(lookupValues));
+    sessionStorage.setItem(computePrefix(mtype), JSON.stringify(lookupValues));
 };

@@ -492,13 +492,22 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Get defined actions
+     *
+     * @return array associative array of defined actions
+     */
+    public function get_defined_actions() {
+        return $this->actionsdefs;
+    }
+
+    /**
      * @throws coding_exception
      */
     protected function setup_other_fields() {
     }
 
     /**
-     * Format the actions cell.
+     * Format the action cell.
      *
      * @param $row
      * @return string
@@ -509,14 +518,17 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         // That will render a template from a json instead.
         global $OUTPUT;
         $actions = [];
-        foreach ($this->actionsdefs as $k => $a) {
+        foreach ($this->actionsdefs as $a) {
+            if(is_array($a)) {
+                $a = (object) $a;
+            }
             $url = new moodle_url($a->url, ['id' => $row->id]);
             $popupaction = empty($a->popup) ? null :
                     new popup_action('click', $url);
             $actions[] = $OUTPUT->action_icon(
                     $url,
                     new pix_icon($a->icon,
-                            get_string($k, $a->component ?? 'local_cltools')),
+                            get_string($a->name, $a->component ?? 'local_cltools')),
                     $popupaction
             );
         }

@@ -131,7 +131,11 @@ class entity_selector extends persistent_field {
      * @param mixed ...$additionalargs
      */
     public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
-        $choices = static::entity_lookup($this->entityclass, $this->displayfield);
+        $values = static::entity_lookup($this->entityclass, $this->displayfield);
+        $choices = [];
+        foreach ($values as $val) {
+            $choices[$val['id']] = $val['value'];
+        }
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name(), $choices);
         parent::internal_form_add_element($mform);
     }
@@ -147,7 +151,6 @@ class entity_selector extends persistent_field {
      * @throws dml_exception
      */
     public static function entity_lookup($entityclass, $displayfield) {
-        global $DB;
         if ($entityclass && class_exists($entityclass)) {
             $fields = entity_utils::get_defined_fields($entityclass);
             if (empty($displayfield)) {
@@ -157,7 +160,10 @@ class entity_selector extends persistent_field {
                     }
                 }
             }
-            $allrecords = $DB->get_records_menu($entityclass::TABLE, null, "$displayfield ASC", 'id,' . $displayfield);
+            $records = $entityclass::get_records(null, $displayfield, 'ASC');
+            $allrecords = array_map(function($r) use ($displayfield) {
+                return ['id' => $r->get('id'), 'value' => $r->get($displayfield)];
+            }, $records);
             return $allrecords;
         } else {
             return [];

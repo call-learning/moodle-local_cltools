@@ -217,26 +217,28 @@ abstract class base {
     public function instanciate_related_persistent_table() {
         $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
-                'edit' => (object) [
-                        'icon' => 't/edit',
-                        'url' => $this->persistentnavigation->get_edit_url($this->refpersistentclass)
-                ],
-                'view' => (object) [
-                        'icon' => 'e/search',
-                        'url' => $this->persistentnavigation->get_view_url($this->refpersistentclass),
-                ],
-                'delete' => (object) [
-                        'icon' => 't/delete',
-                        'url' => $this->persistentnavigation->get_delete_url($this->refpersistentclass)
-                ]
+            (object) [
+                'name' => 'edit',
+                'icon' => 't/edit',
+                'url' => $this->persistentnavigation->get_edit_url()
+            ],
+            (object) [
+                'name' => 'view',
+                'icon' => 'e/search',
+                'url' => $this->persistentnavigation->get_view_url(),
+            ],
+            (object) [
+                'name' => 'delete',
+                'icon' => 't/delete',
+                'url' => $this->persistentnavigation->get_delete_url()
+            ]
         ];
-        $listentity = null;
         $reflectionclass = $this->get_related_class('table');
         if ($reflectionclass) {
             $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false, $this->refpersistentclass->getName());
         } else {
             // Default list boilerplate.
-            $listentity = new generic_entity_table(null, null, false, $this->refpersistentclass->getName());
+            $listentity = new generic_entity_table(null, $actionsdefs, false, $this->refpersistentclass->getName());
         }
         return $listentity;
     }

@@ -25,7 +25,6 @@
 import Tabulator from 'local_cltools/local/table/tabulator-lazy';
 import moment from 'local_cltools/local/moment-lazy';
 import $ from 'jquery';
-import {call as ajaxCall} from 'core/ajax';
 import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 import {columnSetup} from './tabulator-converters';
@@ -33,9 +32,17 @@ import {cellEdited} from './tabulator-edition';
 import {convertFiltersToMoodle, convertInitialFilter} from './moodle-filter-converters';
 import {TABULATOR_FORMATTERS} from "./tabulator-formatters";
 import {TABULATOR_EDITORS} from "./tabulator-editors";
+import {getTableColumns, getTableRows} from "./repository";
 
 
-const rowQuery = (tableHandler, tableHandlerParams, tableUniqueid, pageSize, params, initialFilters, tableEditable) => {
+const rowQuery = (tableHandler,
+                  tableHandlerParams,
+                  tableUniqueid,
+                  pageSize,
+                  params,
+                  initialFilters,
+                  tableEditable,
+                  tableActionsDefs) => {
     let joinType;
     let filters = convertFiltersToMoodle(params.filters);
     [joinType, filters] = convertInitialFilter(initialFilters, filters);
@@ -53,16 +60,10 @@ const rowQuery = (tableHandler, tableHandlerParams, tableUniqueid, pageSize, par
         pagenumber: params.page,
         pagesize: pageSize,
         hiddencolumns: [],
-        editable: tableEditable
+        editable: tableEditable,
+        actionsdefs: tableActionsDefs
     };
-    return Promise.race(
-        ajaxCall(
-            [{
-                methodname: 'cltools_dynamic_table_get_rows',
-                args: args
-            }]
-        )
-    ).catch(Notification.exception);
+    return getTableRows(args).catch(Notification.exception);
 };
 
 const ajaxResponseProcessor = function (url, params, response) {
@@ -86,6 +87,7 @@ export const init = async (tabulatorelementid) => {
         rowClickCallback,
         tableelement.data('tableOtheroptions'),
         tableelement.data('tableEditable'),
+        tableelement.data('tableActionsDefs'),
     );
 };
 export const tableInit = async (
@@ -97,7 +99,8 @@ export const tableInit = async (
     tableFilters,
     rowClickCallback,
     otherOptions,
-    tableEditable
+    tableEditable,
+    tableActionsDefs
 ) => {
     let joinType, filters;
     // Make sure momentjs is defined.
@@ -106,18 +109,15 @@ export const tableInit = async (
     }
     const placeHolderMessage = await getString('table:nodata', 'local_cltools');
     [joinType, filters] = convertInitialFilter(tableFilters, []);
-    let columns = await Promise.race(ajaxCall(
-        [{
-            methodname: 'cltools_dynamic_table_get_columns',
-            args: {
-                handler: tableHandler,
-                handlerparams: tableHandlerParams,
-                uniqueid: tableUniqueId,
-                filters: filters,
-                jointype: joinType,
-                editable: tableEditable
-            }
-        }])).catch(Notification.exception);
+    let columns = await getTableColumns({
+        handler: tableHandler,
+        handlerparams: tableHandlerParams,
+        uniqueid: tableUniqueId,
+        filters: filters,
+        jointype: joinType,
+        editable: tableEditable,
+        actionsdefs: tableActionsDefs
+    }).catch(Notification.exception);
 
 
     Tabulator.prototype.extendModule("format", "formatters", TABULATOR_FORMATTERS);
@@ -128,7 +128,16 @@ export const tableInit = async (
     let options = {
         ajaxRequestFunc: function (url, config, params) {
             const pageSize = this.table.getPageSize();
-            return rowQuery(tableHandler, tableHandlerParams, tableUniqueId, pageSize, params, tableFilters, tableEditable);
+            return rowQuery(
+                tableHandler,
+                tableHandlerParams,
+                tableUniqueId,
+                pageSize,
+                params,
+                tableFilters,
+                tableEditable,
+                tableActionsDefs
+            );
         },
         ajaxURL: true, // If not set the RequestFunct will never be called.
         pagination: "remote",

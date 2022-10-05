@@ -20,7 +20,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {validateRemote} from './tabulator-edition';
-import {entityLookup} from "./tabulator-entity-lookup";
+import {entityLookup, prepareEntityLookup} from "./tabulator-entity-lookup";
+import {prepareGenericLookup} from "./tabulator-generic-lookup";
 
 export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
@@ -63,7 +64,11 @@ export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, 
                 }
                 if (columndef[colprop] === 'entity_lookup') {
                     const params = columndef[colprop + "Params"];
-                    await entityLookup(params.entityclass, params.displayfield);
+                    await prepareEntityLookup(params.entityclass, params.displayfield);
+                }
+                if (columndef[colprop] === 'generic_lookup') {
+                    const params = columndef[colprop + "Params"];
+                    await prepareGenericLookup(params.type);
                 }
             }
         }
