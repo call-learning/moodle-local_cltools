@@ -34,6 +34,7 @@ use lang_string;
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\crud\form\entity_form;
+use local_cltools\local\crud\generic\generic_entity_form_generator;
 use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\crud\navigation\flat_navigation;
 use moodle_exception;
@@ -156,6 +157,9 @@ abstract class base {
         $reflectionclass = $this->get_related_class('form');
         if ($reflectionclass) {
             $formentity = $reflectionclass->newInstanceArgs([$this->actionurl, ['persistent' => $entity]] + $formparameters);
+        } else {
+            $formentity = generic_entity_form_generator::generate($this->refpersistentclass->getName(),
+                    [$this->actionurl, ['persistent' => $entity]] + $formparameters);
         }
         return $formentity;
     }

@@ -105,26 +105,6 @@ class entity_selector extends persistent_field {
     }
 
     /**
-     * Get additional invisible sort field
-     *
-     * Not necessary most of the time
-     *
-     * @param $entityalias
-     * @return string
-     */
-    public function get_additional_util_field() {
-        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
-        $fieldname = $aliasname . $this->displayfield;
-        $field = persistent_field::get_instance_from_def($fieldname, [
-                        "fullname" => $fieldname,
-                        "rawtype" => PARAM_RAW,
-                        "type" => "hidden"
-                ]
-        );
-        return $field;
-    }
-
-    /**
      * Add element onto the form
      *
      * @param MoodleQuickForm $mform

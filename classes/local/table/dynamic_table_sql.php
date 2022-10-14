@@ -278,9 +278,9 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         $fieldlist = [];
         foreach ($this->fields as $field) {
             $fieldname = $field->get_name();
-            $this->fieldaliases[$fieldname] = "entity.{$fieldname}";
+            $this->fieldaliases[$fieldname] = "{$tablealias}.{$fieldname}";
             $fieldlist[] = $this->internal_get_sql_for_field($field, $tablealias);
-            $additionalfields = $field->get_additional_fields('entity');
+            $additionalfields = $field->get_additional_fields($tablealias);
             foreach ($additionalfields as $f) {
                 $fieldlist[] = $f;
             }

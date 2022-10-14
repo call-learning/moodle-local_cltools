@@ -28,6 +28,8 @@ use coding_exception;
 use core_renderer;
 use dml_exception;
 use local_cltools\local\crud\entity_utils;
+use local_cltools\local\crud\generic\generic_entity_exporter;
+use local_cltools\local\crud\generic\generic_entity_exporter_generator;
 use moodle_exception;
 use moodle_page;
 use moodle_url;
@@ -111,10 +113,21 @@ class crud_view extends base {
         $entity = $this->refpersistentclass->newInstance($id);
         $returnedtext .= $this->renderer->container_start();
         $relatedexporter = $this->instanciate_related_exporter($entity);
-        $returnedtext .= $this->renderer->render_from_template(
-                "$persistentcomponent/$persistentprefix",
-                $relatedexporter->export($this->renderer)
-        );
+        if (empty($relatedexporter)) {
+            // Create a dummy exporter and make sure we point to the right class.
+            $relatedexporter = generic_entity_exporter_generator::generate($this->refpersistentclass->getName(), $entity);
+
+            $exportedvalue = $relatedexporter->export($this->renderer);
+            $returnedtext .= $this->renderer->render_from_template(
+                    "local_cltools/persistent_info",
+                    $exportedvalue
+            );
+        } else {
+            $returnedtext .= $this->renderer->render_from_template(
+                    "$persistentcomponent/$persistentprefix",
+                    $relatedexporter->export($this->renderer)
+            );
+        }
         $returnedtext .= $this->renderer->container_end();
         $this->trigger_event($entity);
         return $returnedtext;

@@ -70,7 +70,7 @@ class generic_selector extends persistent_field {
                     return $values;
                 }
                 foreach ($DB->get_recordset('user') as $user) {
-                    $userdisplay = fullname($user) . " ($user->email)";
+                    $userdisplay = ucwords(fullname($user)) . " ($user->email)";
 
                     $values[] = [
                             'id' => $user->id,

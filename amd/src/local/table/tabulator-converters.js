@@ -21,7 +21,7 @@
  */
 import {validateRemote} from './tabulator-edition';
 import {entityLookup, prepareEntityLookup} from "./tabulator-entity-lookup";
-import {prepareGenericLookup} from "./tabulator-generic-lookup";
+import {genericLookup, prepareGenericLookup} from "./tabulator-generic-lookup";
 
 export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
@@ -38,10 +38,24 @@ export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, 
                 transformer: (coldef) => {
                     const entityClass = coldef.filterParams.entityclass;
                     const displayField = coldef.filterParams.displayfield;
-                    coldef.filterParams = {values: entityLookup(entityClass, displayField)};
+                    coldef.filterParams = {
+                        values: entityLookup(entityClass, displayField),
+                        allowEmpty: true,
+                        showListOnEmpty: true
+                    };
                     coldef.headerFilterFunc = '=';
-                    coldef.showListOnEmpty = true;
-                    coldef.allowEmpty = true;
+                    return coldef;
+                }
+            },
+            'generic_lookup': {
+                to: 'autocomplete',
+                transformer: (coldef) => {
+                    coldef.filterParams = {
+                        values: genericLookup(coldef.filterParams.type),
+                        allowEmpty: true,
+                        showListOnEmpty: true
+                    };
+                    coldef.headerFilterFunc = '=';
                     return coldef;
                 }
             }

@@ -126,19 +126,19 @@ class entity_table extends dynamic_table_sql {
      * @param string $tablealias
      */
     protected function internal_get_sql_fields($tablealias = 'e') {
-        return parent::internal_get_sql_fields('entity');
+        return parent::internal_get_sql_fields($tablealias);
     }
 
     /**
      * Overridable sql query
      */
-    protected function internal_get_sql_from($tablealias = 'entity') {
+    protected function internal_get_sql_from($tablealias = 'e') {
         $persistentclass = $this->define_class();
         $from = $persistentclass::TABLE;
-        $from = '{' . $from . '} entity';
+        $from = '{' . $from . '} '.$tablealias;
         // Add joins.
         foreach ($this->fields as $field) {
-            $additionalfrom = $field->get_additional_from('entity');
+            $additionalfrom = $field->get_additional_from($tablealias);
             $from .= " " . $additionalfrom;
         }
         return $from;
