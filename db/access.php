@@ -17,8 +17,6 @@
 /**
  * Access for different parts of Cltools
  *
- *
- *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,37 +24,37 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-    'local/cltools:dynamictableread' => array(
-        'riskbitmask' => RISK_SPAM,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
+        'local/cltools:dynamictableread' => array(
+                'riskbitmask' => RISK_SPAM,
+                'captype' => 'read',
+                'contextlevel' => CONTEXT_SYSTEM,
+                'archetypes' => array(
+                        'manager' => CAP_ALLOW
+                )
+        ),
+        'local/cltools:dynamictablewrite' => array(
+                'riskbitmask' => RISK_SPAM,
+                'captype' => 'write',
+                'contextlevel' => CONTEXT_SYSTEM,
+                'archetypes' => array(
+                        'manager' => CAP_ALLOW
+                )
+        ),
+        'local/cltools:entitylookup' => array(
+                'riskbitmask' => RISK_SPAM,
+                'captype' => 'read',
+                'contextlevel' => CONTEXT_SYSTEM,
+                'archetypes' => array(
+                        'manager' => CAP_ALLOW
+                )
+        ),
+        'local/cltools:viewentityfiles' => array(
+                'riskbitmask' => RISK_SPAM,
+                'captype' => 'read',
+                'contextlevel' => CONTEXT_SYSTEM,
+                'archetypes' => array(
+                        'manager' => CAP_ALLOW,
+                        'user' => CAP_ALLOW,
+                )
         )
-    ),
-    'local/cltools:dynamictablewrite' => array(
-        'riskbitmask' => RISK_SPAM,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
-    'local/cltools:entitylookup' => array(
-        'riskbitmask' => RISK_SPAM,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
-    'local/cltools:viewentityfiles' => array(
-        'riskbitmask' => RISK_SPAM,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW,
-            'user' => CAP_ALLOW,
-        )
-    )
 );

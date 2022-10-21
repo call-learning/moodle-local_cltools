@@ -13,33 +13,38 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Form accept routine
+ * Form accept routines
  *
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\forms;
+namespace local_cltools\local\form;
 
 use core\output\mustache_template_finder;
 use Exception;
+use MoodleQuickForm;
 use templatable;
 
+/**
+ * Form accept routines trait
+ *
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 trait form_element_accept {
     /**
      * Accepts a renderer, but tweak it to render the right local template
      *
-     * @param object     An HTML_QuickForm_Renderer object
-     * @param bool       Whether an element is required
-     * @param string     An error message associated with an element
-     * @access public
-     * @return void
+     * @param MoodleQuickForm $renderer
+     * @param bool $required Whether an element is required
+     * @param string|null $error An error message associated with an element
      */
-    public function accept(&$renderer, $required = false, $error = null) {
+    public function accept(MoodleQuickForm &$renderer, $required = false, string $error = null) {
         // Make sure the element has an id.
         $this->_generateId();
         $advanced = isset($renderer->_advancedElements[$this->getName()]);
@@ -48,7 +53,7 @@ trait form_element_accept {
         if ($renderer->_inGroup) {
             $this->_groupElementTemplate = $html;
         }
-        if (($renderer->_inGroup) and !empty($this->_groupElementTemplate)) {
+        if (($renderer->_inGroup) && !empty($this->_groupElementTemplate)) {
             $this->_groupElementTemplate = $html;
         } else if (!isset($this->_templates[$this->getName()])) {
             $renderer->_templates[$this->getName()] = $html;
@@ -68,15 +73,15 @@ trait form_element_accept {
      *
      * *Ideally* we should be able to override the renderer in the local plugin.
      *
-     * @param $element
-     * @param $required
-     * @param $advanced
-     * @param $error
-     * @param $ingroup
-     * @param $renderer
+     * @param MoodleQuickForm $element
+     * @param bool $required
+     * @param bool $advanced
+     * @param string $error
+     * @param bool $ingroup
      * @return false
      */
-    protected function render_from_local_template($element, $required, $advanced, $error, $ingroup) {
+    protected function render_from_local_template(MoodleQuickForm $element, bool $required, bool $advanced, string $error,
+            bool $ingroup) {
         global $PAGE;
         $localrenderer = $PAGE->get_renderer('local_cltools');
         $templatename = 'local_cltools/element-' . $element->getType();

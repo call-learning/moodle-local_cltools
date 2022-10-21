@@ -48,6 +48,7 @@ class get_columns_test extends advanced_testcase {
 
     /**
      * Test an API function
+     * @covers \local_cltools\local\table\external\get_columns
      */
     public function test_get_table_columns_not_logged_in() {
         $this->expectException('require_login_exception');
@@ -56,6 +57,7 @@ class get_columns_test extends advanced_testcase {
 
     /**
      * Test an API function
+     * @covers \local_cltools\local\table\external\get_columns
      */
     public function test_get_table_columns() {
         $this->setAdminUser();
@@ -65,18 +67,25 @@ class get_columns_test extends advanced_testcase {
         $this->assertEquals($expected, $columns);
     }
 
+    /**
+     * Expected results
+     */
     const EXPECTED_COLUMNS_JSON = '[
     {
         "title": "shortname",
         "field": "shortname",
         "visible": true,
-        "filter": "input"
+        "filter": "input",
+        "headerSort": true,
+        "formatter": "textarea"
     },
     {
         "title": "idnumber",
         "field": "idnumber",
         "visible": true,
-        "filter": "input"
+        "filter": "input",
+        "headerSort": true,
+        "formatter": "textarea"
     },
     {
         "title": "description",
@@ -89,15 +98,17 @@ class get_columns_test extends advanced_testcase {
         "visible": true,
         "headerSort": true,
         "formatter": "entity_lookup",
-        "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"\"}",
+        "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"shortname\"}",
         "filter": "entity_lookup",
-        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"\"}"
+        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\simple\\\\\\\\entity\",\"displayfield\":\"shortname\"}"
     },
     {
         "title": "path",
         "field": "path",
         "visible": true,
-        "filter": "input"
+        "filter": "input",
+        "headerSort": true,
+        "formatter": "textarea"
     },
     {
         "title": "sortorder",
@@ -113,9 +124,9 @@ class get_columns_test extends advanced_testcase {
         "visible": true,
         "headerSort": true,
         "formatter": "entity_lookup",
-        "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"\"}",
+        "formatterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"shortname\"}",
         "filter": "entity_lookup",
-        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"\"}"
+        "filterParams": "{\"entityclass\":\"local_cltools\\\\\\\\othersimple\\\\\\\\entity\",\"displayfield\":\"shortname\"}"
     },
     {
         "title": "scaleid",

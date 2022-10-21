@@ -21,7 +21,6 @@ use context;
 use context_system;
 use core_table\local\filter\filter;
 use external_api;
-use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
@@ -52,74 +51,74 @@ class helper extends external_api {
      * Note that we include filters as they can somewhat have an influcence on columns
      * selected too.
      *
-     * @return external_function_parameters
+     * @return array
      */
     public static function get_table_query_basic_parameters(): array {
         return array_merge(
-            self::get_query_basic_parameters(), [
-                'sortdata' => new external_multiple_structure(
-                    new external_single_structure([
-                        'sortby' => new external_value(
-                            PARAM_ALPHANUMEXT,
-                            'The name of a sortable column',
-                            VALUE_REQUIRED
+                self::get_query_basic_parameters(), [
+                        'sortdata' => new external_multiple_structure(
+                                new external_single_structure([
+                                        'sortby' => new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'The name of a sortable column',
+                                                VALUE_REQUIRED
+                                        ),
+                                        'sortorder' => new external_value(
+                                                PARAM_ALPHANUMEXT,
+                                                'The direction that this column should be sorted by',
+                                                VALUE_REQUIRED
+                                        ),
+                                ]),
+                                'The combined sort order of the table. Multiple fields can be specified.',
+                                VALUE_DEFAULT,
+                                []
                         ),
-                        'sortorder' => new external_value(
-                            PARAM_ALPHANUMEXT,
-                            'The direction that this column should be sorted by',
-                            VALUE_REQUIRED
+                        'filters' => new external_multiple_structure(
+                                new external_single_structure([
+                                        'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
+                                        'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
+                                        'jointype' => new external_value(PARAM_INT, 'Type of join for filter values',
+                                                VALUE_REQUIRED),
+                                        'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL,
+                                                false),
+                                        'values' => new external_multiple_structure(
+                                                new external_value(PARAM_RAW, 'Filter value'),
+                                                'The value to filter on',
+                                                VALUE_REQUIRED
+                                        )
+                                ]),
+                                'The filters that will be applied in the request',
+                                VALUE_DEFAULT,
+                                []
                         ),
-                    ]),
-                    'The combined sort order of the table. Multiple fields can be specified.',
-                    VALUE_DEFAULT,
-                    []
-                ),
-                'filters' => new external_multiple_structure(
-                    new external_single_structure([
-                        'type' => new external_value(PARAM_ALPHANUMEXT, 'Type of filter', VALUE_REQUIRED),
-                        'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
-                        'jointype' => new external_value(PARAM_INT, 'Type of join for filter values',
-                            VALUE_REQUIRED),
-                        'required' => new external_value(PARAM_BOOL, 'Is this a required filter', VALUE_OPTIONAL,
-                            false),
-                        'values' => new external_multiple_structure(
-                            new external_value(PARAM_RAW, 'Filter value'),
-                            'The value to filter on',
-                            VALUE_REQUIRED
-                        )
-                    ]),
-                    'The filters that will be applied in the request',
-                    VALUE_DEFAULT,
-                    []
-                ),
-                'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_DEFAULT,
-                    filter::JOINTYPE_NONE),
-                'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
-                'actionsdefs' =>
-                    new external_multiple_structure(
-                        new external_single_structure([
-                            'name' => new external_value(
-                                PARAM_ALPHANUMEXT,
-                                'The name of the action',
-                                VALUE_REQUIRED
-                            ),
-                            'url' => new external_value(
-                                PARAM_URL,
-                                'The url to go to when the action button is clicked',
-                                VALUE_REQUIRED
-                            ),
-                            'icon' => new external_value(
-                                PARAM_RAW_TRIMMED,
-                                'The icon name',
-                                VALUE_OPTIONAL,
-                                ''
-                            ),
-                        ]),
-                        'The action definition for this table (action are defined as edit, delete...).',
-                        VALUE_OPTIONAL,
-                        []
-                    ),
-            ]
+                        'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_DEFAULT,
+                                filter::JOINTYPE_NONE),
+                        'editable' => new external_value(PARAM_BOOL, 'Is table editable ?', VALUE_DEFAULT, false),
+                        'actionsdefs' =>
+                                new external_multiple_structure(
+                                        new external_single_structure([
+                                                'name' => new external_value(
+                                                        PARAM_ALPHANUMEXT,
+                                                        'The name of the action',
+                                                        VALUE_REQUIRED
+                                                ),
+                                                'url' => new external_value(
+                                                        PARAM_URL,
+                                                        'The url to go to when the action button is clicked',
+                                                        VALUE_REQUIRED
+                                                ),
+                                                'icon' => new external_value(
+                                                        PARAM_RAW_TRIMMED,
+                                                        'The icon name',
+                                                        VALUE_OPTIONAL,
+                                                        ''
+                                                ),
+                                        ]),
+                                        'The action definition for this table (action are defined as edit, delete...).',
+                                        VALUE_OPTIONAL,
+                                        []
+                                ),
+                ]
         );
     }
 
@@ -129,30 +128,30 @@ class helper extends external_api {
      * Note that we include filters as they can somewhat have an influcence on columns
      * selected too.
      *
-     * @return external_function_parameters
+     * @return array
      */
     public static function get_query_basic_parameters(): array {
         return [
-            'handler' => new external_value(
-            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-            // For now we will have to check manually.
-                PARAM_RAW,
-                'Handler',
-                VALUE_REQUIRED
-            ),
-            'handlerparams' => new external_value(
-            // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-            // For now we will have to check manually.
-                PARAM_RAW,
-                'Handler parameters',
-                VALUE_DEFAULT,
-                ''
-            ),
-            'uniqueid' => new external_value(
-                PARAM_ALPHANUMEXT,
-                'Unique ID for the container',
-                VALUE_REQUIRED
-            ),
+                'handler' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now, we will have to check manually.
+                        PARAM_RAW,
+                        'Handler',
+                        VALUE_REQUIRED
+                ),
+                'handlerparams' => new external_value(
+                // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
+                // For now, we will have to check manually.
+                        PARAM_RAW,
+                        'Handler parameters',
+                        VALUE_DEFAULT,
+                        ''
+                ),
+                'uniqueid' => new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'Unique ID for the container',
+                        VALUE_REQUIRED
+                ),
         ];
     }
 
@@ -164,9 +163,10 @@ class helper extends external_api {
      * @param string $uniqueid
      * @param bool $editable
      * @param object|null $actionsdefs
-     * @return mixed
+     * @return dynamic_table_interface
      */
-    public static function get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable = false, $actionsdefs = null) {
+    public static function get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable = false,
+            $actionsdefs = null): dynamic_table_interface {
         global $CFG;
 
         // Hack alert: this is to make sure we can "see" the test entities class.
@@ -178,7 +178,7 @@ class helper extends external_api {
 
         if (!class_exists($handler)) {
             throw new UnexpectedValueException("Table handler class {$handler} not found. " .
-                "Please make sure that your handler is defined.");
+                    "Please make sure that your handler is defined.");
         }
 
         if (!is_subclass_of($handler, dynamic_table_interface::class)) {
@@ -200,19 +200,19 @@ class helper extends external_api {
     /**
      * Setup filters
      *
-     * @param $instance
-     * @param $filters
-     * @param $jointype
+     * @param dynamic_table_interface $instance
+     * @param array $filters
+     * @param int $jointype
      */
-    public static function setup_filters(&$instance, $filters, $jointype) {
+    public static function setup_filters(dynamic_table_interface &$instance, array $filters, $jointype): void {
         $instanceclass = get_class($instance);
         $filtersetclass = "{$instanceclass}_filterset";
         if (!class_exists($filtersetclass)) {
             $filtertypedef = [];
             foreach ($filters as $rawfilter) {
                 $ftdef = (object) [
-                    'filterclass' => 'local_cltools\\local\filter\\' . $rawfilter['type'],
-                    'required' => !empty($rawfilter['required']),
+                        'filterclass' => 'local_cltools\\local\filter\\' . $rawfilter['type'],
+                        'required' => !empty($rawfilter['required']),
                 ];
                 $filtertypedef[$rawfilter['name']] = $ftdef;
             }
@@ -223,9 +223,9 @@ class helper extends external_api {
         $filterset->set_join_type($jointype);
         foreach ($filters as $rawfilter) {
             $filterset->add_filter_from_params(
-                $rawfilter['name'], // Field name.
-                $rawfilter['jointype'],
-                $rawfilter['values']
+                    $rawfilter['name'], // Field name.
+                    $rawfilter['jointype'],
+                    $rawfilter['values']
             );
         }
 
@@ -236,11 +236,10 @@ class helper extends external_api {
     /**
      * Get current context or global system context
      *
-     * @return context|context_system
+     * @return context
      */
-    public static function get_current_context() {
+    public static function get_current_context(): context {
         global $PAGE;
-        $context = null;
         try {
             $context = $PAGE->context;
             return $context;

@@ -48,7 +48,7 @@ class html extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'html';
         return $format;
@@ -60,7 +60,7 @@ class html extends persistent_field {
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $elementname = $this->get_name() . '_editor';
         $mform->addElement($this->get_form_field_type(), $elementname, $this->get_display_name());
         parent::internal_form_add_element($mform, $elementname);
@@ -72,7 +72,7 @@ class html extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "editor";
     }
 }

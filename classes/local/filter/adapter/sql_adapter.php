@@ -13,6 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * SQL query adapter for filter
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace local_cltools\local\filter\adapter;
 
 /**

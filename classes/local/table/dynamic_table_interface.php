@@ -40,19 +40,19 @@ interface dynamic_table_interface {
      * the given string, and the sort_default_order to the given integer.
      *
      * @param bool $bool
-     * @param string $defaultcolumn
+     * @param string|null $defaultcolumn
      * @param int $defaultorder
      * @return void
      */
-    public function set_sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC);
+    public function set_sortable(bool $bool, ?string $defaultcolumn, int $defaultorder = SORT_ASC): void;
 
     /**
      * Is the column sortable?
      *
-     * @param string column name, null means table
+     * @param string|null $column column name, null means table
      * @return bool
      */
-    public function is_sortable($column = null);
+    public function is_sortable(?string $column): bool;
 
     /**
      * Sets the use_pages variable to the given boolean.
@@ -60,7 +60,7 @@ interface dynamic_table_interface {
      * @param bool $bool
      * @return void
      */
-    public function set_pageable($bool);
+    public function set_pageable(bool $bool): void;
 
     /**
      * Sets the pagesize variable to the given integer, the totalrows variable
@@ -70,7 +70,7 @@ interface dynamic_table_interface {
      * @param int $total
      * @return void
      */
-    public function set_pagesize($perpage, $total);
+    public function set_pagesize(int $perpage, int $total): void;
 
     /**
      * Is paged
@@ -87,14 +87,18 @@ interface dynamic_table_interface {
     public function get_total_rows(): int;
 
     /**
+     * Get page start
+     *
      * @return int the offset for LIMIT clause of SQL
      */
-    public function get_page_start();
+    public function get_page_start(): int;
 
     /**
+     * Get page size
+     *
      * @return int the pagesize for LIMIT clause of SQL
      */
-    public function get_page_size();
+    public function get_page_size(): int;
 
     /**
      * Get uniqueid for this table
@@ -113,8 +117,7 @@ interface dynamic_table_interface {
     /**
      * Set the preferred table sorting attributes.
      *
-     * @param string $sortby The field to sort by.
-     * @param int $sortorder The sort order.
+     * @param array $sortdata
      */
     public function set_sortdata(array $sortdata): void;
 
@@ -160,8 +163,8 @@ interface dynamic_table_interface {
      *
      * @param context $context
      * @param bool $writeaccess
-     * @return mixed
+     * @return bool
      */
-    public function validate_access(context $context, $writeaccess = false);
+    public static function validate_access(context $context, bool $writeaccess = false): bool;
 
 }

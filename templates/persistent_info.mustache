@@ -20,15 +20,14 @@
 
     Example context (json):
     {
-        "usermodifiedfullname": user full name,
-        "timemodified": <int timestamp>,
-        "timecreated":  <int timestamp>,
-
+        "usermodifiedfullname": "user full name",
+        "timemodified": 1666676787,
+        "timecreated":  1666676787
     }
 }}
 <div class="persistent-info">
-    <div><span class="usermodified">{{#str}}usermodified, local_cltools{{/str}}:</span>{{usermodifiedfullname}}({{usermodified}})</div>
-    <div><span class="timemodified">{{#str}}timemodified, local_cltools{{/str}}:</span>
+    <div><span class="usermodified">{{#str}}usermodified, local_cltools{{/str}}: </span>{{usermodifiedfullname}}</div>
+    <div><span class="timemodified">{{#str}}timemodified, local_cltools{{/str}}: </span>
         {{#userdate}} {{timemodified}}, {{#str}} strftimedate {{/str}} {{/userdate}}
     </div>
     <div><span class="timecreated">{{#str}}timecreated, local_cltools{{/str}}:</span>

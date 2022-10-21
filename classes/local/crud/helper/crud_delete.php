@@ -24,13 +24,8 @@
 
 namespace local_cltools\local\crud\helper;
 
-use coding_exception;
-use core_renderer;
-use dml_exception;
 use local_cltools\local\crud\entity_utils;
-use moodle_exception;
 use moodle_url;
-use ReflectionException;
 
 /**
  * Class crud_helper
@@ -56,35 +51,32 @@ class crud_delete extends base {
     /**
      * crud_helper constructor.
      *
-     * @param string $entityclassname
-     * @param string $action
-     * @param core_renderer $renderer
-     * @throws ReflectionException
+     * @param string $entityclassname the related entity class name
+     * @param string|null $entityprefix optional entity prefix
+     * @param string|null $formclassname optional form class name
+     * @param string|null $tableclassname optional table classname
+     * @param string|null $exporterclassname optional exporter classname
+     * @param object|null $persistentnavigation optional persitent navigation
      */
     public function __construct(string $entityclassname,
-            $entityprefix = null,
-            $formclassname = null,
-            $listclassname = null,
-            $exporterclassname = null,
-            $persistentnavigation = null,
-            $pagesrooturl = null
+            ?string $entityprefix,
+            ?string $formclassname,
+            ?string $tableclassname,
+            ?string $exporterclassname,
+            ?object $persistentnavigation
     ) {
-        parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-                $exporterclassname, $persistentnavigation, $pagesrooturl);
+        parent::__construct($entityclassname, $entityprefix, $formclassname, $tableclassname,
+                $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_delete_url();
     }
 
     /**
      * Process the action
      *
-     * @param null $postprocesscb
-     * @return mixed
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
-     * @throws ReflectionException
+     * @param callable $postprocesscb
+     * @return string
      */
-    public function action_process($postprocesscb = null) {
+    public function action_process($postprocesscb = null): string {
         $returnedtext = '';
         $confirm = optional_param('confirm', false, PARAM_BOOL);
         $id = required_param('id', PARAM_INT);

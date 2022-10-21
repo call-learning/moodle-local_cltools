@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Persistent utils class
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local\crud;
 
 use coding_exception;
@@ -38,6 +29,13 @@ use moodle_url;
 use ReflectionClass;
 use ReflectionException;
 
+/**
+ * Persistent utils class
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class entity_utils {
 
     /**
@@ -48,6 +46,9 @@ class entity_utils {
             'select' => 'slct',
             'from' => 'frm',
     ];
+    /**
+     * Properties that are usually reserved
+     */
     const RESERVED_PROPERTIES = array('id', 'timecreated', 'timemodified', 'usermodified');
     /**
      * Default plugin component name
@@ -57,14 +58,14 @@ class entity_utils {
     /**
      * Get string for given entity
      *
-     * @param $persistentclass
-     * @param $stringname
-     * @params $args
+     * @param ReflectionClass $persistentclass related persistent class
+     * @param string $stringname the language string code
+     * @param mixed $args additional arguments {@see get_string()}
      * @return lang_string|string
      * @throws ReflectionException
      * @throws coding_exception
      */
-    public static function get_string_for_entity($persistentclass, $stringname, $args = null) {
+    public static function get_string_for_entity(ReflectionClass $persistentclass, string $stringname, $args = null) {
         $entityprefix = self::get_persistent_prefix($persistentclass);
         $component = self::get_component($persistentclass);
         $stringmanager = get_string_manager();
@@ -79,11 +80,13 @@ class entity_utils {
     }
 
     /**
-     * @param ReflectionClass| string $persistentclass
+     * Get prefix for persistent class (namespace)
+     *
+     * @param ReflectionClass $persistentclass
      * @return string
      * @throws ReflectionException
      */
-    public static function get_persistent_prefix($persistentclass) {
+    public static function get_persistent_prefix(ReflectionClass $persistentclass) {
         $namespace = static::get_persistent_namespace($persistentclass);
         $namespaceparts = explode('\\', $namespace);
         $persistentprefix = strtolower(end($namespaceparts));
@@ -96,14 +99,11 @@ class entity_utils {
     /**
      * Get persistent namespace
      *
-     * @param ReflectionClass| string $persistentclass
+     * @param ReflectionClass $persistentclass
      * @return string
      * @throws ReflectionException
      */
-    public static function get_persistent_namespace($persistentclass) {
-        if (is_string($persistentclass)) {
-            $persistentclass = new ReflectionClass($persistentclass);
-        }
+    public static function get_persistent_namespace(ReflectionClass $persistentclass) {
         $namespace = $persistentclass->getNamespaceName();
         return $namespace;
     }
@@ -111,10 +111,10 @@ class entity_utils {
     /**
      * Guess the component the persistent class belongs to (from its namespace)
      *
-     * @param $persistentclass
-     * @throws ReflectionException
+     * @param ReflectionClass $persistentclass
+     * @return string
      */
-    public static function get_component($persistentclass) {
+    public static function get_component(ReflectionClass $persistentclass) {
         $namespace = static::get_persistent_namespace($persistentclass);
         $namespacecomp = explode('\\', $namespace);
         $component = self::DEFAULT_PLUGIN_COMPONENT_NAME;
@@ -129,7 +129,7 @@ class entity_utils {
     /**
      * Is a reserved property
      *
-     * @param $propertyname
+     * @param string $propertyname
      * @return bool
      */
     public static function is_reserved_property($propertyname) {
@@ -234,7 +234,7 @@ class entity_utils {
     /**
      * Check if the property is required
      *
-     * The wording "null"/"null allowed" is confusing so we use this method as a way to make
+     * The wording "null"/"null allowed" is confusing, so we use this method as a way to make
      * it less ambiguous.
      *
      * @param array $prop
@@ -252,7 +252,7 @@ class entity_utils {
      * @return mixed
      * @throws coding_exception
      */
-    public static function get_defined_fields($persistentclassname, $nonpersistentfields = false) {
+    public static function get_defined_fields($persistentclassname) {
         $interfaces = class_implements($persistentclassname);
         if (empty($interfaces[enhanced_persistent::class])) {
             throw new coding_exception("The class '{$persistentclassname}' should implemented enhanced_persistent interface");
@@ -263,8 +263,8 @@ class entity_utils {
     /**
      * Validate entity context
      *
-     * @param $entityclass
-     * @param $context
+     * @param string $entityclass
+     * @param context $context
      * @return false|mixed
      */
     public static function validate_entity_access($entityclass, $context) {

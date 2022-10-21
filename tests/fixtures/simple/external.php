@@ -25,10 +25,6 @@
 namespace local_cltools\simple;
 
 use external_api;
-use external_function_parameters;
-use external_multiple_structure;
-use external_single_structure;
-use local_cltools\local\crud\entity_utils;
 
 defined('MOODLE_INTERNAL') || die();
 

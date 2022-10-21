@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_cltools';
-$plugin->release = '1.0.0';
-$plugin->version = 2021100407;
+$plugin->release = '2.0.0';
+$plugin->version = 2022100101;
 $plugin->requires = 2020061500; // Requires this Moodle version (3.9.1).
 $plugin->maturity = MATURITY_ALPHA;

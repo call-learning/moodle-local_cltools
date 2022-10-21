@@ -13,26 +13,29 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Persistent utils class
+ * Trait persistent_linktable_trait: Persistent utils class
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\utils;
 
 /**
- * Trait persistent_linktable_trait
+ * Trait persistent_linktable_trait: Persistent utils class
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 trait persistent_linktable_trait {
-    public static function get_linked_entity_table($fieldname) {
+    /**
+     * Get linked table
+     * @param string $fieldname
+     * @return object
+     */
+    public static function get_linked_entity_table(string $fieldname) {
         return (object) [];
     }
 }

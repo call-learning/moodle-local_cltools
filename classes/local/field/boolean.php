@@ -17,6 +17,8 @@
 namespace local_cltools\local\field;
 
 use coding_exception;
+use core\persistent;
+use renderer_base;
 
 /**
  * Boolean field
@@ -44,10 +46,10 @@ class boolean extends persistent_field {
     /**
      * Get the matching formatter type to be used for display
      *
-     * @return string|null return the type (and null if no formatter)
+     * @return object|null return the type (and null if no formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'tickCross';
         $format->formatterParams = (object) [
@@ -60,10 +62,10 @@ class boolean extends persistent_field {
     /**
      * Get the matching editor type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the editor parameters (and null if no filter)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'tickCross',
                 'editorParams' => (object) [
@@ -80,7 +82,7 @@ class boolean extends persistent_field {
      * @return object
      * @throws coding_exception
      */
-    public function get_column_filter() {
+    public function get_column_filter(): object {
         return (object) [
                 'filter' => 'tickCross',
                 'filterParams' => (object) [
@@ -95,11 +97,12 @@ class boolean extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param bool $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return $value ? get_string('truevalue', 'local_cltools')
                 : get_string('falsevalue', 'local_cltools');
     }
@@ -109,8 +112,9 @@ class boolean extends persistent_field {
      *
      * @param mixed $value
      * @throws field_exception
+     * @return bool
      */
-    public function validate_value($value) {
+    public function validate_value($value): bool {
         $value = strtolower($value);
         if (!$this->is_true_value($value) && !$this->is_false_value($value)) {
             throw new field_exception('invalidvalue', $value);
@@ -123,9 +127,8 @@ class boolean extends persistent_field {
      *
      * @param mixed $value
      * @return bool
-     * @throws coding_exception
      */
-    protected function is_true_value($value) {
+    protected function is_true_value($value): bool {
         return in_array($value, [
                 get_string('truevalue', 'local_cltools'),
                 true,
@@ -140,9 +143,8 @@ class boolean extends persistent_field {
      *
      * @param mixed $value
      * @return bool
-     * @throws coding_exception
      */
-    protected function is_false_value($value) {
+    protected function is_false_value($value): bool {
         return in_array($value, [
                 get_string('falsevalue', 'local_cltools'),
                 false,
@@ -157,7 +159,7 @@ class boolean extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type():string {
         return "advcheckbox";
     }
 }

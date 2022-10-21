@@ -13,11 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 namespace local_cltools\local\table\external;
 defined('MOODLE_INTERNAL') || die;
 
 use context_system;
+use core\event\user_loggedin;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
@@ -44,24 +44,21 @@ class generic_lookup extends external_api {
     /**
      * Entity lookup value
      *
+     * @param string $type
      * @return array
-     * @throws invalid_parameter_exception
-     * @throws restricted_context_exception
      */
-    public static function execute(string $type) {
+    public static function execute(string $type): array {
         [
                 'type' => $type,
         ] = self::validate_parameters(self::execute_parameters(), [
                 'type' => $type,
         ]);
         raise_memory_limit(MEMORY_HUGE);
-        $warnings = [];
-        $context = context_system::instance();
+        $context = isloggedin() ? context_system::instance() : null;
         self::validate_context($context);
         $values = generic_selector::get_generic_entities($type);
         return [
-                'values' => $values,
-                'warnings' => $warnings
+                'values' => $values
         ];
     }
 
@@ -94,8 +91,7 @@ class generic_lookup extends external_api {
                                                 'value' => new external_value(PARAM_RAW, 'display value'),
                                         ]
                                 )
-                        ),
-                        'warnings' => new external_warnings()
+                        )
                 )
         );
     }

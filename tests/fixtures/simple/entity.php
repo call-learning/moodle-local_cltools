@@ -24,7 +24,6 @@
 
 namespace local_cltools\simple;
 
-use coding_exception;
 use core\persistent;
 use ddl_exception;
 use ddl_table_missing_exception;
@@ -34,12 +33,14 @@ use local_cltools\local\field\editor;
 use local_cltools\local\field\entity_selector;
 use local_cltools\local\field\files;
 use local_cltools\local\field\number;
+use local_cltools\local\field\persistent_field;
 use local_cltools\local\field\select_choice;
 use local_cltools\local\field\text;
+use stdClass;
 use xmldb_table;
 
 /**
- * Class rotation
+ * Class Sample entity
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -49,13 +50,40 @@ class entity extends persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 
+    /**
+     * @var $string TABLE
+     */
     const TABLE = 'simple';
+
+
+    /**
+     * Create an instance of this class. Make sure that non persistent fields are removed before
+     * calling from record.
+     *
+     * @param int $id If set, this is the id of an existing record, used to load the data.
+     * @param stdClass|null $record If set will be passed to {@see self::from_record()}.
+     */
+    public function __construct($id = 0, stdClass $record = null) {
+        if (!empty($record)) {
+            // Make sure we remove non persitent fields before we build the entity.
+            $fields = self::define_fields();
+            foreach ($fields as $f) {
+                /* @var persistent_field $f a persistent field */
+                if (!$f->is_persistent()) {
+                    $fname = $f->get_name();
+                    if (isset($record->$fname)) {
+                        unset($record->$fname);
+                    }
+                }
+            }
+        }
+        parent::__construct($id, $record);
+    }
 
     /**
      * Usual properties definition for a persistent
      *
      * @return array|array[]
-     * @throws coding_exception
      */
     public static function define_fields(): array {
         global $CFG;
@@ -66,13 +94,15 @@ class entity extends persistent implements enhanced_persistent {
                 new editor('description'), // Description format is automatically added.
                 new entity_selector([
                         'fieldname' => 'parentid',
-                        'entityclass' => self::class
+                        'entityclass' => self::class,
+                        'displayfield' => 'shortname'
                 ]),
                 new text('path'),
                 new number('sortorder'),
                 new entity_selector([
                         'fieldname' => 'othersimpleid',
-                        'entityclass' => \local_cltools\othersimple\entity::class
+                        'entityclass' => \local_cltools\othersimple\entity::class,
+                        'displayfield' => 'shortname'
                 ]),
                 new select_choice([
                         'fieldname' => 'scaleid',

@@ -22,6 +22,7 @@
  */
 
 import {call as fetchMany} from 'core/ajax';
+
 /**
  * Get all rows from a dynamic table
  *

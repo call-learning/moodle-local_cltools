@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * String filter.
- *
- * @copyright  2020 Simey Lameze <simey@moodle.com>
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 declare(strict_types=1);
 
 namespace local_cltools\local\filter;
@@ -30,10 +21,11 @@ use local_cltools\local\filter\adapter\enhanced_filter_adapter;
 use local_cltools\local\filter\adapter\sql_adapter;
 
 /**
- * Class representing a string filter.
+ * String filter.
  *
- * @package    core
+ * @package    local_cltools
  * @copyright  2020 Simey Lameze <simey@moodle.com>
+ * @copyright  2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class string_filter extends \core_table\local\filter\string_filter implements sql_adapter, enhanced_filter_adapter {

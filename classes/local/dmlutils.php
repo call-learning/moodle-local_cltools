@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Renderable for entities table
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local;
 
 use mysqli_native_moodle_database;
@@ -29,10 +20,16 @@ use oci_native_moodle_database;
 use pgsql_native_moodle_database;
 use sqlsrv_native_moodle_database;
 
+/**
+ * Data model utils
+ *
+ * Intended to retrofit some features found in 3.11
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class dmlutils {
-    /*
-     *
-     */
     /**
      * Group concat was introduced in 3.11 (https://tracker.moodle.org/browse/MDL-52817)
      * We need this to be able to backport this to < 3.11 release
@@ -40,15 +37,15 @@ class dmlutils {
      * @param string $field
      * @param string $separator
      * @param string $sort
-     * @return mixed
+     * @return string
      */
-    public static function get_sql_group_concat(string $field, string $separator = ', ', string $sort = '') {
+    public static function get_sql_group_concat(string $field, string $separator = ', ', string $sort = ''): string {
         global $DB;
         if (method_exists($DB, 'sql_group_concat')) {
             return $DB->sql_group_concat($field, $separator, $sort);
         }
         // Yes, this is ugly, but as it will soon be deprecated as support shifts toward
-        // 3.11 +, this is not worth really trying spend much time on it.
+        // 3.11 +, this is not worth really trying to spend much time on it.
         if (is_a($DB, mysqli_native_moodle_database::class)) {
             $fieldsort = $sort ? "ORDER BY {$sort}" : '';
             return "GROUP_CONCAT({$field} {$fieldsort} SEPARATOR '{$separator}')";

@@ -1,8 +1,14 @@
-# CALL Learning Tools #
+Moodle Local cltools - CAL Learning tools
+==
 
-TODO Describe the plugin shortly here.
 
-TODO Provide more detailed description here.
+Tools used in different project to fill the gap from missing features that are handy:
+* Real JS tables (using tabulator.js)
+* Using a sort of "crude" crud in turn using persistent class and form
+* Additional form elements
+
+This is not production ready for a generic use but right now it is working in some specific case and is due to evolve
+depending on it usage.
 
 ## License ##
 

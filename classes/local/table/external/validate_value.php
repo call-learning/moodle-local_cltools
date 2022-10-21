@@ -22,10 +22,7 @@ use external_function_parameters;
 use external_single_structure;
 use external_value;
 use external_warnings;
-use invalid_parameter_exception;
 use moodle_exception;
-use ReflectionException;
-use restricted_context_exception;
 
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
@@ -47,12 +44,10 @@ class validate_value extends external_api {
      * @param string $handler Dynamic table class name.
      * @param string $handlerparams Handler params
      * @param string $uniqueid Unique ID for the container.
+     * @param int $id ID (table id) for the entity
      * @param string $field fieldname
      * @param string $value value
      * @return array
-     * @throws ReflectionException
-     * @throws invalid_parameter_exception
-     * @throws restricted_context_exception
      */
     public static function execute(
             string $handler,
@@ -78,7 +73,8 @@ class validate_value extends external_api {
         ]);
 
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
-        $instance->validate_access();
+        $context = helper::get_current_context();
+        $instance::validate_access($context);
         $success = false;
         $warnings = array();
         try {

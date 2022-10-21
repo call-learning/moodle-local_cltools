@@ -37,17 +37,24 @@ class table extends entity_table {
     /** @var string The fully qualified classname. */
     protected static $persistentclass = entity::class;
 
-    public function __construct($uniqueid = null,
-            $actionsdefs = null,
-            $editable = false
+    /**
+     * Sets up the page_table parameters.
+     *
+     * @param string|null $uniqueid
+     * @param array|null $actionsdefs
+     * @param bool $editable
+     */
+    public function __construct(?string $uniqueid,
+            ?array $actionsdefs,
+            bool $editable = false
     ) {
         $actionsdefs = [
-                'edit' => (object) [
+                [
                         'url' => 'edit.php',
-                        'icon' => 't/edit'
+                        'icon' => 't/edit',
+                        'name' => 'edit'
                 ]
         ];
         parent::__construct($uniqueid, $actionsdefs, $editable);
     }
-
 }

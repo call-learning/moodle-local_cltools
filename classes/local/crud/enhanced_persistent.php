@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Enhanced entity definition
  *
@@ -23,6 +22,8 @@
  */
 
 namespace local_cltools\local\crud;
+
+use context;
 
 /**
  * Enhanced entity definition
@@ -42,7 +43,14 @@ interface enhanced_persistent {
     /**
      * Get persistent context
      *
-     * @return mixed
+     * @return context|null
      */
-    public function get_context();
+    public function get_context(): ?context;
+
+    /**
+     * Get template name
+     *
+     * @return string|null
+     */
+    public function get_template_name(): ?string;
 }

@@ -13,27 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Persistent object list
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local\crud;
 
-use coding_exception;
 use core\persistent;
-use dml_exception;
 use html_writer;
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_exception;
-use ReflectionException;
 
 /**
- * Persistent list base class
+ * Persistent table base class
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -45,20 +33,6 @@ class entity_table extends dynamic_table_sql {
      * @var string $persistentclass
      */
     protected static $persistentclass = null;
-
-    /**
-     * Sets up the page_table parameters.
-     *
-     * @throws coding_exception
-     * @see page_list::get_filter_definition() for filter definition
-     */
-    public function __construct($uniqueid = null,
-            $actionsdefs = null,
-            $editable = false,
-            $persistentclassname = null
-    ) {
-        parent::__construct($uniqueid, $actionsdefs, $editable);
-    }
 
     /**
      * Define properties (additional properties)
@@ -81,18 +55,14 @@ class entity_table extends dynamic_table_sql {
     /**
      * Set the value of a specific row.
      *
-     * @param $rowid
-     * @param $fieldname
-     * @param $newvalue
-     * @param $oldvalue
+     * @param int $rowid
+     * @param string $fieldname
+     * @param mixed $newvalue
+     * @param mixed $oldvalue
      * @return void
-     *
-     *
      */
-    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
-        /* @var $entity persistent the persistent class */
-        $persistentclass = $this->define_class();
-        $entity = new $persistentclass($rowid);
+    public function set_value($rowid, $fieldname, $newvalue, $oldvalue): void {
+        $entity = $this->get_entity_helper($rowid);
         $field = null;
         foreach ($this->fields as $f) {
             if ($f->get_name() == $fieldname) {
@@ -101,12 +71,36 @@ class entity_table extends dynamic_table_sql {
         }
         if (empty($field)) {
             throw new moodle_exception('fielddoesnotexist', 'local_cltools', null, $fieldname);
+        } else {
+            if (!$field->can_edit()) {
+                throw new moodle_exception('cannoteditfield', 'local_cltools', null, $field->get_display_name());
+            }
+            $entity->set($fieldname, $newvalue);
+            $entity->update();
         }
-        if (empty($field) || !$field->is_editable()) {
-            throw new moodle_exception('cannoteditfield', 'local_cltools', null, $field->get_display_name());
+    }
+
+    /**
+     * Entity retriever helper
+     *
+     * @param int $rowid
+     * @return persistent
+     * @throws \required_capability_exception
+     */
+    private function get_entity_helper($rowid): persistent {
+        /* @var $entity persistent the persistent class */
+        $persistentclass = $this->define_class();
+        $entity = new $persistentclass($rowid);
+        if ($entity instanceof enhanced_persistent) {
+            $context = $entity->get_context();
+        } else {
+            $context = \context_system::instance();
         }
-        $entity->set($fieldname, $newvalue);
-        $entity->update();
+        if (!isloggedin() || !has_capability('local/cltools:dynamictablewrite', $context)) {
+            throw new \required_capability_exception($context,
+                    'local/cltools:dynamictablewrite', 'cannotsetvalue', 'local_cltools');
+        }
+        return $entity;
     }
 
     /**
@@ -119,23 +113,32 @@ class entity_table extends dynamic_table_sql {
     }
 
     /**
-     * Get sql fields
+     * Check if the value is valid for this row, column
      *
-     * Overridable sql query
-     *
-     * @param string $tablealias
+     * @param int $rowid
+     * @param string $fieldname
+     * @param mixed $newvalue
+     * @return bool
      */
-    protected function internal_get_sql_fields($tablealias = 'e') {
-        return parent::internal_get_sql_fields($tablealias);
+    public function is_valid_value(int $rowid, string $fieldname, $newvalue): bool {
+        try {
+            $entity = $this->get_entity_helper($rowid);
+            $entity->set($fieldname, $newvalue);
+            return $entity->is_valid();
+        } catch (moodle_exception $e) {
+            return false;
+        }
     }
 
     /**
      * Overridable sql query
+     *
+     * @param string $tablealias
      */
     protected function internal_get_sql_from($tablealias = 'e') {
         $persistentclass = $this->define_class();
         $from = $persistentclass::TABLE;
-        $from = '{' . $from . '} '.$tablealias;
+        $from = '{' . $from . '} ' . $tablealias;
         // Add joins.
         foreach ($this->fields as $field) {
             $additionalfrom = $field->get_additional_from($tablealias);
@@ -148,8 +151,6 @@ class entity_table extends dynamic_table_sql {
      * Default property definition
      *
      * Add all the fields from persistent class except the reserved ones
-     *
-     * @throws ReflectionException
      */
     protected function setup_fields() {
         $this->fields = entity_utils::get_defined_fields($this->define_class());
@@ -159,10 +160,10 @@ class entity_table extends dynamic_table_sql {
      * Utility to get the relevant files for a given entity
      *
      * @param object $entity
+     * @param string $entityfilearea
+     * @param string $entityfilecomponent
+     * @param string $altmessage
      * @return string
-     * @throws ReflectionException
-     * @throws coding_exception
-     * @throws dml_exception
      */
     protected function internal_col_files($entity, $entityfilearea, $entityfilecomponent, $altmessage = 'entity-image') {
         $imagesurls = entity_utils::get_files_urls(

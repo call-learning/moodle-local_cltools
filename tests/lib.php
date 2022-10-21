@@ -27,10 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 // Replace autoloading.
 global $CFG;
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/entity.php');
-require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/entity.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/table.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/exporter.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/external.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/simple/form.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/entity.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/form.php');
 require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/exporter.php');
+require_once($CFG->dirroot . '/local/cltools/tests//fixtures/othersimple/table.php');

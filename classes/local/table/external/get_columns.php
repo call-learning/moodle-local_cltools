@@ -49,11 +49,10 @@ class get_columns extends external_api {
      * @param array|null $sortdata The columns and order to sort by
      * @param array|null $filters The filters that will be applied in the request.
      * @param int|null $jointype The join type.
-     * @param bool|false $editable editable ?
+     * @param bool $editable editable ?
      * @param array|null $actionsdefs Actions definition
      *
      * @return array
-     * @throws invalid_parameter_exception
      */
     public static function execute(
             string $handler,
@@ -62,9 +61,9 @@ class get_columns extends external_api {
             ?array $sortdata = [],
             ?array $filters = [],
             ?int $jointype = filter::JOINTYPE_NONE,
-            ?bool $editable = false,
+            bool $editable = false,
             ?array $actionsdefs = []
-    ) {
+    ): array {
         [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
@@ -86,9 +85,8 @@ class get_columns extends external_api {
         ]);
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable, $actionsdefs);
         $context = helper::get_current_context();
-        $instance->validate_access($context);
+        $instance::validate_access($context);
         helper::setup_filters($instance, $filters, $jointype);
-        /* @var $instance dynamic_table_sql instance */
         $columndefs = array_values($instance->get_fields_definition());
 
         return $columndefs;

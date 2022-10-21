@@ -13,32 +13,32 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Enhanced filter
+ *
+ * @package    local_cltools
+ * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @copyright  2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+namespace local_cltools\local\filter;
 
 /**
  * Enhanced filter
  *
- * @copyright 2020 Andrew Nicols <andrew@nicols.co.uk>
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @package    local_cltools
+ * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @copyright  2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-namespace local_cltools\local\filter;
-
-/**
- * Additional methods for filters
- *
- * @package   local_cltools
- * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 trait enhanced_filter_impl {
     // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseFunction
     /**
      * Serialize filter.
      *
-     * @return mixed|object
+     * @return object
      */
-    public function jsonSerialize() {
+    public function jsonSerialize(): object {
         return (object) [
                 'type' => $this->get_type(),
                 'name' => $this->get_name(),

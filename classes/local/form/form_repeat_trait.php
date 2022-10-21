@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_cltools\local\forms;
+namespace local_cltools\local\form;
 
 use coding_exception;
 use HTML_QuickForm_group;
@@ -49,20 +49,20 @@ trait form_repeat_trait {
      * @param string $repeathiddenname name for hidden element storing no of repeats in this form
      * @param string $addfieldsname name for button to add more fields
      * @param int $addfieldsno how many fields to add at a time
-     * @param string $addstring name of button, {no} is replaced by no of blanks that will be added.
+     * @param string|null $addstring name of button, {no} is replaced by no of blanks that will be added.
      * @param bool $addbuttoninside if true, don't call closeHeaderBefore($addfieldsname). Default false.
-     * @param string $deletefieldsname name of the button that will trigger the deletion of the repeat element
-     * @param string $deletestring name for button to remove the last field
+     * @param string|null $deletefieldsname name of the button that will trigger the deletion of the repeat element
+     * @param string|null $deletestring name for button to remove the last field
      * @return int no of repeats of element in this page
      * @throws coding_exception
      */
-    public function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname,
-            $addfieldsname,
-            $addfieldsno = 5,
-            $addstring = null,
-            $addbuttoninside = false,
-            $deletefieldsname = null,
-            $deletestring = null
+    public function repeat_elements(array $elementobjs, int $repeats, array $options, string $repeathiddenname,
+            string $addfieldsname,
+            int $addfieldsno = 5,
+            string $addstring = null,
+            bool $addbuttoninside = false,
+            string $deletefieldsname = null,
+            string $deletestring = null
     ) {
         $repeats = $this->optional_param($repeathiddenname, $repeats, PARAM_INT);
         if ($deletefieldsname) {

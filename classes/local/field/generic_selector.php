@@ -17,10 +17,9 @@
 namespace local_cltools\local\field;
 
 use context_system;
-use dml_exception;
-use local_cltools\local\crud\entity_utils;
+use moodle_exception;
 use MoodleQuickForm;
-use ReflectionException;
+use required_capability_exception;
 
 /**
  * Select a user or a course or a given moodle entity
@@ -45,42 +44,11 @@ class generic_selector extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_INT,
-                'default' => '',
-                'editable' => false
+                'default' => ''
         ];
         $this->init($fielnameordef, $standarddefaults);
         $this->mtype = empty($fielddef->type) ? 'user' : $fielddef->type;
         $this->sortable = true; // Not sortable for now.
-    }
-
-    /**
-     * Get all users
-     *
-     * @return array
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function get_generic_entities(string $type): array {
-        global $DB;
-        $context = context_system::instance();
-        $values = [];
-        switch($type) {
-            case 'user':
-                if (!has_capability('moodle/user:viewdetails', $context)) {
-                    return $values;
-                }
-                foreach ($DB->get_recordset('user') as $user) {
-                    $userdisplay = ucwords(fullname($user)) . " ($user->email)";
-
-                    $values[] = [
-                            'id' => $user->id,
-                            'value' => $userdisplay
-                    ];
-                }
-                break;
-            default:
-        }
-        return $values;
     }
 
     /**
@@ -90,7 +58,7 @@ class generic_selector extends persistent_field {
      * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'generic_lookup';
         $format->formatterParams = (object) [
@@ -106,7 +74,7 @@ class generic_selector extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'generic_lookup',
                 'editorParams' => (object) [
@@ -115,14 +83,13 @@ class generic_selector extends persistent_field {
         ];
     }
 
-
     /**
      * Add element onto the form
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $values = static::get_generic_entities($this->mtype);
         $choices = [];
         foreach ($values as $val) {
@@ -133,11 +100,42 @@ class generic_selector extends persistent_field {
     }
 
     /**
+     * Get all users
+     *
+     * @param string $type
+     * @return array
+     */
+    public static function get_generic_entities(string $type): array {
+        global $DB;
+        $context = context_system::instance();
+        $values = [];
+        switch ($type) {
+            case 'user':
+                if (!has_capability('moodle/user:viewdetails', $context)) {
+                    throw new required_capability_exception($context, 'moodle/user:viewdetails', 'cannotviewdetails',
+                            'local_cltools');
+                }
+                foreach ($DB->get_recordset('user') as $user) {
+                    $userdisplay = ucwords(fullname($user)) . " ($user->email)";
+
+                    $values[] = [
+                            'id' => $user->id,
+                            'value' => $userdisplay
+                    ];
+                }
+                break;
+            default:
+                throw new moodle_exception('cannotfetchentity', 'local_cltools');
+        }
+        return $values;
+    }
+
+    /**
      * Get form field type
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "searchableselector";
     }
 }

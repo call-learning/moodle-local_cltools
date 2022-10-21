@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Persistent utils base test case
- *
- * @package     local_cltools
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\test;
 
 use advanced_testcase;

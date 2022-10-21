@@ -27,6 +27,7 @@ namespace local_cltools\local\crud;
 use context_system;
 use file_exception;
 use local_cltools\test\base_crud_test;
+use ReflectionClass;
 use stored_file_creation_exception;
 
 
@@ -36,14 +37,23 @@ use stored_file_creation_exception;
  * @package     local_cltools
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \local_cltools\local\crud\entity_utils
  */
 class entity_utils_test extends base_crud_test {
 
+    /**
+     * Test persistent prefix finder
+     * @covers \local_cltools\local\crud\entity_utils::get_persistent_prefix
+     */
     public function test_get_persistent_prefix() {
-        $persistentprefix = entity_utils::get_persistent_prefix("\\local_cltools\\simple\\entity");
+        $persistentprefix = entity_utils::get_persistent_prefix(new ReflectionClass(\local_cltools\simple\entity::class));
         $this->assertEquals('simple', $persistentprefix);
     }
 
+    /**
+     * Is it a reserved property ?
+     * @covers \local_cltools\local\crud\entity_utils::is_reserved_property
+     */
     public function test_is_reserved_property() {
         $this->assertTrue(entity_utils::is_reserved_property('timecreated'));
         $this->assertTrue(entity_utils::is_reserved_property('timemodified'));
@@ -52,10 +62,19 @@ class entity_utils_test extends base_crud_test {
         $this->assertFalse(entity_utils::is_reserved_property('name'));
     }
 
+    /**
+     * Test generic parameter callback
+     * @return void
+     * @covers \local_cltools\local\crud\entity_utils::external_get_filter_generic_parameters
+     */
     public function test_external_get_filter_generic_parameters() {
         $this->assertnotNull(entity_utils::external_get_filter_generic_parameters());
     }
 
+    /**
+     * Get files url
+     * @covers \local_cltools\local\crud\entity_utils::get_files_urls
+     */
     public function test_external_get_files_url() {
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -72,9 +91,10 @@ class entity_utils_test extends base_crud_test {
      *
      * @param array $imagefilenames
      * @param array $destfilenames
+     * @param string $filearea
+     * @param string $component
+     * @param int $itemid
      * @return array
-     * @throws file_exception
-     * @throws stored_file_creation_exception
      */
     protected function upload_files($imagefilenames, $destfilenames, $filearea, $component, $itemid = 0) {
         $contextsystem = context_system::instance();
@@ -113,12 +133,22 @@ class entity_utils_test extends base_crud_test {
 
     }
 
+    /**
+     * Delete files
+     *
+     * @param string $filearea
+     * @param string $component
+     */
     protected function delete_files($filearea, $component) {
         $contextsystem = context_system::instance();
         $fs = get_file_storage();
         $fs->delete_area_files($contextsystem->id, $component, $filearea);
     }
 
+    /**
+     * Get files url
+     * @covers \local_cltools\local\crud\entity_utils::get_files_urls
+     */
     public function test_external_get_files_url_with_item_id() {
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -134,6 +164,10 @@ class entity_utils_test extends base_crud_test {
         $this->delete_files('testfilearea', 'local_cltools');
     }
 
+    /**
+     * Validate entity access
+     * @covers \local_cltools\local\crud\entity_utils::validate_entity_access
+     */
     public function test_validate_entity_access() {
         global $CFG;
         $this->resetAfterTest();

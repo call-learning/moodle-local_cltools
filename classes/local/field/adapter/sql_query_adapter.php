@@ -20,7 +20,6 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\local\field\adapter;
 
 /**
@@ -34,27 +33,27 @@ interface sql_query_adapter {
     /**
      * Get additional fields
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return array of SQL fields (['xxx AS yyy', '...])
      */
-    public function get_additional_fields($entityalias = 'e');
+    public function get_additional_fields(string $entityalias = 'e'): array;
 
     /**
      * Additional From Query
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return string
      */
-    public function get_additional_from($entityalias = 'e');
+    public function get_additional_from(string $entityalias = 'e'): string;
 
     /**
      * Additional WHERE Query
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return array ["WHERE QUERY",[params]]
      */
-    public function get_additional_where($entityalias = 'e');
+    public function get_additional_where(string $entityalias = 'e'): array;
 }

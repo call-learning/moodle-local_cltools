@@ -36,7 +36,7 @@ export const dateEditor = (cell, onRendered, success) => {
 
     editor.setAttribute("type", "date");
 
-    // Create and style input
+    // Create and style input.
     editor.style.padding = "3px";
     editor.style.width = "100%";
     editor.style.boxSizing = "border-box";
@@ -44,13 +44,13 @@ export const dateEditor = (cell, onRendered, success) => {
     // Set value of editor to the current value of the cell.
     editor.value = moment(cell.getValue(), "DD/MM/YYYY").format("YYYY-MM-DD");
 
-    // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM)
+    // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM).
     onRendered(function () {
         editor.focus();
         editor.style.css = "100%";
     });
 
-    // When the value has been set, trigger the cell to update
+    // When the value has been set, trigger the cell to update.
     function successFunc() {
         success(moment(editor.value, "YYYY-MM-DD").format("DD/MM/YYYY"));
     }
@@ -58,7 +58,7 @@ export const dateEditor = (cell, onRendered, success) => {
     editor.addEventListener("change", successFunc);
     editor.addEventListener("blur", successFunc);
 
-    // Return the editor element
+    // Return the editor element.
     return editor;
 };
 
@@ -69,7 +69,7 @@ export const dateEditor = (cell, onRendered, success) => {
  */
 export const TABULATOR_EDITORS = {
     date: dateEditor,
-    'entity_lookup': (cell, onRendered, success, cancel, editorParams) => {
+    'entity_lookup': function(cell, onRendered, success, cancel, editorParams) {
         return this.editors.select(cell, onRendered, success, cancel,
             entityLookup(editorParams.entityclass, editorParams.displayfield));
     }

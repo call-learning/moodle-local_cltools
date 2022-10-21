@@ -34,7 +34,7 @@ use moodle_url;
 use stdClass;
 
 /**
- * This traits fill part of the gap between table_sql but implementation is progressively distancing itself from
+ * This trait fill part of the gap between table_sql but implementation is progressively distancing itself from
  * the original implementation
  *
  *
@@ -48,7 +48,6 @@ trait table_sql_trait {
     protected $sortdefaultcolumn;
     protected $sortdefaultorder;
     protected $columnnosort;
-    protected $iscollapsible;
     protected $usepages;
     protected $pagesize;
     protected $totalrows;
@@ -58,18 +57,17 @@ trait table_sql_trait {
     protected $issetup;
     protected $rawdata = [];
     protected $uniqueid;
-    protected $userfieldid;
 
     /**
      * Sets the issortable variable to the given boolean, sort_default_column to
      * the given string, and the sort_default_order to the given integer.
      *
      * @param bool $bool
-     * @param string $defaultcolumn
+     * @param string|null $defaultcolumn
      * @param int $defaultorder
      * @return void
      */
-    public function set_sortable($bool, $defaultcolumn = null, $defaultorder = SORT_ASC) {
+    public function set_sortable(bool $bool, string $defaultcolumn = null, int $defaultorder = SORT_ASC): void {
         $this->issortable = $bool;
         $this->sortdefaultcolumn = $defaultcolumn;
         $this->sortdefaultorder = $defaultorder;
@@ -78,10 +76,10 @@ trait table_sql_trait {
     /**
      * Is the column sortable?
      *
-     * @param string column name, null means table
+     * @param string|null $column column name, null means table
      * @return bool
      */
-    public function is_sortable($column = null) {
+    public function is_sortable(?string $column): bool {
         if (empty($column)) {
             return $this->issortable;
         }
@@ -97,26 +95,30 @@ trait table_sql_trait {
      * @param bool $bool
      * @return void
      */
-    public function set_pageable($bool) {
+    public function set_pageable($bool): void {
         $this->usepages = $bool;
     }
 
     /**
+     * Get page start
+     *
      * @return int the offset for LIMIT clause of SQL
      */
-    public function get_page_start() {
+    public function get_page_start(): int {
         if (!$this->usepages) {
-            return '';
+            return 0;
         }
         return $this->currpage * $this->pagesize;
     }
 
     /**
+     * Get page size
+     *
      * @return int the pagesize for LIMIT clause of SQL
      */
-    public function get_page_size() {
+    public function get_page_size(): int {
         if (!$this->usepages) {
-            return '';
+            return 0;
         }
         return $this->pagesize;
     }
@@ -128,7 +130,7 @@ trait table_sql_trait {
      * @param int $total
      * @return void
      */
-    public function set_pagesize($perpage, $total) {
+    public function set_pagesize(int $perpage, int $total): void {
         if ($this->usepages) {
             $this->pagesize = $perpage;
             $this->totalrows = $total;
@@ -154,10 +156,20 @@ trait table_sql_trait {
         $this->currpage = $pagenumber - 1;
     }
 
+    /**
+     * Is pageable
+     *
+     * @return bool
+     */
     public function is_pageable(): bool {
         return $this->usepages;
     }
 
+    /**
+     * Get total number of rows
+     *
+     * @return int
+     */
     public function get_total_rows(): int {
         return $this->totalrows ?? 0;
     }
@@ -172,6 +184,8 @@ trait table_sql_trait {
     }
 
     /**
+     * Define the columns for this table
+     *
      * @param array $columns an array of identifying names for columns. If
      * columns are sorted then column names must correspond to a field in sql.
      */
@@ -185,6 +199,8 @@ trait table_sql_trait {
     }
 
     /**
+     * Define column headers
+     *
      * @param array $headers numerical keyed array of displayed string titles
      * for each column.
      */
@@ -208,15 +224,16 @@ trait table_sql_trait {
         $this->issetup = true;
 
         if ($this->usepages) {
-            $this->currpage = $currpage ? $currpage : $this->currpage;
+            $this->currpage = $currpage ?? $this->currpage;
         }
         return $this->issetup;
     }
 
     /**
-     * Prepare an an order by clause from the list of columns to be sorted.
+     * Prepare an order by clause from the list of columns to be sorted.
      *
      * @param array $cols column name => SORT_ASC or SORT_DESC
+     * @param array $textsortcols other columns to sort by
      * @return string SQL fragment that can be used in an ORDER BY clause.
      */
     protected function construct_order_by($cols, $textsortcols = array()) {
@@ -239,7 +256,7 @@ trait table_sql_trait {
 
     /**
      * Call appropriate methods on this table class to perform any processing on values before displaying in table.
-     * Takes raw data from the database and process it into human readable format, perhaps also adding html linking when
+     * Takes raw data from the database and process it into human-readable format, perhaps also adding html linking when
      * displaying table as html, adding a div wrap, etc.
      *
      * See for example col_fullname below which will be called for a column whose name is 'fullname'.
@@ -270,11 +287,14 @@ trait table_sql_trait {
     /**
      * You can override this method in a child class. See the description of
      * build_table which calls this method.
+     *
+     * @param string $column
+     * @param object $row
      */
     protected function other_cols($column, $row) {
         if (isset($row->$column) && ($column === 'email' || $column === 'idnumber')) {
             // Columns email and idnumber may potentially contain malicious characters, escape them by default.
-            // This function will not be executed if the child class implements col_email() or col_idnumber().
+            // This function will not be executed if the child class implement col_email() or col_idnumber().
             return s($row->$column);
         }
         return null;
@@ -331,6 +351,14 @@ trait table_sql_trait {
     }
 
     /**
+     * Format text
+     *
+     * @param string $text
+     * @param int $format
+     * @param object $options
+     * @param int $courseid
+     * @return string
+     *
      * Used from col_* functions when text is to be displayed. Does the
      * right thing - either converts text to html or strips any html tags
      * depending on if we are downloading and what is the download type. Params
@@ -360,7 +388,7 @@ trait table_sql_trait {
      * Closes recordset (for use after building the table).
      */
     protected function close_recordset() {
-        if ($this->rawdata  && is_object($this->rawdata) && ($this->rawdata instanceof recordset_walk ||
+        if (is_object($this->rawdata) && ($this->rawdata instanceof recordset_walk ||
                         $this->rawdata instanceof moodle_recordset)) {
             $this->rawdata->close();
             $this->rawdata = [];

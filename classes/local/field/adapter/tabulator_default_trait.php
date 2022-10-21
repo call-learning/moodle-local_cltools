@@ -20,7 +20,6 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\local\field\adapter;
 
 use stdClass;
@@ -41,7 +40,7 @@ trait tabulator_default_trait {
      * @return object|null return the parameters (or null if no matching filter)
      *
      */
-    public function get_column_filter() {
+    public function get_column_filter(): ?object {
         $editor = $this->get_column_editor();
         if ($editor) {
             $params = new stdClass();
@@ -61,7 +60,7 @@ trait tabulator_default_trait {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return null;
     }
 
@@ -72,7 +71,7 @@ trait tabulator_default_trait {
      * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         return (object) [
                 'headerSort' => $this->can_sort()
         ];
@@ -85,7 +84,7 @@ trait tabulator_default_trait {
      * @return object|null return the parameters (or null if no matching validator)
      *
      */
-    public function get_column_validator() {
+    public function get_column_validator(): ?object {
         return null;
     }
 
@@ -94,7 +93,7 @@ trait tabulator_default_trait {
      *
      * @return bool
      */
-    public function can_sort() {
+    public function can_sort(): bool {
         return true;
     }
 

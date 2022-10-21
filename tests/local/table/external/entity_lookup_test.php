@@ -32,6 +32,7 @@ require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
  * @package     local_cltools
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \local_cltools\local\table\external\entity_lookup
  */
 class entity_lookup_test extends advanced_testcase {
     /**
@@ -64,6 +65,8 @@ class entity_lookup_test extends advanced_testcase {
 
     /**
      * Test an API function access
+     *
+     * @covers \local_cltools\local\table\external\entity_lookup
      */
     public function test_get_entity_lookup_not_logged_in() {
         $this->expectException('require_login_exception');
@@ -72,6 +75,8 @@ class entity_lookup_test extends advanced_testcase {
 
     /**
      * Test an API function access
+     *
+     * @covers \local_cltools\local\table\external\entity_lookup
      */
     public function test_get_entity_lookup_with_simple_user() {
         $user = $this->getDataGenerator()->create_user();
@@ -82,6 +87,8 @@ class entity_lookup_test extends advanced_testcase {
 
     /**
      * Test an API function access
+     *
+     * @covers \local_cltools\local\table\external\entity_lookup
      */
     public function test_get_entity_lookup_with_admin() {
         $this->setAdminUser(); // This is thanks to the static validate_global_access method.
@@ -90,14 +97,44 @@ class entity_lookup_test extends advanced_testcase {
 
     /**
      * Test an API function
+     *
+     * @covers \local_cltools\local\table\external\entity_lookup
      */
     public function test_get_entity_lookup() {
         $this->setAdminUser();
         $shortnamesapicall = array_values(entity_lookup::execute(entity::class, 'shortname'));
+
         $this->assertEquals(['Not available', 'Shortname 1', 'Shortname 2'],
-                json_decode($shortnamesapicall[0], true));
+                array_map(function($r) {
+                    return $r['value'];
+                }, $shortnamesapicall[0]));
         $idnumbersapicall = array_values(entity_lookup::execute(entity::class, 'idnumber'));
         $this->assertEquals(['Not available', 'Idnumber 1', 'Idnumber 2'],
-                json_decode($idnumbersapicall[0], true));
+                array_map(function($r) {
+                    return $r['value'];
+                }, $idnumbersapicall[0]));
+    }
+
+    /**
+     * Test an API function access
+     *
+     * @covers \local_cltools\local\table\external\entity_lookup
+     */
+    public function test_get_entity_lookup_with_warning() {
+        $this->setAdminUser(); // This is thanks to the static validate_global_access method.
+        $warningmessage = array_values(entity_lookup::execute(entity::class, 'idnumber2'));
+        $this->assertEquals(
+                'idnumber2',
+                $warningmessage[1][0]->displayfield
+        );
+        $this->assertEquals(
+                [
+                        [
+                                'id' => 0,
+                                'value' => 'Not available',
+                        ]
+                ],
+                $warningmessage[0]
+        );
     }
 }

@@ -24,6 +24,11 @@ namespace local_cltools\local\field;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hidden extends persistent_field {
+    /**
+     * Constructor
+     *
+     * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
+     */
     public function __construct($fielnameordef) {
         $standarddefaults = [
                 'required' => false,
@@ -32,37 +37,37 @@ class hidden extends persistent_field {
                 'visible' => false,
                 'editable' => false
         ];
-        $fielddef = $this->init($fielnameordef, $standarddefaults);
+        $this->init($fielnameordef, $standarddefaults);
         $this->visible = false;
     }
 
     /**
      * Check if the field is visible or not
      *
-     * @return boolean visibility
+     * @return bool visibility
      *
      */
-    public function is_visible() {
+    public function is_visible(): bool {
         return false;
     }
 
     /**
      * Get the matching filter type to be used for display
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the type (and null if no filter)
      *
      */
-    public function get_column_filter() {
+    public function get_column_filter(): ?object {
         return null;
     }
 
     /**
      * Get the matching editor type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the type (and null if no filter)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return null;
     }
 
@@ -71,7 +76,7 @@ class hidden extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "hidden";
     }
 }

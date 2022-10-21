@@ -13,6 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace local_cltools\othersimple;
+
+use local_cltools\local\crud\entity_exporter;
 
 /**
  * Entity exporter
@@ -21,11 +24,6 @@
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\othersimple;
-
-use local_cltools\local\crud\entity_exporter;
-
 class exporter extends entity_exporter {
 
     /**

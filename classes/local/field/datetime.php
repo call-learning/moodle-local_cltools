@@ -16,7 +16,8 @@
 
 namespace local_cltools\local\field;
 
-use coding_exception;
+use core\persistent;
+use renderer_base;
 
 /**
  * Date time field
@@ -44,11 +45,9 @@ class datetime extends persistent_field {
     /**
      * Get the matching formatter type to be used for display
      *
-     * @return string|null return the type (and null if no formatter)
-     *
-     * @throws coding_exception
+     * @return object|null return the type (and null if no formatter)
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'datetimets';
         $format->formatterParams = (object) [
@@ -65,11 +64,12 @@ class datetime extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param int $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return userdate($value, get_string('strftimedatetimeshort', 'langconfig'));
     }
 
@@ -77,9 +77,9 @@ class datetime extends persistent_field {
      * Check if the provided value is valid for this field.
      *
      * @param mixed $value
-     * @throws field_exception
+     * @return bool
      */
-    public function validate_value($value) {
+    public function validate_value($value): bool {
         if (strtotime($value) === false) {
             throw new field_exception('valuecannotbechecked', $value);
         }
@@ -91,7 +91,7 @@ class datetime extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "date_time_selector";
     }
 }

@@ -28,7 +28,7 @@ use core_table\local\filter\filter;
 class enhanced_filterset_test extends advanced_testcase {
     /**
      * Get the optional filters.
-     *
+     * @covers \local_cltools\local\filter\enhanced_filterset
      */
     public function test_get_required_optional_filters() {
         $enhancedfilters = new enhanced_filterset(
@@ -59,6 +59,14 @@ class enhanced_filterset_test extends advanced_testcase {
      *  Get the sql where / params used for filtering
      *
      * @dataProvider sql_filter_provider
+     * @param array $filtersdef
+     * @param array $filtersvalues
+     * @param int $jointtype
+     * @param string $tableprefix
+     * @param array $excludedfiltersname
+     * @param array $expectedwhere
+     * @param array $expectedparams
+     * @covers \local_cltools\local\filter\enhanced_filterset
      */
     public function test_get_sql_for_filter($filtersdef, $filtersvalues, $jointtype, $tableprefix, $excludedfiltersname,
             $expectedwhere, $expectedparams) {

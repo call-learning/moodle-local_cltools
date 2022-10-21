@@ -25,10 +25,8 @@
 namespace local_cltools\local\crud\helper;
 
 use coding_exception;
-use core_renderer;
 use dml_exception;
 use local_cltools\local\crud\entity_utils;
-use local_cltools\local\crud\generic\generic_entity_exporter;
 use local_cltools\local\crud\generic\generic_entity_exporter_generator;
 use moodle_exception;
 use moodle_page;
@@ -60,21 +58,22 @@ class crud_view extends base {
     /**
      * crud_helper constructor.
      *
-     * @param string $entityclassname
-     * @param string $action
-     * @param core_renderer $renderer
-     * @throws ReflectionException
+     * @param string $entityclassname the related entity class name
+     * @param string|null $entityprefix optional entity prefix
+     * @param string|null $formclassname optional form class name
+     * @param string|null $tableclassname optional table classname
+     * @param string|null $exporterclassname optional exporter classname
+     * @param object|null $persistentnavigation optional persitent navigation
      */
     public function __construct(string $entityclassname,
-            $entityprefix = null,
-            $formclassname = null,
-            $listclassname = null,
-            $exporterclassname = null,
-            $persistentnavigation = null,
-            $pagesrooturl = null
+            ?string $entityprefix,
+            ?string $formclassname,
+            ?string $tableclassname,
+            ?string $exporterclassname,
+            ?object $persistentnavigation
     ) {
-        parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
-                $exporterclassname, $persistentnavigation, $pagesrooturl);
+        parent::__construct($entityclassname, $entityprefix, $formclassname, $tableclassname,
+                $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_view_url();
     }
 
@@ -82,10 +81,8 @@ class crud_view extends base {
      * Page setup
      *
      * @param moodle_page $page
-     * @throws coding_exception
-     * @throws moodle_exception
      */
-    public function setup_page(&$page) {
+    public function setup_page(moodle_page &$page): void {
         parent::setup_page($page);
         $id = required_param('id', PARAM_INT);
         $buttonedit = new single_button(
@@ -98,14 +95,14 @@ class crud_view extends base {
     /**
      * Process the action
      *
-     * @param null $postprocesscb
+     * @param callable $postprocesscb
      * @return mixed
      * @throws coding_exception
      * @throws dml_exception
      * @throws moodle_exception
      * @throws ReflectionException
      */
-    public function action_process($postprocesscb = null) {
+    public function action_process($postprocesscb = null): string {
         $returnedtext = '';
         $persistentprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
         $persistentcomponent = entity_utils::get_component($this->refpersistentclass);
@@ -113,21 +110,25 @@ class crud_view extends base {
         $entity = $this->refpersistentclass->newInstance($id);
         $returnedtext .= $this->renderer->container_start();
         $relatedexporter = $this->instanciate_related_exporter($entity);
+        $exportedvalue = [];
+
         if (empty($relatedexporter)) {
             // Create a dummy exporter and make sure we point to the right class.
-            $relatedexporter = generic_entity_exporter_generator::generate($this->refpersistentclass->getName(), $entity);
-
-            $exportedvalue = $relatedexporter->export($this->renderer);
+            $relatedexporter = generic_entity_exporter_generator::generate($entity);
+        }
+        $exportedvalue = $relatedexporter->export($this->renderer);
+        try {
+            $returnedtext .= $this->renderer->render_from_template(
+                    "$persistentcomponent/$persistentprefix",
+                    $exportedvalue
+            );
+        } catch (moodle_exception $e) {
             $returnedtext .= $this->renderer->render_from_template(
                     "local_cltools/persistent_info",
                     $exportedvalue
             );
-        } else {
-            $returnedtext .= $this->renderer->render_from_template(
-                    "$persistentcomponent/$persistentprefix",
-                    $relatedexporter->export($this->renderer)
-            );
         }
+
         $returnedtext .= $this->renderer->container_end();
         $this->trigger_event($entity);
         return $returnedtext;

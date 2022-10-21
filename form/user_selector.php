@@ -22,9 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core_table\local\filter\filter;
-use core_table\local\filter\integer_filter;
-
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -43,7 +40,7 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
     use templatable_form_element {
         export_for_template as export_for_template_base;
     }
-    use \local_cltools\local\forms\form_element_accept;
+    use \local_cltools\local\form\form_element_accept;
 
     /**
      * @var boolean $allowmultiple Allow selecting more than one course.
@@ -77,7 +74,7 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
      * @return array
      * @throws coding_exception
      */
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(renderer_base $output): array {
         global $DB;
         $data = $this->export_for_template_base($output);
         $action = new action_link(
@@ -98,17 +95,15 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
         return $data;
     }
 
+    // phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod,Squiz.Scope.MethodScope.Missing
     /**
      * Sets the value of the form element
      *
      * @param string $value Default value of the form element
      * @return    void
-     * @since     1.0
-     * @access    public
      */
-    // phpcs:ignore moodle.NamingConventions.ValidFunctionName.LowercaseMethod,Squiz.Scope.MethodScope.Missing
     function setValue($value) {
         $this->updateAttributes(array('value' => $value));
-    } // end func setValue
-
+    }
+    // phpcs:enable moodle.NamingConventions.ValidFunctionName.LowercaseMethod,Squiz.Scope.MethodScope.Missing
 }

@@ -52,7 +52,7 @@ class simple_added extends crud_event_added {
      *
      * @return string
      */
-    public function get_description() {
+    public function get_description(): string {
         return "Simple entity added";
     }
 
@@ -61,7 +61,7 @@ class simple_added extends crud_event_added {
      *
      * @return string
      */
-    public static function get_objectid_mapping() {
+    public static function get_objectid_mapping(): string {
         return base::NOT_MAPPED;
     }
 

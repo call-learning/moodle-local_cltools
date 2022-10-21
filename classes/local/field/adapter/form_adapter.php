@@ -23,7 +23,7 @@
 
 namespace local_cltools\local\field\adapter;
 
-use core\persistent;
+use local_cltools\local\crud\enhanced_persistent;
 use MoodleQuickForm;
 use stdClass;
 
@@ -40,47 +40,47 @@ interface form_adapter {
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
-     * @return mixed
+     * @return void
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs);
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void;
 
     /**
      * Filter persistent data submission
      *
-     * @param $data
-     * @return mixed
+     * @param stdClass $data
+     * @return stdClass
      */
-    public function filter_data_for_persistent($data);
+    public function filter_data_for_persistent(stdClass $data): stdClass;
 
     /**
      * Is this field part of the persistent definition
      *
-     * @return mixed
+     * @return bool
      */
-    public function is_persistent();
+    public function is_persistent(): bool;
 
     /**
      * Can we edit this field
      *
      * @return bool
      */
-    public function can_edit();
+    public function can_edit(): bool;
 
     /**
      * Callback for this field, so data can be converted before form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent
      * @return stdClass
      */
-    public function form_prepare_files($itemdata, persistent $persistent);
+    public function form_prepare_files(stdClass $itemdata, enhanced_persistent $persistent): stdClass;
 
     /**
      * Callback for this field, so data can be saved after form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent
      * @return stdClass
      */
-    public function form_save_files($itemdata, persistent $persistent);
+    public function form_save_files(stdClass $itemdata, enhanced_persistent $persistent): stdClass;
 }

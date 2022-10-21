@@ -16,7 +16,9 @@
 
 namespace local_cltools\local\field;
 
+use core\persistent;
 use MoodleQuickForm;
+use renderer_base;
 
 /**
  * Number field
@@ -26,15 +28,18 @@ use MoodleQuickForm;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class number extends persistent_field {
+    /**
+     * @var bool|mixed $isfloat
+     */
     protected $isfloat = false;
 
     /**
      * Construct the field from its definition
      *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
-     * definiton
+     * @param bool $isfloat is a float
      */
-    public function __construct($fielnameordef, $isfloat = false) {
+    public function __construct($fielnameordef, bool $isfloat = false) {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => $isfloat ? PARAM_FLOAT : PARAM_INT,
@@ -47,10 +52,10 @@ class number extends persistent_field {
     /**
      * Get the matching filter type to be used for display
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the type (and null if no filter)
      *
      */
-    public function get_column_filter() {
+    public function get_column_filter(): ?object {
         return (object) [
                 'filter' => $this->get_type()
         ];
@@ -59,10 +64,10 @@ class number extends persistent_field {
     /**
      * Get the matching formatter type to be used for display
      *
-     * @return string|null return the type (and null if no formatter)
+     * @return object|null return the type (and null if no formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = $this->get_type();
         return $format;
@@ -71,10 +76,10 @@ class number extends persistent_field {
     /**
      * Get the matching editor type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the type (and null if no filter)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => $this->get_type(),
         ];
@@ -83,10 +88,10 @@ class number extends persistent_field {
     /**
      * Get the matching editor type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
+     * @return object|null return the type (and null if no filter)
      *
      */
-    public function get_column_validator() {
+    public function get_column_validator(): ?object {
         return (object) [
                 'validator' => $this->isfloat ? 'float' : 'integer',
         ];
@@ -95,11 +100,12 @@ class number extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param int|float $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return $value;
     }
 
@@ -109,7 +115,7 @@ class number extends persistent_field {
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
     }
@@ -119,7 +125,7 @@ class number extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type():string {
         return $this->isfloat ? 'float' : 'text';
     }
 }

@@ -20,6 +20,7 @@ use context_system;
 use core\persistent;
 use local_cltools\local\crud\enhanced_persistent;
 use MoodleQuickForm;
+use renderer_base;
 use stdClass;
 
 /**
@@ -58,10 +59,10 @@ class editor extends persistent_field {
     /**
      * Check if the field is visible or not
      *
-     * @return boolean visibility
+     * @return bool visibility
      *
      */
-    public function is_visible() {
+    public function is_visible(): bool {
         return false;
     }
 
@@ -69,20 +70,20 @@ class editor extends persistent_field {
      * Callback for this field, so data can be converted before form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent $persistent
      * @return stdClass
      */
-    public function form_prepare_files($itemdata, persistent $persistent) {
+    public function form_prepare_files($itemdata, enhanced_persistent $persistent): stdClass {
         $fieldname = $this->get_name();
-        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($persistent, $fieldname);
-        // Tweak the content so we get the submitted text if ever we failed to submit the full form and come back to the
+        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($fieldname, $persistent);
+        // Tweak the content, so we get the submitted text if ever we failed to submit the full form and come back to the
         // intial form (case persistent is not yet created).
         if (!empty($itemdata->{$fieldname . '_editor'})) {
             $itemdata->$fieldname = $itemdata->$fieldname ?? $itemdata->{$fieldname . '_editor'}['text'];
             $itemdata->{$fieldname . 'format'} =
                     $itemdata->{$fieldname . 'format'} ?? $itemdata->{$fieldname . '_editor'}['format'];
         }
-        $itemdata = file_prepare_standard_editor($itemdata,
+        return file_prepare_standard_editor($itemdata,
                 $fieldname,
                 $this->get_editor_options($persistent),
                 $context,
@@ -90,7 +91,6 @@ class editor extends persistent_field {
                 $filearea,
                 $itemid
         );
-        return $itemdata;
     }
 
     /**
@@ -116,12 +116,12 @@ class editor extends persistent_field {
      * Callback for this field, so data can be saved after form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent
      * @return stdClass
      */
-    public function form_save_files($itemdata, persistent $persistent) {
+    public function form_save_files(stdClass $itemdata, enhanced_persistent $persistent): stdClass {
         $fieldname = $this->get_name();
-        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($persistent, $fieldname);
+        list($context, $component, $filearea, $itemid) = $this->get_file_info_context($fieldname, $persistent);
         $data = file_postupdate_standard_editor($itemdata, $fieldname,
                 $this->get_editor_options($persistent),
                 $context,
@@ -137,10 +137,10 @@ class editor extends persistent_field {
     /**
      * Filter persistent data submission
      *
-     * @param $data
-     * @return mixed
+     * @param stdClass $itemdata
+     * @return stdClass
      */
-    public function filter_data_for_persistent($itemdata) {
+    public function filter_data_for_persistent(stdClass $itemdata): stdClass {
         if (!empty($itemdata->{$this->get_name() . '_editor'})) {
             if (empty($itemdata->{$this->get_name()})) {
                 $itemdata->{$this->get_name()} = $itemdata->{$this->get_name() . '_editor'}['text'] ?? '';
@@ -155,6 +155,26 @@ class editor extends persistent_field {
     }
 
     /**
+     * Return a printable version of the value provided in input
+     *
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
+     */
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        if (!empty($persistent)) {
+            $fieldname = $this->get_name();
+            [$context, $component, $filearea, $itemid] = $this->get_file_info_context($fieldname, $persistent);
+            return file_rewrite_pluginfile_urls($value, 'pluginfile.php',
+                    $context->id, $component, $filearea, $itemid);
+        }
+        return $value;
+    }
+
+    /**
+     * Get persistent properties
+     *
      * @return array[]
      */
     public function get_persistent_properties(): array {
@@ -175,11 +195,11 @@ class editor extends persistent_field {
     /**
      * Get additional fields
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return array of SQL fields (['xxx AS yyy', '...])
      */
-    public function get_additional_fields($entityalias = 'e') {
+    public function get_additional_fields(string $entityalias = 'e'): array {
         return ["{$entityalias}.{$this->get_name()}format"];
     }
 
@@ -187,9 +207,9 @@ class editor extends persistent_field {
      * Check if the provided value is valid for this field.
      *
      * @param mixed $value
-     * @throws field_exception
+     * @return bool
      */
-    public function validate_value($value) {
+    public function validate_value($value): bool {
         return is_string($value);
     }
 
@@ -199,7 +219,7 @@ class editor extends persistent_field {
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $elementname = $this->get_name() . '_editor';
         $persistent = $additionalargs[0] ?? null;
         $editoroptions = $this->get_editor_options($persistent);
@@ -214,7 +234,7 @@ class editor extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "editor";
     }
 }

@@ -51,21 +51,36 @@ class blank_field extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'html';
         return $format;
     }
 
-    public function can_edit() {
+    /**
+     * Can we edit this field
+     *
+     * @return bool
+     */
+    public function can_edit(): bool {
         return false;
     }
 
-    public function is_persistent() {
+    /**
+     * Is this field part of the persistent definition
+     *
+     * @return bool
+     */
+    public function is_persistent(): bool {
         return false;
     }
 
-    public function can_sort() {
+    /**
+     * Can we sort the column ?
+     *
+     * @return bool
+     */
+    public function can_sort(): bool {
         return false;
     }
 }

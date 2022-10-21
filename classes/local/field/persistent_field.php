@@ -16,13 +16,15 @@
 
 namespace local_cltools\local\field;
 
-use local_cltools\local\field\adapter\filter_adapter;
+use core\persistent;
 use local_cltools\local\field\adapter\form_adapter;
 use local_cltools\local\field\adapter\form_adapter_default;
 use local_cltools\local\field\adapter\sql_query_adapter;
 use local_cltools\local\field\adapter\sql_query_adapter_default_trait;
 use local_cltools\local\field\adapter\tabulator_adapter;
 use local_cltools\local\field\adapter\tabulator_default_trait;
+use renderer_base;
+use stdClass;
 
 /**
  * Base field
@@ -61,18 +63,22 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * @var bool $sortable
      */
-    protected bool $sortable;
+    protected $sortable;
     /**
      * @var bool $editable
      */
-    protected $editable = false;
+    protected $editable = true;
+    /**
+     * @var bool $rawtype
+     */
+    protected $rawtype;
 
     /**
      * Get an identifier for this type of format
      *
-     * @return mixed
+     * @return string
      */
-    public function get_type() {
+    public function get_type(): string {
         $tableclass = explode("\\", get_class($this));
         return end($tableclass);
     }
@@ -80,19 +86,19 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * Get the display name for this field
      *
-     * @return mixed
+     * @return string
      */
-    public function get_display_name() {
+    public function get_display_name(): string {
         return $this->fullname;
     }
 
     /**
      * Check if the field is visible or not
      *
-     * @return boolean visibility
+     * @return bool visibility
      *
      */
-    public function is_visible() {
+    public function is_visible(): bool {
         return $this->visible;
     }
 
@@ -109,20 +115,22 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * Return a printable version of the value provided in input
      *
-     * @param $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return $value;
     }
 
     /**
      * Callback for this field, so data can be converted before sending it to a persistent
      *
-     * @param $data
+     * @param stdClass $itemdata
+     * @param mixed ...$args
      */
-    public function form_filter_data(&$itemdata, ...$args) {
+    public function form_filter_data(stdClass &$itemdata, ...$args) {
 
     }
 
@@ -131,10 +139,10 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
      *
      * Not necessary most of the time
      *
-     * @param $entityalias
+     * @param string $entityalias
      * @return array [[string], string]
      */
-    public function get_additional_sql($entityalias) {
+    public function get_additional_sql(string $entityalias): array {
         return [[], ""];
     }
 
@@ -143,7 +151,6 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
      *
      * Not necessary most of the time
      *
-     * @param $entityalias
      * @return string
      */
     public function get_additional_util_field() {
@@ -173,19 +180,19 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * Get the type of parameter (see PARAM_XXX) for this type
      *
-     * @return mixed
+     * @return string
      */
-    public function get_raw_param_type() {
+    public function get_raw_param_type(): string {
         return $this->rawtype;
     }
 
     /**
      * Check if the field is required or not
      *
-     * @return boolean required
+     * @return bool required
      *
      */
-    public function is_required() {
+    public function is_required(): bool {
         return $this->required;
     }
 
@@ -201,9 +208,9 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * Get the field name for this field
      *
-     * @return mixed
+     * @return string
      */
-    public function get_name() {
+    public function get_name(): string {
         return $this->fieldname;
     }
 
@@ -212,17 +219,8 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
      *
      * @return bool
      */
-    public function can_sort() {
+    public function can_sort(): bool {
         return $this->sortable;
-    }
-
-    /**
-     * Is the field editable
-     *
-     * @return bool
-     */
-    public function is_editable() {
-        return $this->editable;
     }
 
     /**
@@ -248,7 +246,7 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
         $this->fullname = empty($fielddef->fullname) ? $this->fieldname : $fielddef->fullname;
         $this->visible = !isset($fielddef->visible) ? true : $fielddef->visible;
         $this->sortable = !isset($fielddef->sortable) ? true : $fielddef->sortable;
-        $this->editable = !isset($fielddef->editable) ? false : $fielddef->editable;
+        $this->editable = !isset($fielddef->editable) ? true : $fielddef->editable;
         return $fielddef;
     }
 }

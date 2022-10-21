@@ -24,9 +24,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core_table\local\filter\filter;
-use core_table\local\filter\integer_filter;
-
 /**
  * Get plugin file
  *
@@ -42,7 +39,8 @@ use core_table\local\filter\integer_filter;
  * @throws moodle_exception
  * @throws require_login_exception
  */
-function local_cltools_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function local_cltools_pluginfile(object $course, object $cm, context $context, string $filearea, array $args, bool $forcedownload,
+        array $options = array()) {
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     // TODO: add new type of context - one per entity. See custom context in $CFG->custom_context_classes.
     if ($context->contextlevel != CONTEXT_SYSTEM) {

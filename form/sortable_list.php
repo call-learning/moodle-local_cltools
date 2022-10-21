@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Sortable list form element.
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -30,15 +21,15 @@ require_once($CFG->libdir . '/form/templatable_form_element.php');
 require_once('HTML/QuickForm/input.php');
 
 /**
- * The listing sortable list form element.
+ * Sortable list form element.
  *
- * @package   theme_clboost
+ * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class MoodleQuickForm_sortable_list extends HTML_QuickForm_input implements templatable {
     // Include this in order to use the cltools templates.
-    use \local_cltools\local\forms\form_element_accept;
+    use \local_cltools\local\form\form_element_accept;
 
     /**
      * Choices
@@ -57,12 +48,12 @@ class MoodleQuickForm_sortable_list extends HTML_QuickForm_input implements temp
     /**
      * Constructor.
      *
-     * @param string $elementname (optional) name of the sortable list.
-     * @param string $elementlabel (optional) listing label.
+     * @param string|null $elementname (optional) name of the sortable list.
+     * @param string|null $elementlabel (optional) listing label.
      * @param array $attributes (optional) Either a typical HTML attribute string or an associative array.
-     * @param array $options set of options to initalize listing.
+     * @param array|null $options set of options to initalize listing.
      */
-    public function __construct($elementname = null, $elementlabel = null, $attributes = null, $options = array()) {
+    public function __construct(?string $elementname, ?string $elementlabel, array $attributes = [], ?array $options = []) {
         $this->_type = 'sortable_list';
         parent::__construct($elementname, $elementlabel, $attributes);
         $this->_choices = $options;
@@ -74,7 +65,7 @@ class MoodleQuickForm_sortable_list extends HTML_QuickForm_input implements temp
      * @param renderer_base $output
      * @return array|stdClass
      */
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(renderer_base $output): array {
         $context = $this->export_for_template_base($output);
 
         $options = [];

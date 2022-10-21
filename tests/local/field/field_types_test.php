@@ -13,12 +13,41 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+/**
+ * Standard test for different field types
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace local_cltools\local\field;
-
 use advanced_testcase;
 use moodleform;
+defined('MOODLE_INTERNAL') || die();
+global $CFG;
+require_once($CFG->dirroot . '/local/cltools/tests/lib.php');
+use local_cltools\simple\entity;
 
+/**
+ * Local sample form
+ */
+class sample_form extends moodleform {
+    /**
+     * Definition
+     */
+    protected function definition() {
+        $field = $this->_customdata['field'];
+        $field->form_add_element($this->_form);
+    }
+
+    /**
+     * Get form elements
+     * @return array
+     */
+    public function get_elements() {
+        return $this->_form->_elements;
+    }
+};
 /**
  * Standard test for different field types
  *
@@ -86,7 +115,11 @@ class field_types_test extends advanced_testcase {
                         ]
                 ],
                 'entity_selector' => [
-                        'field' => new entity_selector('fieldname'),
+                        'field' => new entity_selector([
+                                        'fieldname' => 'fieldname',
+                                        'entityclass' => entity::class,
+                                        'displayfield' => 'shortname']
+                        ),
                         'expectations' => [
                                 'format' => [],
                                 'type' => PARAM_INT,
@@ -172,11 +205,14 @@ class field_types_test extends advanced_testcase {
     /**
      * Return a printable version of the current value
      *
+     * @param persistent_field $field
+     * @param array $expectations
      * @dataProvider expected_types_values
+     * @covers \local_cltools\local\field\persistent_field::format_value
      */
     public function test_format_string($field, $expectations) {
         foreach ($expectations['format'] as $expectation) {
-            $this->assertEquals($expectation[1], $field->format_value($expectation[0]),
+            $this->assertEquals($expectation[1], $field->format_value($expectation[0], null, null),
                     "Entry {$expectation[0]} expected {$expectation[1]}");
         }
     }
@@ -184,7 +220,10 @@ class field_types_test extends advanced_testcase {
     /**
      * Get an identifier for this type of format
      *
+     * @param persistent_field $field
+     * @param array $expectations
      * @dataProvider expected_types_values
+     * @covers \local_cltools\local\field\persistent_field::get_raw_param_type
      */
     public function test_get_raw_type($field, $expectations) {
         $this->assertEquals($expectations['type'], $field->get_raw_param_type());
@@ -193,7 +232,10 @@ class field_types_test extends advanced_testcase {
     /**
      * Get an identifier for this type of format
      *
+     * @param persistent_field $field
+     * @param array $expectations
      * @dataProvider expected_types_values
+     * @covers \local_cltools\local\field\persistent_field::get_type
      */
     public function test_get_type($field, $expectations) {
         $namespaceparts = explode('\\', get_class($field));
@@ -203,8 +245,10 @@ class field_types_test extends advanced_testcase {
     /**
      * Check if the provided value is valid for this field.
      *
+     * @param persistent_field $field
+     * @param array $expectations
      * @dataProvider expected_types_values
-     *
+     * @covers \local_cltools\local\field\persistent_field::validate_value
      */
     public function test_validate_value($field, $expectations) {
         $fieldclass = get_class($field);
@@ -219,6 +263,7 @@ class field_types_test extends advanced_testcase {
 
     /**
      * Get the display name of this field
+     * @covers \local_cltools\local\field\persistent_field::get_display_name
      */
     public function test_get_display_name() {
         $field = new boolean(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
@@ -231,23 +276,19 @@ class field_types_test extends advanced_testcase {
     /**
      * Add element onto the form
      *
-     *
+     * @param persistent_field $field
+     * @param array $expectations
      * @dataProvider expected_types_values
+     * @covers \local_cltools\local\field\persistent_field::get_form_field_type
      */
     public function test_add_form_element($field, $expectations) {
         global $CFG;
         require_once($CFG->libdir . '/formslib.php');
+        $this->resetAfterTest();
+        entity::delete_table();
+        entity::create_table();
 
-        $form = new class(null, ['field' => $field]) extends moodleform {
-            protected function definition() {
-                $field = $this->_customdata['field'];
-                $field->form_add_element($this->_form);
-            }
-
-            public function get_elements() {
-                return $this->_form->_elements;
-            }
-        };
+        $form = new sample_form(null, ['field' => $field]);
         $elements = array_filter($form->get_elements(),
                 function($e) use ($field) {
                     return (in_array($e->getName(), [$field->get_name(), $field->get_name() . '_editor']));

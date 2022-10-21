@@ -13,55 +13,57 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Persistent navigation utils class
+ * Interface persistent_navigation: Persistent navigation interface
  *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @package local_cltools
+ * @copyright 2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace local_cltools\local\crud\navigation;
 
+use moodle_url;
+
 /**
- * Interface persistent_navigation
+ * Interface persistent_navigation: Persistent navigation interface
  *
- * @package local_cltools\local\crud\navigation
+ * @package local_cltools
+ * @copyright 2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface  persistent_navigation {
-    /***
+    /**
      * Get URL for a list of entities
      *
-     * @return mixed
+     * @return moodle_url
      */
-    public function get_list_url();
+    public function get_list_url(): moodle_url;
 
     /**
      * Get the URL for adding a new entity
      *
-     * @return mixed
+     * @return moodle_url
      */
-    public function get_add_url();
+    public function get_add_url(): moodle_url;
 
     /**
      * Get the URL for deleting an entity
      *
-     * @return mixed
+     * @return moodle_url
      */
-    public function get_delete_url();
+    public function get_delete_url(): moodle_url;
 
     /**
      * Get the URL for editing an entity
      *
-     * @return mixed
+     * @return moodle_url
      */
-    public function get_edit_url();
+    public function get_edit_url(): moodle_url;
 
     /**
      * Get the URL for viewing an entity
      *
-     * @return mixed
+     * @return moodle_url
      */
-    public function get_view_url();
+    public function get_view_url(): moodle_url;
 }

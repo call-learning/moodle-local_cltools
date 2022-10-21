@@ -35,7 +35,7 @@ class utils {
      * @param int $userid
      * @return false|string
      */
-    public static function get_user_fullname($userid) {
+    public static function get_user_fullname(int $userid) {
         global $DB;
         static $userfullnames = [];
 
@@ -47,7 +47,7 @@ class utils {
             return $userfullnames[$userid];
         }
 
-        // We already looked for the user and it does not exist.
+        // We already looked for the user, and it does not exist.
         if (isset($userfullnames[$userid]) && $userfullnames[$userid] === false) {
             return false;
         }
@@ -68,9 +68,10 @@ class utils {
      * Get time helper
      *
      * @param int $time
+     * @param bool $download
      * @return string
      */
-    public static function get_time($time, $download = false) {
+    public static function get_time(int $time, bool $download = false) {
         if (empty($download)) {
             $dateformat = get_string('strftimedatetime', 'core_langconfig');
         } else {

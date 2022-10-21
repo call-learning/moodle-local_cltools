@@ -16,14 +16,13 @@
 
 namespace local_cltools\othersimple;
 
-use coding_exception;
+use context;
 use core\persistent;
-use ddl_exception;
-use ddl_table_missing_exception;
 use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\enhanced_persistent_impl;
 use local_cltools\local\field\number;
 use local_cltools\local\field\text;
+use restricted_context_exception;
 use xmldb_table;
 
 /**
@@ -37,13 +36,13 @@ class entity extends persistent implements enhanced_persistent {
 
     use enhanced_persistent_impl;
 
+    /** @var string TABLE other simple */
     const TABLE = 'othersimple';
 
     /**
      * Usual properties definition for a persistent
      *
-     * @return array|array[]
-     * @throws coding_exception
+     * @return array
      */
     public static function define_fields(): array {
         return array(
@@ -52,7 +51,6 @@ class entity extends persistent implements enhanced_persistent {
                 new number('sortorder'),
         );
     }
-
 
     /**
      * This is specific to the test environment. We create the table structure.
@@ -63,10 +61,8 @@ class entity extends persistent implements enhanced_persistent {
      *
      * If the table exist we leave it as it is.
      *
-     * @throws ddl_exception
-     * @throws ddl_table_missing_exception
      */
-    public static function create_table() {
+    public static function create_table(): void {
         global $DB;
         $dbman = $DB->get_manager();
         $table = new xmldb_table(static::TABLE);
@@ -89,7 +85,7 @@ class entity extends persistent implements enhanced_persistent {
     /**
      * This is specific to the test environment. We delete the table structure.
      */
-    public static function delete_table() {
+    public static function delete_table(): void {
         global $DB;
         $dbman = $DB->get_manager();
         $table = new xmldb_table(static::TABLE);
@@ -98,7 +94,15 @@ class entity extends persistent implements enhanced_persistent {
         }
     }
 
-    public static function validate_access(\context $context) {
+    /**
+     * Validate access
+     *
+     * @param context $context
+     * @param bool $writeaccess
+     * @return bool
+     * @throws restricted_context_exception
+     */
+    public static function validate_access(context $context, $writeaccess = false): bool {
         return has_capability('local/cltools:entitylookup', $context);
     }
 }

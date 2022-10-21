@@ -13,24 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Persistent utils class
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local\crud;
 
 use coding_exception;
 use context_system;
 use core\external\exporter;
 use core\persistent;
-use dml_exception;
+use core_user\output\myprofile\renderer;
+use local_cltools\local\field\persistent_field;
 use moodle_url;
-use ReflectionException;
 use renderer_base;
 
 /**
@@ -44,31 +35,33 @@ use renderer_base;
  */
 abstract class entity_exporter extends exporter {
 
-    /** @var persistent The persistent object we will export. */
+    /** @var persistent $persistent The persistent object we will export. */
     protected $persistent = null;
     /**
      * Persistent component
      *
-     * @var null
+     * @var string|null $persistentcomponent
      */
     protected $persistentcomponent = null;
 
     /**
-     * @var null
+     * @var int|null $instanceid
      */
     protected $instanceid = null;
+
+    /**
+     * @var array $fields
+     */
+    protected $fields = [];
 
     /**
      * persistent_exporter constructor.
      *
      * @param persistent $persistent
      * @param array $related
-     * @throws ReflectionException
-     * @throws coding_exception
-     * @throws dml_exception
      */
-    public function __construct(persistent $persistent, $related = array()) {
-        $this->persistentcomponent = entity_utils::get_component(get_class($persistent));
+    public function __construct(persistent $persistent, array $related = array()) {
+        $this->persistentcomponent = entity_utils::get_component(new \ReflectionClass($persistent));
         $this->instanceid = (int) $persistent->get('id');
         $related = array_merge($related,
                 [
@@ -77,11 +70,6 @@ abstract class entity_exporter extends exporter {
                         'itemid' => (int) $persistent->get('id')
                 ]
         );
-        $classname = static::define_class();
-        if (!$persistent instanceof $classname) {
-            throw new coding_exception('Invalid type for persistent. ' .
-                    'Expected: ' . $classname . ' got: ' . get_class($persistent));
-        }
         $this->persistent = $persistent;
 
         if (method_exists($this->persistent, 'get_context') && !isset($this->related['context'])) {
@@ -93,15 +81,43 @@ abstract class entity_exporter extends exporter {
     }
 
     /**
+     * Define related object information
+     *
+     * @return string[]
+     */
+    protected static function define_related() {
+        return array('context' => '\\context', 'component' => 'string?', 'itemid' => 'int?');
+    }
+
+    /**
+     * Define other properties
+     *
+     * @return array|array[]
+     * @throws coding_exception
+     */
+    protected static function define_other_properties() {
+        $fields = entity_utils::get_defined_fields(static::define_class());
+        $props = [
+                'usermodifiedfullname' => [
+                        'type' => PARAM_ALPHANUMEXT
+                ]
+        ];
+        foreach ($fields as $field) {
+            /* @var persistent_field $field a persistent field */
+            $props[$field->get_name() . 'formatted'] = [
+                    'type' => $field->get_raw_param_type()
+            ];
+
+        }
+        return $props;
+    }
+
+    /**
      * Returns the specific class the persistent should be an instance of.
      *
      * @return string
      */
     abstract protected static function define_class();
-
-    protected static function define_related() {
-        return array('context' => '\\context', 'component' => 'string?', 'itemid' => 'int?');
-    }
 
     /**
      * Persistent exporters get their standard properties from the persistent class.
@@ -110,7 +126,18 @@ abstract class entity_exporter extends exporter {
      */
     protected static function define_properties() {
         $fields = entity_utils::get_defined_fields(static::define_class());
-        $properties = [];
+        $properties['timecreated'] = array(
+                'default' => 0,
+                'type' => PARAM_INT,
+        );
+        $properties['timemodified'] = array(
+                'default' => 0,
+                'type' => PARAM_INT
+        );
+        $properties['usermodified'] = array(
+                'default' => 0,
+                'type' => PARAM_INT
+        );
         foreach ($fields as $field) {
             $properties = array_merge($properties, $field->get_persistent_properties());
         }
@@ -125,19 +152,27 @@ abstract class entity_exporter extends exporter {
      */
     protected function get_other_values(renderer_base $output) {
         $values = [];
-        $values['usermodifiedfullname'] = fullname($this->data->usermodified);
+        $fields = entity_utils::get_defined_fields(static::define_class());
+        foreach ($fields as $fielname => $field) {
+            /* @var persistent_field $field a persistent field */
+            $values[$field->get_name() . 'formatted'] =
+                    $field->format_value($this->persistent->get($field->get_name()), $this->persistent, $output);
+        }
+        $values['usermodifiedfullname'] = '';
+        if ($this->data->usermodified) {
+            $usermodified = \core_user::get_user($this->data->usermodified);
+        }
+        $values['usermodifiedfullname'] = fullname($usermodified);
         return $values;
     }
 
     /**
      * Export linked file
      *
-     * @param $filearea
-     * @param null $fileprefix
-     * @param null $filetypegroup
+     * @param string $filearea
+     * @param string|null $fileprefix
+     * @param string|null $filetypegroup
      * @return moodle_url|null
-     * @throws coding_exception
-     * @throws dml_exception
      */
     protected function export_file($filearea, $fileprefix = null, $filetypegroup = null) {
         // Retrieve the file from the Files API.

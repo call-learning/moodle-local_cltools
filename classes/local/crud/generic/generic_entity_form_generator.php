@@ -13,18 +13,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+/**
+ * Persistent generic entity form generator
+ *
+ * @package   local_cltools
+ * @copyright 2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace local_cltools\local\crud\generic;
-
-use core\external\exporter;
-use core\external\persistent_exporter;
-use core\persistent;
 use local_cltools\local\crud\form\entity_form;
-
-defined('MOODLE_INTERNAL') || die();
+use local_cltools\local\crud\form\generic_entity_form;
 
 /**
- * Persistent generic entity form
+ * Persistent generic entity form generator
  *
  * @package   local_cltools
  * @copyright 2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
@@ -37,15 +38,8 @@ class generic_entity_form_generator {
      * @param string $entityclassname
      * @param array $args
      * @return entity_form|mixed
-     * @throws \ReflectionException
      */
-    public static function generate(string $entityclassname, $args) {
-        $form = new class() extends entity_form {
-            /** @var string The fully qualified classname. */
-            protected static $persistentclass = '';
-        };
-        $refclass = new \ReflectionClass($form);
-        $refclass->setStaticPropertyValue('persistentclass', $entityclassname);
-        return $refclass->newInstanceArgs($args);
+    public static function generate(string $entityclassname, $args): entity_form {
+        return new generic_entity_form($entityclassname, ...$args);
     }
 }

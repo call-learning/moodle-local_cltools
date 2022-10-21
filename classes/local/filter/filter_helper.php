@@ -20,16 +20,18 @@ use core_table\local\filter\filter;
 /**
  * Helper class to deal with filters and filterset
  *
- * @package   local_cltools
- * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_cltools
+ * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @copyright  2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class filter_helper {
     /**
      * Return filter SQL
      *
-     * @param string $alias
+     * @param filter $filter
+     * @param array $wheres
+     * @param array $params
      * @return array array of two elements - SQL query and named parameters
      */
     public static function get_sql_filter_join(filter $filter, array $wheres, array $params): array {
@@ -46,8 +48,10 @@ class filter_helper {
     /**
      * Map join types to corresponding SQL values
      *
+     * @param int $jointtype
+     * @return string
      */
-    public static function get_jointype_to_sql_join(int $jointtype) {
+    public static function get_jointype_to_sql_join(int $jointtype): string {
         $jointtypetosql = [
                 filter::JOINTYPE_ALL => 'AND',
                 filter::JOINTYPE_ANY => 'OR',
@@ -59,7 +63,7 @@ class filter_helper {
      * Return filter sanitized name (for use in SQL)
      *
      * @param string $name
-     * @return array array of two elements - SQL query and named parameters
+     * @return string
      */
     public static function get_sanitized_name(string $name): string {
         return trim(strtolower($name));

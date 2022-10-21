@@ -33,7 +33,7 @@ class crud_event_deleted extends base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event:entity:deleted', 'local_envf');
+        return get_string('event:entity:deleted', 'local_cltools');
     }
 
     /**
@@ -41,7 +41,7 @@ class crud_event_deleted extends base {
      *
      * @return string
      */
-    public static function get_objectid_mapping() {
+    public static function get_objectid_mapping(): string {
         return base::NOT_MAPPED;
     }
 
@@ -60,8 +60,8 @@ class crud_event_deleted extends base {
      *
      * @return string
      */
-    public function get_description() {
-        return get_string('entity:deleted', 'local_envf', "{$this->objecttable}({$this->objectid})");
+    public function get_description(): string {
+        return get_string('entity:deleted', 'local_cltools', "{$this->objecttable}({$this->objectid})");
     }
 
     /**
@@ -72,7 +72,7 @@ class crud_event_deleted extends base {
      * @return void
      */
     protected function validate_data() {
-        $this->data['objecttable'] = $this->data['other']['objecttable']; // We passed this through other.
+        $this->data['objecttable'] = $this->data['other']['objecttable']; // We passed this through others.
     }
 
     /**

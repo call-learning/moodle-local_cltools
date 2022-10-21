@@ -17,6 +17,8 @@
 namespace local_cltools\local\field;
 
 use coding_exception;
+use core\persistent;
+use renderer_base;
 
 /**
  * Date field
@@ -44,11 +46,11 @@ class date extends persistent_field {
     /**
      * Get the matching formatter type to be used for display
      *
-     * @return string|null return the type (and null if no formatter)
+     * @return object|null return the type (and null if no formatter)
      *
      * @throws coding_exception
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'datets';
         $format->formatterParams = (object) [
@@ -65,11 +67,12 @@ class date extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param int $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return userdate($value, get_string('strftimedatefullshort', 'langconfig'));
     }
 
@@ -91,7 +94,7 @@ class date extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "date_selector";
     }
 }

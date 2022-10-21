@@ -22,7 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
@@ -46,7 +45,7 @@ class behat_local_cltools extends behat_base {
      * arguments 'Responses report', 'Test quiz'.
      *
      * You should override this as appropriate for your plugin. The method
-     * {@link behat_navigation::resolve_core_page_instance_url()} is a good example.
+     * {@see behat_navigation::resolve_core_page_instance_url()} is a good example.
      *
      * Your overridden method should document the recognised page types with
      * a table like this:
@@ -71,8 +70,8 @@ class behat_local_cltools extends behat_base {
                 return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/edit.php", ['id' => $entity->get('id')]);
             case 'Entity add':
                 return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/add.php");
-            case 'Entity list':
-                return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/list.php");
+            case 'Entity index':
+                return new moodle_url("/local/cltools/tests/fixtures/pages/{$identifier}/index.php");
         }
         throw new Exception('Unrecognised page type "' . $type . '."');
     }
@@ -80,6 +79,7 @@ class behat_local_cltools extends behat_base {
     /**
      * Create the simple entity / other entities tables for testing
      *
+     * @param BeforeScenarioScope $scope
      * @BeforeScenario
      */
     public function before_scenario(BeforeScenarioScope $scope) {

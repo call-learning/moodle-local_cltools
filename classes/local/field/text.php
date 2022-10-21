@@ -13,19 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace local_cltools\local\field;
+use core\persistent;
+use renderer_base;
 
 /**
- * Base formatter
- *
- * For input and output
+ * Text field
  *
  * @package   local_cltools
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\field;
-
 class text extends persistent_field {
     /**
      * Construct the field from its definition
@@ -49,7 +47,7 @@ class text extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'input'
         ];
@@ -62,7 +60,7 @@ class text extends persistent_field {
      * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'textarea';
         return $format;
@@ -71,10 +69,9 @@ class text extends persistent_field {
     /**
      * Get the matching validator type to be used in the table
      *
-     * @return string|null return the type (and null if no filter)
-     *
+     * @return object|null return the type (and null if no filter)
      */
-    public function get_column_validator() {
+    public function get_column_validator(): ?object {
         return (object) [
                 'validator' => 'string'
         ];
@@ -83,11 +80,12 @@ class text extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param bool $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return html_to_text($value);
     }
 }

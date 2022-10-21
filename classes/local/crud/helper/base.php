@@ -24,20 +24,19 @@
 
 namespace local_cltools\local\crud\helper;
 
-use coding_exception;
 use context_system;
 use core\persistent;
 use core_renderer;
-use dml_exception;
 use html_writer;
-use lang_string;
+use local_cltools\local\crud\entity_exporter;
 use local_cltools\local\crud\entity_table;
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\crud\form\entity_form;
+use local_cltools\local\crud\generic\generic_entity_exporter_generator;
 use local_cltools\local\crud\generic\generic_entity_form_generator;
 use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\crud\navigation\flat_navigation;
-use moodle_exception;
+use local_cltools\local\crud\navigation\persistent_navigation;
 use moodle_page;
 use moodle_url;
 use ReflectionClass;
@@ -65,95 +64,77 @@ abstract class base {
     const ACTION_DONE = null;
 
     /**
-     * @var persistent|null $persistent
+     * @var ReflectionClass $refpersistentclass reference to the persistent entity class
      */
     protected $refpersistentclass = null;
+    /**
+     * @var ReflectionClass $refpersistentformclassname reference to the persistent entity class
+     */
     protected $refpersistentformclassname = null;
+    /**
+     * @var ReflectionClass $refpersistenttableclassname reference to the persistent entity class
+     */
     protected $refpersistenttableclassname = null;
+    /**
+     * @var ReflectionClass $refpersistentexporterclassname reference to the persistent entity class
+     */
     protected $refpersistentexporterclassname = null;
+    /**
+     * @var moodle_url $actionurl action URL
+     */
     protected $actionurl;
+    /**
+     * @var persistent_navigation $persistentnavigation navigation
+     */
     protected $persistentnavigation = null;
-
+    /**
+     * @var string $entityprefix entity prefix
+     */
     protected $entityprefix = null;
 
-    /** @var core_renderer */
+    /** @var core_renderer $renderer */
     protected $renderer;
 
     /**
      * crud_helper constructor.
      *
-     * @param string $entityclassname
-     * @param string $action
-     * @param core_renderer $renderer
-     * @throws ReflectionException
+     * @param string $entityclassname the related entity class name
+     * @param string|null $entityprefix optional entity prefix
+     * @param string|null $formclassname optional form class name
+     * @param string|null $tableclassname optional table classname
+     * @param string|null $exporterclassname optional exporter classname
+     * @param object|null $persistentnavigation optional persitent navigation
      */
     public function __construct(string $entityclassname,
-            $entityprefix = null,
-            $formclassname = null,
-            $tableclassname = null,
-            $exporterclassname = null,
-            $persistentnavigation = null
+            ?string $entityprefix,
+            ?string $formclassname,
+            ?string $tableclassname,
+            ?string $exporterclassname,
+            ?object $persistentnavigation
     ) {
         $this->refpersistentclass = new ReflectionClass($entityclassname);
         $entitynamespace = $this->refpersistentclass->getNamespaceName();
         $namespaceparts = explode('\\', $entitynamespace);
-        $this->entityprefix = $entityprefix ? $entityprefix : strtolower(end($namespaceparts));
+        $this->entityprefix = $entityprefix ?? strtolower(end($namespaceparts));
         $this->refpersistentformclassname = $formclassname;
         $this->refpersistenttableclassname = $tableclassname;
         $this->refpersistentexporterclassname = $exporterclassname;
-        $this->persistentnavigation = $persistentnavigation ? $persistentnavigation :
-                new flat_navigation($entityclassname);
-    }
-
-    /**
-     * crud_helper factory.
-     *
-     * @param string $entityclassname
-     * @param string $action
-     * @param core_renderer $renderer
-     * @return mixed
-     * @throws ReflectionException
-     */
-    public static function create(string $entityclassname,
-            $action = crud_add::ACTION,
-            $entityprefix = null,
-            $formclassname = null,
-            $tableclassname = null,
-            $exporterclassname = null,
-            $persistentnavigation = null
-    ) {
-        $actionclass = "\\local_cltools\\local\\crud\\helper\\crud_$action";
-        return new $actionclass($entityclassname,
-                $entityprefix,
-                $formclassname,
-                $tableclassname,
-                $exporterclassname,
-                $persistentnavigation
-        );
-    }
-
-    /**
-     * Get prefix for persistent class
-     *
-     * @return string
-     */
-    public function get_persistent_prefix() {
-        return $this->entityprefix;
+        $this->persistentnavigation = $persistentnavigation ?? new flat_navigation($entityclassname);
     }
 
     /**
      * Get related form
      *
-     * @param $formparameters
+     * @param int $persistentid
+     * @param mixed ...$formparameters
      * @return entity_form|object
-     * @throws ReflectionException*
+     * @throws ReflectionException *
      */
-    public function instanciate_related_form($persistentid = 0, ...$formparameters) {
+    public function instanciate_related_form(int $persistentid = 0, ...$formparameters): object {
         $entity = null;
         if ($persistentid) {
             $entity = $this->refpersistentclass->newInstance($persistentid);
         }
-        $formentity = null;
         $reflectionclass = $this->get_related_class('form');
         if ($reflectionclass) {
             $formentity = $reflectionclass->newInstanceArgs([$this->actionurl, ['persistent' => $entity]] + $formparameters);
@@ -167,22 +148,26 @@ abstract class base {
     /**
      * Get related form, exporter, list class
      *
-     * @param $type
-     * @return object
+     * @param string $type
+     * @return ReflectionClass|null
      */
-    protected function get_related_class($type) {
+    protected function get_related_class(string $type): ?ReflectionClass {
         $propertyname = "refpersistent{$type}classname";
-        $reflectionclass = $this->get_related_persistent_reflectionclass($this->$propertyname, $type);
-        return $reflectionclass;
+        if (!empty($this->$propertyname)) {
+            return $this->get_related_persistent_reflectionclass($this->$propertyname, $type);
+        }
+        return null;
     }
 
     /**
-     * @param $persistentclassname
-     * @param $reflectionclassname
+     * Get related reflection class for entity
+     *
+     * @param string $persistentclassname
+     * @param string $reflectionclassname
      * @return ReflectionClass
-     * @throws ReflectionException
      */
-    protected function get_related_persistent_reflectionclass($persistentclassname, $reflectionclassname) {
+    protected function get_related_persistent_reflectionclass(string $persistentclassname,
+            string $reflectionclassname): ?ReflectionClass {
         if ($persistentclassname) {
             return new ReflectionClass($persistentclassname);
         } else {
@@ -198,44 +183,42 @@ abstract class base {
     /**
      * Get related form
      *
-     * @param $formparameters
-     * @return entity_form|object
-     * @throws ReflectionException*
+     * @param persistent $entity
+     * @return entity_exporter
      */
-    public function instanciate_related_exporter(persistent $entity) {
-        $exporterentity = null;
+    public function instanciate_related_exporter(persistent $entity): entity_exporter {
         $reflectionclass = $this->get_related_class('exporter');
-        if ($reflectionclass) {
+        if (!class_exists($reflectionclass)) {
+            $exporterentity = generic_entity_exporter_generator::generate($entity);
+        } else {
             $exporterentity = $reflectionclass->newInstance($entity);
         }
         return $exporterentity;
     }
 
     /**
-     * Get related list class
+     * Get related table class
      *
-     * @param array $formparameters
      * @return entity_table|object
-     * @throws ReflectionException*
      */
-    public function instanciate_related_persistent_table() {
+    public function instanciate_related_persistent_table(): entity_table {
         $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
-            (object) [
-                'name' => 'edit',
-                'icon' => 't/edit',
-                'url' => $this->persistentnavigation->get_edit_url()
-            ],
-            (object) [
-                'name' => 'view',
-                'icon' => 'e/search',
-                'url' => $this->persistentnavigation->get_view_url(),
-            ],
-            (object) [
-                'name' => 'delete',
-                'icon' => 't/delete',
-                'url' => $this->persistentnavigation->get_delete_url()
-            ]
+                (object) [
+                        'name' => 'edit',
+                        'icon' => 't/edit',
+                        'url' => $this->persistentnavigation->get_edit_url()
+                ],
+                (object) [
+                        'name' => 'view',
+                        'icon' => 'e/search',
+                        'url' => $this->persistentnavigation->get_view_url(),
+                ],
+                (object) [
+                        'name' => 'delete',
+                        'icon' => 't/delete',
+                        'url' => $this->persistentnavigation->get_delete_url()
+                ]
         ];
         $reflectionclass = $this->get_related_class('table');
         if ($reflectionclass) {
@@ -251,10 +234,8 @@ abstract class base {
      * Page setup
      *
      * @param moodle_page $page
-     * @throws coding_exception
-     * @throws moodle_exception
      */
-    public function setup_page(&$page) {
+    public function setup_page(moodle_page &$page): void {
         $header = $this->get_page_header();
         $page->set_pagelayout('standard');
         $page->set_context(context_system::instance());
@@ -270,10 +251,8 @@ abstract class base {
      * Get current page header
      *
      * @return string
-     * @throws ReflectionException
-     * @throws coding_exception
      */
-    protected function get_page_header() {
+    protected function get_page_header(): string {
         $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
         $action = get_string(static::ACTION, 'local_cltools');
         return $action . ' ' . entity_utils::get_string_for_entity($this->refpersistentclass, $stringprefix . ':entity');
@@ -282,23 +261,17 @@ abstract class base {
     /**
      * Process the action
      *
-     * @param null $postprocesscb
+     * @param mixed $postprocesscb
      * @return mixed
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
-     * @throws ReflectionException
      */
     abstract public function action_process($postprocesscb = null);
 
     /**
      * Get event description as language string
      *
-     * @return lang_string|string
-     * @throws ReflectionException
-     * @throws coding_exception
+     * @return string
      */
-    protected function get_action_event_description() {
+    protected function get_action_event_description(): string {
         $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
         return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
@@ -308,12 +281,9 @@ abstract class base {
     /**
      * Setup extra page navigation
      *
-     * @param $page
-     * @throws ReflectionException
-     * @throws coding_exception
-     * @throws moodle_exception
+     * @param moodle_page $page
      */
-    protected function setup_page_navigation($page) {
+    protected function setup_page_navigation($page): void {
         $header = $this->get_page_header();
         $listpageurl = $this->persistentnavigation->get_list_url();
         $page->navbar->add(
@@ -325,10 +295,8 @@ abstract class base {
      * Trigger related event
      *
      * @param persistent $entity
-     * @throws coding_exception
-     * @throws dml_exception
      */
-    protected function trigger_event(persistent $entity) {
+    protected function trigger_event(persistent $entity): void {
         $eventparams = [
                 'objectid' => $entity->get('id'),
                 'context' => context_system::instance(),
@@ -345,9 +313,8 @@ abstract class base {
      * Get event class
      *
      * @return string
-     * @throws ReflectionException
      */
-    private function get_action_event_class() {
+    private function get_action_event_class(): string {
         $globaleventclass = entity_utils::get_component($this->refpersistentclass)
                 . '\\event\\'
                 . entity_utils::get_persistent_prefix($this->refpersistentclass)
@@ -356,6 +323,37 @@ abstract class base {
             return $globaleventclass;
         }
         return '\local_cltools\\event\\crud_event' . '_' . static::ACTION_DONE;
+    }
+
+    /**
+     * crud_helper factory.
+     *
+     * @param string $entityclassname the related entity class name
+     * @param string $action current action
+     * @param string|null $entityprefix optional entity prefix
+     * @param string|null $formclassname optional form class name
+     * @param string|null $tableclassname optional table classname
+     * @param string|null $exporterclassname optional exporter classname
+     * @param object|null $persistentnavigation optional persitent navigation
+     * @return base
+     */
+    public static function create(string $entityclassname,
+            string $action = crud_add::ACTION,
+            ?string $entityprefix = null,
+            ?string $formclassname = null,
+            ?string $tableclassname = null,
+            ?string $exporterclassname = null,
+            ?object $persistentnavigation = null
+    ): base {
+        $action = $action ?? 'add';
+        $actionclass = "\\local_cltools\\local\\crud\\helper\\crud_$action";
+        return new $actionclass($entityclassname,
+                $entityprefix,
+                $formclassname,
+                $tableclassname,
+                $exporterclassname,
+                $persistentnavigation
+        );
     }
 
 }

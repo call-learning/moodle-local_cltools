@@ -13,6 +13,16 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Enhanced entity implementation
+ *
+ * @package   local_cltools
+ * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+namespace local_cltools\local\crud;
+
+use context;
 
 /**
  * Enhanced entity implementation
@@ -21,9 +31,6 @@
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace local_cltools\local\crud;
-
 trait enhanced_persistent_impl {
     /**
      * Return defined properties from
@@ -39,7 +46,6 @@ trait enhanced_persistent_impl {
         }
         return $properties;
     }
-    // TODO: define fields from table XML definition.
 
     /**
      * Return defined properties from
@@ -57,10 +63,18 @@ trait enhanced_persistent_impl {
     /**
      * Get persistent context
      *
-     * @return mixed
+     * @return context|null
      */
-    public function get_context() {
+    public function get_context(): ?context {
         global $PAGE;
         return $PAGE->context;
+    }
+
+    /**
+     * Get template name
+     * @return string|null
+     */
+    public function get_template_name(): ?string {
+        return null;
     }
 }

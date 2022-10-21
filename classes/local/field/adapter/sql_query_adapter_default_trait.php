@@ -34,33 +34,33 @@ trait sql_query_adapter_default_trait {
     /**
      * Get additional fields
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return array of SQL fields (['xxx AS yyy', '...])
      */
-    public function get_additional_fields($entityalias = 'e') {
+    public function get_additional_fields(string $entityalias = 'e'): array {
         return [];
     }
 
     /**
      * Additional From Query
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return string
      */
-    public function get_additional_from($entityalias = 'e') {
+    public function get_additional_from(string $entityalias = 'e'): string {
         return "";
     }
 
     /**
      * Additional WHERE Query
      *
-     * @param $entityalias
+     * @param string $entityalias
      *
      * @return array ["WHERE QUERY",[params]]
      */
-    public function get_additional_where($entityalias = 'e') {
+    public function get_additional_where(string $entityalias = 'e'): array {
         return ["", []];
     }
 }

@@ -13,14 +13,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Persistent generic entity exporter
+ *
+ * @package   local_cltools
+ * @copyright 2022 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace local_cltools\local\crud\generic;
 
-use core\external\exporter;
 use core\external\persistent_exporter;
 use core\persistent;
-
-defined('MOODLE_INTERNAL') || die();
+use local_cltools\local\crud\entity_exporter;
 
 /**
  * Persistent generic entity exporter
@@ -33,38 +38,16 @@ class generic_entity_exporter_generator {
     /**
      * Generate exporter
      *
-     * @param string $entityclassname
      * @param persistent $entity
-     * @return persistent_exporter|mixed
-     * @throws \ReflectionException
+     * @return persistent_exporter
      */
-    public static function generate(string $entityclassname, persistent $entity) {
-        $exporter = new class($entity, [], $entityclassname) extends persistent_exporter {
+    public static function generate(persistent $entity): entity_exporter {
+        $exporter = new class($entity) extends entity_exporter {
             /**
-             * @var string $classname This will be changed dynamically before calling the constructor.
+             * @var string $classname This will be changed dynamically after calling the constructor.
              */
             public static $classname;
 
-            /**
-             * Constructor - saves the persistent object, and the related objects.
-             *
-             * @param \core\persistent $persistent The persistent object to export.
-             * @param array $related - An optional list of pre-loaded objects related to this persistent.
-             */
-            public function __construct(\core\persistent $persistent, $related = array(), string $classname) {
-                if (!$persistent instanceof $classname) {
-                    throw new coding_exception('Invalid type for persistent. ' .
-                            'Expected: ' . $classname . ' got: ' . get_class($persistent));
-                }
-                $this->persistent = $persistent;
-
-                if (method_exists($this->persistent, 'get_context') && !isset($this->related['context'])) {
-                    $this->related['context'] = $this->persistent->get_context();
-                }
-
-                $data = $persistent->to_record();
-                exporter::__construct($data, $related);
-            }
             /**
              * Define the related class.
              *
@@ -74,11 +57,9 @@ class generic_entity_exporter_generator {
                 return self::$classname;
             }
         };
-        $exporter::$classname = $entityclassname;
+        $exporter::$classname = get_class($entity);
         return $exporter;
     }
 
-
 }
 
-;

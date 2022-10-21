@@ -23,9 +23,10 @@
 
 namespace local_cltools\local\field\adapter;
 
-use core\persistent;
+use local_cltools\local\crud\enhanced_persistent;
 use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
+use ReflectionClass;
 use ReflectionException;
 use stdClass;
 
@@ -42,9 +43,8 @@ trait form_adapter_default {
      *
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
-     * @return mixed
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name());
         $this->internal_form_add_element($mform);
     }
@@ -54,18 +54,17 @@ trait form_adapter_default {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "text";
     }
 
     /**
      * Add element onto the form
      *
-     * @param $mform
-     * @param mixed ...$additionalargs
-     * @return mixed
+     * @param MoodleQuickForm $mform
+     * @param string $elementname
      */
-    protected function internal_form_add_element($mform, $elementname = '') {
+    protected function internal_form_add_element(MoodleQuickForm $mform, string $elementname = ''): void {
         if (empty($elementname)) {
             $elementname = $this->get_name();
         }
@@ -81,10 +80,10 @@ trait form_adapter_default {
     /**
      * Filter persistent data submission
      *
-     * @param $data
+     * @param stdClass $data
      * @return mixed
      */
-    public function filter_data_for_persistent($data) {
+    public function filter_data_for_persistent(stdClass $data): stdClass {
         return $data;
     }
 
@@ -92,10 +91,10 @@ trait form_adapter_default {
      * Callback for this field, so data can be converted before form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent
      * @return stdClass
      */
-    public function form_prepare_files($itemdata, persistent $persistent) {
+    public function form_prepare_files(stdClass $itemdata, enhanced_persistent $persistent): stdClass {
         return $itemdata;
     }
 
@@ -103,10 +102,10 @@ trait form_adapter_default {
      * Callback for this field, so data can be saved after form submission
      *
      * @param stdClass $itemdata
-     * @param persistent $persistent
+     * @param enhanced_persistent $persistent
      * @return stdClass
      */
-    public function form_save_files($itemdata, persistent $persistent) {
+    public function form_save_files(stdClass $itemdata, enhanced_persistent $persistent): stdClass {
         return $itemdata;
     }
 
@@ -114,7 +113,7 @@ trait form_adapter_default {
      * Is in persistent
      *
      */
-    public function is_persistent() {
+    public function is_persistent(): bool {
         return true;
     }
 
@@ -123,25 +122,27 @@ trait form_adapter_default {
      *
      * @return bool
      */
-    public function can_edit() {
-        return true;
+    public function can_edit(): bool {
+        return $this->editable;
     }
 
     /**
      * Get context for file creation/saving
      *
-     * @param persistent $persistent
      * @param string $fieldname
+     * @param enhanced_persistent $persistent
      * @return array
      * @throws ReflectionException
      */
-    protected function get_file_info_context(persistent $persistent, string $fieldname) {
+    protected function get_file_info_context(string $fieldname, enhanced_persistent $persistent): ?array {
         if ($persistent) {
             $context = $persistent->get_context();
-            $component = entity_utils::get_component(get_class($persistent));
-            $filearearoot = entity_utils::get_persistent_prefix(get_class($persistent));
+            $refpersistent = new ReflectionClass($persistent);
+            $component = entity_utils::get_component($refpersistent);
+            $filearearoot = entity_utils::get_persistent_prefix($refpersistent);
             $itemid = $persistent && $persistent->get('id') > 0 ? $persistent->get('id') : null;
+            return [$context, $component, "{$filearearoot}_{$fieldname}", $itemid];
         }
-        return [$context, $component, "{$filearearoot}_{$fieldname}", $itemid];
+        return null;
     }
 }

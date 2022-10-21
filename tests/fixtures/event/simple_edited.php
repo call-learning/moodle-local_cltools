@@ -23,7 +23,7 @@ use core\event\base;
  *
  * Message sent /created when entity is added
  *
- * @package   local_envf
+ * @package   local_cltools
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,7 +52,7 @@ class simple_edited extends crud_event_edited {
      *
      * @return string
      */
-    public function get_description() {
+    public function get_description(): string {
         return "Simple entity edited";
     }
 
@@ -61,7 +61,7 @@ class simple_edited extends crud_event_edited {
      *
      * @return string
      */
-    public static function get_objectid_mapping() {
+    public static function get_objectid_mapping(): string {
         return base::NOT_MAPPED;
     }
 

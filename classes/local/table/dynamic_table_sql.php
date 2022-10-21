@@ -13,19 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Dynamic table addons
- *
- * This is basically for Moodle 3.9 the similar to 'extends \table_sql implements dynamic_table'
- * but with the capability to find the core table in persistent namespace
- * This does not inherit from table_sql anymore and a fork of the original concept.
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local\table;
 
 use coding_exception;
@@ -42,7 +29,17 @@ use moodle_url;
 use pix_icon;
 use popup_action;
 use restricted_context_exception;
-
+/**
+ * Dynamic table addons
+ *
+ * This is basically for Moodle 3.9 the similar to 'extends \table_sql implements dynamic_table'
+ * but with the capability to find the core table in persistent namespace
+ * This does not inherit from table_sql anymore and a fork of the original concept.
+ *
+ * @package   local_cltools
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class dynamic_table_sql implements dynamic_table_interface {
     use table_sql_trait;
 
@@ -75,16 +72,17 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     protected $fieldaliases = [];
 
     /**
-     * Sets up the page_table parameters.
+     * Constructor for dynamic table
      *
-     * @throws coding_exception
-     * @see page_list::get_filter_definition() for filter definition
+     * @param string|null $uniqueid a random unique id
+     * @param array|null $actionsdefs an array of action
+     * @param bool $editable is the table editable ?
      */
-    public function __construct($uniqueid = null,
-            $actionsdefs = null,
-            $editable = false
+    public function __construct(?string $uniqueid = null,
+            ?array $actionsdefs = null,
+            ?bool $editable = false
     ) {
-        $this->uniqueid = $uniqueid ? $uniqueid : html_writer::random_id('dynamictable');
+        $this->uniqueid = $uniqueid ?? html_writer::random_id('dynamictable');
         $this->actionsdefs = $actionsdefs;
         $this->iseditable = (bool) $editable;
         list($cols, $headers) = $this->get_table_columns_definitions();
@@ -130,7 +128,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
-     * Setup the fields for this table
+     * Set up the fields for this table
      */
     abstract protected function setup_fields();
 
@@ -199,14 +197,16 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @param bool $writeaccess
      * @throws restricted_context_exception
      */
-    public function validate_access(context $context, $writeaccess = false) {
+    public static function validate_access(context $context, bool $writeaccess = false): bool {
         helper::validate_context($context);
+        return true;
     }
 
     /**
      * Retrieve data from the database and return a row set
      * This can be a superset or a modified of what actual is in the table.
      *
+     * @param int $pagesize
      * @return array
      */
     public function get_rows($pagesize) {
@@ -226,8 +226,8 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * Main method to create the underlying query (SQL)
      *
      * @param int $pagesize
-     * @param bool $useinitialsbar
      * @param bool $disablefilters disable filters
+     * @throws \dml_exception
      */
     public function query_db($pagesize, $disablefilters = false) {
         global $DB;
@@ -327,6 +327,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * Get where
      *
      * @param bool $disablefilters
+     * @param string $tablealias
      * @return array
      */
     protected function internal_get_sql_where($disablefilters = false, $tablealias = 'e') {
@@ -385,8 +386,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      *
      * This is a modified version.
      *
-     * @param string $sortby The field to sort by.
-     * @param int $sortorder The sort order.
+     * @param array $sortdata
      */
     public function set_sortdata(array $sortdata): void {
         $this->sortdata = [];
@@ -403,6 +403,8 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     }
 
     /**
+     * Get field definition
+     *
      * @return array
      */
     public function get_fields_definition() {
@@ -460,34 +462,32 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     /**
      * Set the value of a specific row.
      *
-     * @param $rowid
-     * @param $fieldname
-     * @param $newvalue
-     * @param $oldvalue
-     * @return bool
+     * @param int $rowid
+     * @param string $fieldname
+     * @param mixed $newvalue
+     * @param mixed $oldvalue
      */
-    public function set_value($rowid, $fieldname, $newvalue, $oldvalue) {
-        return false;
+    public function set_value(int $rowid, string $fieldname, $newvalue, $oldvalue): void {
     }
 
     /**
      * Check if the value is valid for this row, column
      *
-     * @param $rowid
-     * @param $fieldname
-     * @param $newvalue
+     * @param int $rowid
+     * @param string $fieldname
+     * @param mixed $newvalue
      * @return bool
      */
-    public function is_valid_value($rowid, $fieldname, $newvalue) {
+    public function is_valid_value(int $rowid, string $fieldname, $newvalue): bool {
         return false;
     }
 
     /**
      * Check if table editable
      *
-     * @returns bool
+     * @return bool
      */
-    public function is_editable() {
+    public function is_editable(): bool {
         return $this->iseditable;
     }
 
@@ -496,12 +496,12 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      *
      * @return array associative array of defined actions
      */
-    public function get_defined_actions() {
+    public function get_defined_actions(): ?array {
         return $this->actionsdefs;
     }
 
     /**
-     * @throws coding_exception
+     * Setup other fields: callback for additional behaviour.
      */
     protected function setup_other_fields() {
     }
@@ -509,17 +509,17 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     /**
      * Format the action cell.
      *
-     * @param $row
+     * @param object $row
      * @return string
      * @throws coding_exception
      * @throws moodle_exception
      */
-    protected function col_actions($row) {
+    protected function col_actions(object $row): string {
         // That will render a template from a json instead.
         global $OUTPUT;
         $actions = [];
         foreach ($this->actionsdefs as $a) {
-            if(is_array($a)) {
+            if (is_array($a)) {
                 $a = (object) $a;
             }
             $url = new moodle_url($a->url, ['id' => $row->id]);

@@ -14,23 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Renderer for CL Tools
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\output;
 
 use local_cltools\output\table\entity_table_renderable;
 use plugin_renderer_base;
 
 /**
- * Renderer for CompetVetEval
+ * Renderer for CLTools
  *
- * @package    local_resourcelibrary
+ * @package    local_cltools
  * @copyright  2020 CALL Learning 2²020 - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,8 +34,9 @@ class renderer extends plugin_renderer_base {
      * Renderer for table
      *
      * @param entity_table_renderable $entitytable
+     * @return string
      */
-    public function render_entity_table(entity_table_renderable $entitytable) {
+    public function render_entity_table(entity_table_renderable $entitytable): string {
         return $this->render_from_template('local_cltools/dynamic_table_sql',
                 $entitytable->export_for_template($this));
     }

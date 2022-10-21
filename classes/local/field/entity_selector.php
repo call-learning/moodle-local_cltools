@@ -16,10 +16,12 @@
 
 namespace local_cltools\local\field;
 
-use dml_exception;
+use core\persistent;
 use local_cltools\local\crud\entity_utils;
 use MoodleQuickForm;
+use ReflectionClass;
 use ReflectionException;
+use renderer_base;
 
 /**
  * Entity selector field
@@ -30,7 +32,7 @@ use ReflectionException;
  */
 class entity_selector extends persistent_field {
     /**
-     * @var string|null $entityclass
+     * @var persistent|null $entityclass
      */
     protected $entityclass = "";
     /**
@@ -42,7 +44,7 @@ class entity_selector extends persistent_field {
      * Construct the field from its definition
      *
      * @param string|array $fielnameordef there is a shortform with defaults for boolean field and a long form with all or a partial
-     * definiton
+     * definition
      */
     public function __construct($fielnameordef) {
         $standarddefaults = [
@@ -51,8 +53,14 @@ class entity_selector extends persistent_field {
                 'default' => 0
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
-        $this->entityclass = empty($fielddef->entityclass) ? null : $fielddef->entityclass;
-        $this->displayfield = empty($fielddef->displayfield) ? "" : $fielddef->displayfield;
+        if (empty($fielddef->entityclass)) {
+            throw new field_exception('required', 'entityclass');
+        }
+        if (empty($fielddef->displayfield)) {
+            throw new field_exception('required', 'displayfield');
+        }
+        $this->entityclass = $fielddef->entityclass;
+        $this->displayfield = $fielddef->displayfield;
     }
 
     /**
@@ -62,7 +70,7 @@ class entity_selector extends persistent_field {
      * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'entity_lookup';
         $format->formatterParams = (object) [
@@ -79,7 +87,7 @@ class entity_selector extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'entity_lookup',
                 'editorParams' => (object) [
@@ -94,13 +102,14 @@ class entity_selector extends persistent_field {
      *
      * Not necessary most of the time
      *
-     * @param $entityalias
+     * @param string $entityalias
      * @return string
      * @throws ReflectionException
      */
-    public function get_additional_from($entityalias = 'e') {
+    public function get_additional_from(string $entityalias = 'e'): string {
         $table = ($this->entityclass)::TABLE;
-        $aliasname = entity_utils::get_persistent_prefix($this->entityclass);
+        $reflectionclass = new ReflectionClass($this->entityclass);
+        $aliasname = entity_utils::get_persistent_prefix($reflectionclass);
         return "LEFT JOIN {" . $table . "} $aliasname ON {$aliasname}.id = {$entityalias}.{$this->fieldname}";
     }
 
@@ -110,7 +119,7 @@ class entity_selector extends persistent_field {
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $values = static::entity_lookup($this->entityclass, $this->displayfield);
         $choices = [];
         foreach ($values as $val) {
@@ -125,12 +134,11 @@ class entity_selector extends persistent_field {
      *
      * Used in external API.
      *
-     * @param $entityclass
-     * @param $displayfield
+     * @param string $entityclass
+     * @param string $displayfield
      * @return array
-     * @throws dml_exception
      */
-    public static function entity_lookup($entityclass, $displayfield) {
+    public static function entity_lookup(string $entityclass, string $displayfield): array {
         if ($entityclass && class_exists($entityclass)) {
             $fields = entity_utils::get_defined_fields($entityclass);
             if (empty($displayfield)) {
@@ -141,10 +149,9 @@ class entity_selector extends persistent_field {
                 }
             }
             $records = $entityclass::get_records(null, $displayfield, 'ASC');
-            $allrecords = array_map(function($r) use ($displayfield) {
+            return array_map(function($r) use ($displayfield) {
                 return ['id' => $r->get('id'), 'value' => $r->get($displayfield)];
             }, $records);
-            return $allrecords;
         } else {
             return [];
         }
@@ -155,7 +162,22 @@ class entity_selector extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type(): string {
         return "searchableselector";
+    }
+    /**
+     * Return a printable version of the value provided in input
+     *
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
+     */
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        if (!empty($value) && is_numeric($value)) {
+            $record = $this->entityclass::get_record(['id' => $value], 'ASC');
+            return $record->get($this->displayfield);
+        }
+        return $value;
     }
 }

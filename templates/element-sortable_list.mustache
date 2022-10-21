@@ -20,24 +20,16 @@
 
     Example context (json):
     {
+        "label": "Course full name",
+        "required": true,
+        "advanced": false,
+        "error": null,
         "element": {
-            "id": "id_xxxx",
-            "nameraw": "sortablelist",
+            "wrapperid": "fitem_id_fullname",
+            "id": "id_fullname",
+            "name": "fullname",
             "name": "sortablelist",
-            "label": null,
-            "multiple": null,
-            "checked": null,
-            "error": null,
-            "size": null,
-            "value": null,
-            "helpbutton": "",
-            "hiddenlabel": false,
-            "frozen": false,
-            "hardfrozen": false,
-            "extraclasses": null,
-            "type": "select",
-            "attributes": "",
-            "options": [{ 'text': 'Text value', 'value': '134' },...]
+            "options": [{ "text": "Text value", "value": "134" }]
         }
     }
 }}
@@ -56,18 +48,9 @@
     {{/element}}
 {{/ core_form/element-template }}
 {{^element.frozen}}
-    {{#js}}
-        require(['jquery', 'core/sortable_list'], function($, SortableList) {
-        var list = new SortableList('#{{element.id}}-ui');
-        $('#{{element.id}}-ui > *').on(SortableList.EVENTS.DROP, function(evt, info) {
-            var sortedvalue = $('#{{element.id}}-ui > li:not(.sortable-list-is-dragged)').map(function() {
-                    return $(this).data('value');
-            }).get().join(", ");
-            $('#{{element.id}}').val(sortedvalue);
-        });
-        list.getElementName = function(element) {
-            return $.Deferred().resolve(element.attr('data-name'));
-        }
-        });
-    {{/js}}
+{{#js}}
+    require(['local_cltools/sortable_list'], function(SortableList) {
+        SortableList.init('#{{element.id}}');
+    });
+{{/js}}
 {{/element.frozen}}

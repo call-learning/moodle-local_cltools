@@ -97,7 +97,7 @@ class entity_lookup extends external_api {
                 [
                         'entityclass' => new external_value(
                         // Note: We do not have a PARAM_CLASSNAME which would have been ideal.
-                        // For now we will have to check manually.
+                        // For now, we will have to check manually.
                                 PARAM_RAW,
                                 'Handler',
                                 VALUE_REQUIRED

@@ -24,13 +24,8 @@
 
 namespace local_cltools\local\crud\helper;
 
-use coding_exception;
-use core_renderer;
-use dml_exception;
 use local_cltools\output\table\entity_table_renderable;
-use moodle_exception;
 use moodle_page;
-use ReflectionException;
 use single_button;
 
 /**
@@ -57,20 +52,21 @@ class crud_list extends base {
     /**
      * crud_helper constructor.
      *
-     * @param string $entityclassname
-     * @param string $action
-     * @param core_renderer $renderer
-     * @throws ReflectionException
+     * @param string $entityclassname the related entity class name
+     * @param string|null $entityprefix optional entity prefix
+     * @param string|null $formclassname optional form class name
+     * @param string|null $tableclassname optional table classname
+     * @param string|null $exporterclassname optional exporter classname
+     * @param object|null $persistentnavigation optional persitent navigation
      */
     public function __construct(string $entityclassname,
-            $entityprefix = null,
-            $formclassname = null,
-            $listclassname = null,
-            $exporterclassname = null,
-            $persistentnavigation = null,
-            $pagesrooturl = null
+            ?string $entityprefix,
+            ?string $formclassname,
+            ?string $tableclassname,
+            ?string $exporterclassname,
+            ?object $persistentnavigation
     ) {
-        parent::__construct($entityclassname, $entityprefix, $formclassname, $listclassname,
+        parent::__construct($entityclassname, $entityprefix, $formclassname, $tableclassname,
                 $exporterclassname, $persistentnavigation);
         $this->actionurl = $this->persistentnavigation->get_list_url();
     }
@@ -79,36 +75,25 @@ class crud_list extends base {
      * Page setup
      *
      * @param moodle_page $page
-     * @throws coding_exception
-     * @throws moodle_exception
      */
-    public function setup_page(&$page) {
+    public function setup_page(moodle_page &$page): void {
         parent::setup_page($page);
-        $formclass = $this->get_related_class("form");
-        if ($formclass) {
-            $buttonadd = new single_button($this->persistentnavigation->get_add_url(), get_string('add'));
-            $page->set_button($this->renderer->render($buttonadd));
-        }
+        $buttonadd = new single_button($this->persistentnavigation->get_add_url(), get_string('add'));
+        $page->set_button($this->renderer->render($buttonadd));
         $this->setup_page_navigation($page);
     }
 
     /**
      * Process the action
      *
-     * @param null $postprocesscb
-     * @return mixed
-     * @throws coding_exception
-     * @throws dml_exception
-     * @throws moodle_exception
-     * @throws ReflectionException
+     * @param callable $postprocesscb
+     * @return string
      */
-    public function action_process($postprocesscb = null) {
+    public function action_process($postprocesscb = null): string {
         $returnedtext = '';
         $entitylist = $this->instanciate_related_persistent_table();
         // Here the form is just the filter form.
         $renderable = new entity_table_renderable($entitylist);
-
-        /* @var entity_table_renderable entity table */
         $returnedtext .= $this->renderer->render($renderable);
 
         return $returnedtext;

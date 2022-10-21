@@ -56,28 +56,34 @@ require_once($CFG->dirroot . '/local/cltools/form/register_form_elements.php');
  * You may exclude some fields from the validation should your form include other
  * properties such as files. To do so use the $foreignfields property.
  *
- * @package    core
+ * @package    local_cltools
  * @copyright  2015 Frédéric Massart - FMCorz.net
+ * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class entity_form extends persistent {
 
+    /**
+     * Editor suffix
+     */
     const EDITOR_SUFFIX = '_editor';
     /** @var array Fields to remove when getting the final data. */
     protected static $fieldstoremove = array('submitbutton');
+    /**
+     * @var array|mixed $fields form fields
+     */
     protected $fields = [];
 
     /**
-     * persistent_form constructor.
+     * Persistent form constructor.
      *
-     * @param null $action
-     * @param null $customdata
+     * @param mixed $action
+     * @param mixed $customdata
      * @param string $method
      * @param string $target
-     * @param null $attributes
+     * @param mixed $attributes
      * @param bool $editable
-     * @param null $ajaxformdata
-     * @throws coding_exception
+     * @param array $ajaxformdata
      */
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null,
             $editable = true, $ajaxformdata = null) {
@@ -116,6 +122,8 @@ abstract class entity_form extends persistent {
     }
 
     /**
+     * Hook before field definition
+     *
      * @param MoodleQuickForm $mform
      * Additional definitions for the form (before we add the fields)
      */
@@ -123,6 +131,8 @@ abstract class entity_form extends persistent {
     }
 
     /**
+     * Hook after field definition
+     *
      * @param MoodleQuickForm $mform
      * Additional definitions for the form (after we add the fields)
      */
@@ -152,11 +162,9 @@ abstract class entity_form extends persistent {
     }
 
     /**
-     * Save current data in persitent
+     * Save current data in persistent
      *
-     * @param $data
      * @return \core\persistent
-     * @throws coding_exception
      */
     public function save_data(): \core\persistent {
 
@@ -177,46 +185,13 @@ abstract class entity_form extends persistent {
     }
 
     /**
-     * Filter out the foreign fields of the persistent.
-     *
-     * This can be overridden to filter out more complex fields.
-     *
-     * @param stdClass $data The data to filter the fields out of.
-     * @return object.
-     * @throws coding_exception
-     */
-    protected function filter_data_for_persistent($data) {
-        $filtereddata = parent::filter_data_for_persistent($data);
-        foreach ($this->fields as $field) {
-            $filtereddata = $field->filter_data_for_persistent($filtereddata);
-        }
-        if (!empty($filtereddata->submitbutton)) {
-            unset($filtereddata->submitbutton);
-        }
-        return $filtereddata;
-    }
-
-    /**
-     * Save submited files
-     *
-     * @throws ReflectionException
-     * @throws dml_exception
-     */
-    protected function save_submitted_files($data) {
-        foreach ($this->fields as $field) {
-            $data = $field->form_save_files($data, $this->get_persistent());
-        }
-        return $data;
-    }
-
-    /**
      * Get form data.
      *
      * Conveniently removes non-desired properties and add the ID property.
      *
      * @return object|null
      */
-    public function get_data() {
+    public function get_data(): ?object {
         $data = moodleform::get_data();
         if (is_object($data)) {
             foreach (static::$fieldstoremove as $field) {
@@ -231,13 +206,45 @@ abstract class entity_form extends persistent {
     }
 
     /**
+     * Filter out the foreign fields of the persistent.
+     *
+     * This can be overridden to filter out more complex fields.
+     *
+     * @param stdClass $data The data to filter the fields out of.
+     * @return object
+     * @throws coding_exception
+     */
+    protected function filter_data_for_persistent($data): object {
+        $filtereddata = parent::filter_data_for_persistent($data);
+        foreach ($this->fields as $field) {
+            $filtereddata = $field->filter_data_for_persistent($filtereddata);
+        }
+        if (!empty($filtereddata->submitbutton)) {
+            unset($filtereddata->submitbutton);
+        }
+        return $filtereddata;
+    }
+
+    /**
+     * Save submited files
+     *
+     * @param object $data
+     * @return object
+     */
+    protected function save_submitted_files(object $data): object {
+        foreach ($this->fields as $field) {
+            $data = $field->form_save_files($data, $this->get_persistent());
+        }
+        return $data;
+    }
+
+    /**
      * Get options for filemanager
      *
-     * @param $fieldinfo
+     * @param array $fieldinfo
      * @return array
-     * @throws dml_exception
      */
-    protected function filemanager_get_default_options(&$fieldinfo) {
+    protected function filemanager_get_default_options(array &$fieldinfo): array {
         $formoptions = ['context' => $this->get_persistent()->get_context()];
         return $formoptions;
     }
@@ -245,11 +252,10 @@ abstract class entity_form extends persistent {
     /**
      * Get options for editor
      *
-     * @param $fieldinfo
+     * @param array $fieldinfo
      * @return array
-     * @throws dml_exception
      */
-    protected function editor_get_option($fieldinfo) {
+    protected function editor_get_option(array $fieldinfo): array {
         global $CFG;
         $formoptions =
                 [
@@ -269,9 +275,8 @@ abstract class entity_form extends persistent {
      * Get all fields related to file
      *
      * @return array
-     * @throws coding_exception
      */
-    protected function get_file_fields_info() {
+    protected function get_file_fields_info(): array {
         static $fields = [];
         if (!empty($fields)) {
             return $fields;
@@ -281,8 +286,10 @@ abstract class entity_form extends persistent {
         foreach ($mform->_elements as $e) {
             $elementtype = $e->getType();
             $elementname = $this->get_real_element_name($e);
-            if (in_array($elementtype, ['filemanager', 'file', 'editor'])) {
-                $fields[$elementname] = $this->fields[$elementname];
+            if ($elementname) {
+                if (in_array($elementtype, ['filemanager', 'file', 'editor'])) {
+                    $fields[$elementname] = $this->fields[$elementname];
+                }
             }
         }
         return $fields;
@@ -292,9 +299,9 @@ abstract class entity_form extends persistent {
      * Tweak for editor element names as they are created with _editor suffix
      *
      * @param HTML_QuickForm_element $e
-     * @return false|string
+     * @return null|string
      */
-    private function get_real_element_name(HTML_QuickForm_element $e) {
+    private function get_real_element_name(HTML_QuickForm_element $e): ?string {
         $elementname = $e->getName();
         if ($e->getType() == 'editor') {
             return static::remove_editor_suffix($elementname);
@@ -306,8 +313,10 @@ abstract class entity_form extends persistent {
     /**
      * Tweak for editor element names as they are created with _editor suffix
      *
+     * @param string $fieldname
+     * @return string
      */
-    private static function remove_editor_suffix($fieldname) {
+    private static function remove_editor_suffix(string $fieldname): string {
         return (substr($fieldname, -strlen(self::EDITOR_SUFFIX)) == self::EDITOR_SUFFIX) ?
                 substr($fieldname, 0, strlen($fieldname) - strlen(self::EDITOR_SUFFIX)) : $fieldname;
     }

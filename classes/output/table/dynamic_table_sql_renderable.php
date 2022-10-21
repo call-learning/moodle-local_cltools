@@ -13,28 +13,18 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Renderable for entities table
- *
- * @package   local_cltools
- * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\output\table;
 
 use local_cltools\local\table\dynamic_table_sql;
 use moodle_url;
 use renderable;
 use renderer_base;
-use stdClass;
 use templatable;
 
 /**
  * Renderable for dynamic table
  *
- * @package    local_resourcelibrary
+ * @package    local_cltools
  * @copyright  2020 CALL Learning - Laurent David laurent@call-learning.fr
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -64,13 +54,13 @@ class dynamic_table_sql_renderable implements renderable, templatable {
      * Constructor
      *
      * @param dynamic_table_sql $dynamictable
-     * @param object $otheroptions
+     * @param object|null $otheroptions
      * @param int $perpage
      */
     public function __construct(
-            $dynamictable,
-            $otheroptions = null,
-            $perpage = 30
+            dynamic_table_sql $dynamictable,
+            ?object $otheroptions = null,
+            int $perpage = 30
     ) {
         $this->dynamictable = $dynamictable;
         $this->perpage = $perpage;
@@ -78,30 +68,38 @@ class dynamic_table_sql_renderable implements renderable, templatable {
         $this->actionsdefs = $dynamictable->get_defined_actions();
     }
 
-    public function export_for_template(renderer_base $output) {
-        $context = new stdClass();
-        $context->tableuniqueid = $this->dynamictable->get_unique_id();
-        $context->filtersetjson = json_encode($this->dynamictable->get_filterset());
-        $context->sortdatajson = '';
-        $context->pagesize = $this->perpage;
-        $context->handler = get_class($this->dynamictable);
-        $context->handlerparams = '';
+    /**
+     * Export for template
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    public function export_for_template(renderer_base $output): array {
+        $context = [
+                'tableuniqueid' => $this->dynamictable->get_unique_id(),
+                'filtersetjson' => json_encode($this->dynamictable->get_filterset()),
+                'sortdatajson' => '',
+                'pagesize' => $this->perpage,
+                'handler' => get_class($this->dynamictable),
+                'handlerparams' => '',
+                'otheroptions' => '',
+                'editable' => $this->dynamictable->is_editable(),
+                'actionsdefs' => json_encode([]),
+
+        ];
         if (method_exists($this->dynamictable, 'get_persistent_class')) {
-            $context->handlerparams = $this->dynamictable->define_class();
+            $context['handlerparams'] = $this->dynamictable->define_class();
         }
-        $context->otheroptions = "";
-        $context->editable = $this->dynamictable->is_editable();
         if ($this->otheroptions) {
-            $context->otheroptions = json_encode($this->otheroptions);
+            $context['otheroptions'] = json_encode($this->otheroptions);
         }
-        $context->actionsdefs = json_encode([]);
         if ($this->dynamictable->get_defined_actions()) {
             $actions = $this->dynamictable->get_defined_actions();
             $actions = array_map(function($a) {
                 $a->url = !empty($a->url) ? $a->url->out(false) : '';
                 return $a;
             }, $actions);
-            $context->actionsdefs = json_encode($actions);
+            $context['actionsdefs'] = json_encode($actions);
         }
         return $context;
     }

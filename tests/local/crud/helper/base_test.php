@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Persistent utils test case
- *
- * @package     local_cltools
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_cltools\local\crud\helper;
 
 use local_cltools\simple\entity;
@@ -35,10 +26,12 @@ use moodle_url;
  * @package     local_cltools
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \local_cltools\local\crud\helper\base;
  */
 class base_test extends base_crud_test {
     /**
      * Get crud management
+     * @covers \local_cltools\local\crud\helper\base
      */
     public function test_get_crud_default() {
         $crudmgmt = base::create(entity::class);
@@ -48,13 +41,10 @@ class base_test extends base_crud_test {
     }
 
     /**
-     * Test that we target the right clas
+     * Test that we can instanciate the form
+     *
+     * @covers \local_cltools\local\crud\helper\base
      */
-    public function test_get_persistent_prefix() {
-        $crudmgmt = base::create(entity::class);
-        $this->assertEquals('simple', $crudmgmt->get_persistent_prefix());
-    }
-
     public function test_instanciate_related_form() {
         global $PAGE;
         $crudmgmt = base::create(entity::class);
@@ -66,8 +56,12 @@ class base_test extends base_crud_test {
         $formdisplay = $form->render();
         $this->assertStringContainsString('input', $formdisplay);
     }
-
-    public function test_instanciate_related_persistent_list() {
+    /**
+     * Test that we can instanciate the table
+     *
+     * @covers \local_cltools\local\crud\helper\base
+     */
+    public function test_instanciate_related_persistent_table() {
         global $PAGE;
         // Create a couple of entities.
         $entitiesdata = [
@@ -106,13 +100,18 @@ class base_test extends base_crud_test {
         $rows = $persistenttable->get_rows(1000, true);
         $this->assertStringContainsString('Shortname 1', $rows[0]->shortname);
         $this->assertStringContainsString('Shortname 2', $rows[1]->shortname);
-        $this->assertTrue(!empty($rows[0]->actions)); // This should be actually included in the table.
+        $this->assertNotEmpty($rows[0]->actions); // This should be actually included in the table.
     }
 
     /**
+     * Test page setup
+     *
+     * @param string $action
+     * @param array $expected
      * @dataProvider action_data_provider
+     * @covers \local_cltools\local\crud\helper\base
      */
-    public function test_setup_page($action, $expected) {
+    public function test_setup_page(string $action, array $expected) {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
@@ -120,9 +119,14 @@ class base_test extends base_crud_test {
     }
 
     /**
+     * Test page header generation
+     *
+     * @param string $action
+     * @param array $expected
      * @dataProvider action_data_provider
+     * @covers \local_cltools\local\crud\helper\base
      */
-    public function test_page_header($action, $expected) {
+    public function test_page_header(string $action, array $expected) {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
@@ -130,9 +134,14 @@ class base_test extends base_crud_test {
     }
 
     /**
+     * Test description
+     *
+     * @param string $action
+     * @param array $expected
      * @dataProvider action_data_provider
+     * @covers \local_cltools\local\crud\helper\base
      */
-    public function test_get_action_event_description($action, $expected) {
+    public function test_get_action_event_description(string $action, array $expected) {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
@@ -140,9 +149,15 @@ class base_test extends base_crud_test {
     }
 
     /**
+     * Test action event class
+     *
+     * @param string $action
+     * @param array $expected
+     * @param array|null $formdata
      * @dataProvider action_data_provider
+     * @covers \local_cltools\local\crud\helper\base
      */
-    public function test_get_action_event_class($action, $expected, $formdata = null) {
+    public function test_get_action_event_class(string $action, array $expected, $formdata = null) {
         global $PAGE;
         $user = $this->getDataGenerator()->create_user();
         $eventsink = $this->redirectEvents();
@@ -188,6 +203,8 @@ class base_test extends base_crud_test {
     }
 
     /**
+     * Get data provider
+     *
      * @return array[]
      */
     public function action_data_provider() {

@@ -16,7 +16,9 @@
 
 namespace local_cltools\local\field;
 
+use core\persistent;
 use MoodleQuickForm;
+use renderer_base;
 
 /**
  * Select field
@@ -27,7 +29,7 @@ use MoodleQuickForm;
  */
 class select_choice extends persistent_field {
     /**
-     * List of choices
+     * @var array $choices List of choices
      */
     protected $choices = [];
 
@@ -56,7 +58,7 @@ class select_choice extends persistent_field {
      * @return object|null return the parameters (or null if no matching filter)
      *
      */
-    public function get_column_filter() {
+    public function get_column_filter(): ?object {
         $format = $this->get_column_formatter();
         if ($format) {
             return (object) [
@@ -76,7 +78,7 @@ class select_choice extends persistent_field {
      * @return object|null return the parameters (or null if no matching formatter)
      *
      */
-    public function get_column_formatter() {
+    public function get_column_formatter(): ?object {
         $format = parent::get_column_formatter();
         $format->formatter = 'lookup';
         $format->formatterParams = (object) $this->choices;
@@ -90,7 +92,7 @@ class select_choice extends persistent_field {
      * @return object|null return the parameters (or null if no matching editor)
      *
      */
-    public function get_column_editor() {
+    public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'select',
                 'editorParams' => (object) $this->choices
@@ -104,7 +106,7 @@ class select_choice extends persistent_field {
      * @return object|null return the parameters (or null if no matching validator)
      *
      */
-    public function get_column_validator() {
+    public function get_column_validator(): ?object {
         return (object) [
                 'validator' => "in:" . join('|', (array) array_keys($this->choices))
         ];
@@ -113,11 +115,12 @@ class select_choice extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param int $value
-     * @param mixed $additionalcontext
-     * @return mixed
+     * @param mixed $value
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
      */
-    public function format_value($value, $additionalcontext = null) {
+    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
         return empty($this->choices[$value]) ? '' : $this->choices[$value];
     }
 
@@ -127,7 +130,7 @@ class select_choice extends persistent_field {
      * @param MoodleQuickForm $mform
      * @param mixed ...$additionalargs
      */
-    public function form_add_element(MoodleQuickForm $mform, ...$additionalargs) {
+    public function form_add_element(MoodleQuickForm &$mform, ...$additionalargs): void {
         $mform->addElement($this->get_form_field_type(), $this->get_name(), $this->get_display_name(), $this->choices);
         parent::internal_form_add_element($mform);
     }
@@ -137,7 +140,7 @@ class select_choice extends persistent_field {
      *
      * @return string
      */
-    public function get_form_field_type() {
+    public function get_form_field_type():string {
         return "select";
     }
 
