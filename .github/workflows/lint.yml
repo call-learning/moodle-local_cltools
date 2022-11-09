@@ -3,10 +3,11 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
+
     services:
       postgres:
-        image: postgres:10
+        image: postgres:12
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -14,10 +15,13 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
-        image: mariadb:10.5
+        image: mariadb:10
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
@@ -25,13 +29,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.4']
+        php: ['7.3', '7.4', '8.0']
         moodle-branch: ['MOODLE_39_STABLE', 'MOODLE_311_STABLE']
         database: [pgsql, mariadb]
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: plugin
 
@@ -41,6 +45,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.extensions }}
           ini-values: max_input_vars=5000
+          # none to use phpdbg fallback. Specify pcov (Moodle 3.10 and up) or xdebug to use them instead.
           coverage: none
 
       - name: Initialise moodle-plugin-ci
@@ -50,27 +55,47 @@ jobs:
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+      - name: Install moodle-plugin-ci
+        run: |
+          moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
-      - name: phplint
+      - name: PHP Lint
         if: ${{ always() }}
-        run: moodle-plugin-ci phplint plugin
+        run: moodle-plugin-ci phplint
 
-      - name: phpcpd
+      - name: PHP Copy/Paste Detector
+        continue-on-error: true # This step will show errors but will not fail
         if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd plugin || true
+        run: moodle-plugin-ci phpcpd
 
-      - name: phpmd
+      - name: PHP Mess Detector
+        continue-on-error: true # This step will show errors but will not fail
         if: ${{ always() }}
-        run: moodle-plugin-ci phpmd plugin
+        run: moodle-plugin-ci phpmd
 
-      - name: codechecker
+      - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker plugin
+        run: moodle-plugin-ci codechecker --max-warnings 0
 
-      - name: savepoints
+      - name: Moodle PHPDoc Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci savepoints plugin
+        run: moodle-plugin-ci phpdoc
 
-      - name: phpcpd
+      - name: Validating
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc plugin || true
+        run: moodle-plugin-ci validate
+
+      - name: Check upgrade savepoints
+        if: ${{ always() }}
+        run: moodle-plugin-ci savepoints
+
+      - name: Mustache Lint
+        if: ${{ always() }}
+        run: moodle-plugin-ci mustache
+
+      - name: Grunt
+        if: ${{ always() }}
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
