@@ -110,8 +110,6 @@ class crud_view extends base {
         $entity = $this->refpersistentclass->newInstance($id);
         $returnedtext .= $this->renderer->container_start();
         $relatedexporter = $this->instanciate_related_exporter($entity);
-        $exportedvalue = [];
-
         if (empty($relatedexporter)) {
             // Create a dummy exporter and make sure we point to the right class.
             $relatedexporter = generic_entity_exporter_generator::generate($entity);

@@ -67,12 +67,12 @@ class date extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param mixed $value
      * @param persistent|null $persistent
      * @param renderer_base|null $renderer
      * @return string
      */
-    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
+    public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        $value = parent::format_value($persistent, $renderer);
         return userdate($value, get_string('strftimedatefullshort', 'langconfig'));
     }
 

@@ -16,6 +16,8 @@
 
 namespace local_cltools\local\field;
 
+use cache;
+use cache_store;
 use context_system;
 use moodle_exception;
 use MoodleQuickForm;
@@ -115,13 +117,18 @@ class generic_selector extends persistent_field {
                     throw new required_capability_exception($context, 'moodle/user:viewdetails', 'cannotviewdetails',
                             'local_cltools');
                 }
-                foreach ($DB->get_recordset('user') as $user) {
-                    $userdisplay = ucwords(fullname($user)) . " ($user->email)";
+                $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cveteval', 'genericselectorcache');
+                $values = $cache->get('users');
+                if (!$values) {
+                    foreach ($DB->get_recordset('user') as $user) {
+                        $userdisplay = ucwords(fullname($user)) . " ($user->email)";
 
-                    $values[] = [
+                        $values[] = [
                             'id' => $user->id,
                             'value' => $userdisplay
-                    ];
+                        ];
+                    }
+                    $cache->set('user', $values);
                 }
                 break;
             default:

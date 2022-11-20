@@ -156,7 +156,7 @@ abstract class entity_exporter extends exporter {
         foreach ($fields as $fielname => $field) {
             /* @var persistent_field $field a persistent field */
             $values[$field->get_name() . 'formatted'] =
-                    $field->format_value($this->persistent->get($field->get_name()), $this->persistent, $output);
+                    $field->format_value($this->persistent, $output);
         }
         $values['usermodifiedfullname'] = '';
         if ($this->data->usermodified) {

@@ -33,7 +33,7 @@ class behat_local_cltools_generator extends behat_generator_base {
                         'singular' => 'entity',
                         'datagenerator' => 'entity',
                         'required' => ['entitynamespace'],
-                        'switchids' => [],
+                        'switchids' => ['scale' => 'scaleid'],
                 ]
         ];
     }

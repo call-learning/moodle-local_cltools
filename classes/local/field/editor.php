@@ -157,12 +157,12 @@ class editor extends persistent_field {
     /**
      * Return a printable version of the value provided in input
      *
-     * @param mixed $value
      * @param persistent|null $persistent
      * @param renderer_base|null $renderer
      * @return string
      */
-    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
+    public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        $value = parent::format_value($persistent, $renderer);
         if (!empty($persistent)) {
             $fieldname = $this->get_name();
             [$context, $component, $filearea, $itemid] = $this->get_file_info_context($fieldname, $persistent);

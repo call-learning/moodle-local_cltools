@@ -115,13 +115,12 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     /**
      * Return a printable version of the value provided in input
      *
-     * @param mixed $value
      * @param persistent|null $persistent
      * @param renderer_base|null $renderer
      * @return string
      */
-    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
-        return $value;
+    public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        return !empty($persistent) ? $persistent->get($this->get_name()) : "";
     }
 
     /**

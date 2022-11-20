@@ -32,8 +32,7 @@ class base_crud_test extends advanced_testcase {
     /**
      * Setup persistent table
      */
-    public function setUp() {
-        parent::setUp();
+    protected function setUp() {
         parent::setUp();
         spl_autoload_register(function() {
             global $CFG;

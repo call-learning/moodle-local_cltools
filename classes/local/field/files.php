@@ -186,13 +186,12 @@ class files extends persistent_field {
     /**
      * Return a printable version of the current value
      *
-     * @param mixed $value
      * @param persistent|null $persistent
      * @param renderer_base|null $renderer
      * @return string
      */
-    public function format_value($value, ?persistent $persistent = null, ?renderer_base $renderer = null): string {
-        $filesurl = [];
+    public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        $filesimages = [];
         if (!empty($persistent)) {
             $fieldname = $this->get_name();
             [$context, $component, $filearea, $value] = $this->get_file_info_context($fieldname, $persistent);
@@ -200,21 +199,26 @@ class files extends persistent_field {
             foreach ($files as $f) {
                 /* @var  stored_file $f information for the current file */
                 if (!$f->is_directory() &&
-                        file_mimetype_in_typegroup($f->get_mimetype(), ['web_image', 'document'])) {
+                    file_mimetype_in_typegroup($f->get_mimetype(), ['web_image', 'document'])) {
                     if (!empty($value) && $value != $f->get_itemid()) {
                         continue; // Only display the file specified by the value.
                     }
-                    $filesurl[] = moodle_url::make_pluginfile_url(
-                            $f->get_id(),
-                            $f->get_component(),
-                            $f->get_filearea(),
-                            $f->get_itemid(),
-                            $f->get_filepath(),
-                            $f->get_filename()
+                    $url = moodle_url::make_pluginfile_url(
+                        $f->get_contextid(),
+                        $f->get_component(),
+                        $f->get_filearea(),
+                        $f->get_itemid(),
+                        $f->get_filepath(),
+                        $f->get_filename()
                     );
+                    $filesimages[] = html_writer::img(
+                        $url,
+                        $f->get_filename()
+                    );
+
                 }
             }
         }
-        return html_writer::alist($filesurl);
+        return html_writer::alist($filesimages);
     }
 }

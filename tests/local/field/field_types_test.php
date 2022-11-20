@@ -212,7 +212,7 @@ class field_types_test extends advanced_testcase {
      */
     public function test_format_string($field, $expectations) {
         foreach ($expectations['format'] as $expectation) {
-            $this->assertEquals($expectation[1], $field->format_value($expectation[0], null, null),
+            $this->assertEquals($expectation[1], $field->format_value(null, null),
                     "Entry {$expectation[0]} expected {$expectation[1]}");
         }
     }

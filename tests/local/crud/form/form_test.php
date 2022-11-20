@@ -93,7 +93,7 @@ class form_test extends base_crud_test {
         $form->prepare_for_files();
         $entity = $form->save_data();
         $field = new files('image');
-        $value = $field->format_value(null, $entity, $OUTPUT);
+        $value = $field->format_value($entity, $OUTPUT);
         $this->assertStringContainsString('tux-sample.png', $value);
         $this->assertStringContainsString('/local_cltools/simple_image/', $value);
     }
@@ -171,7 +171,7 @@ class form_test extends base_crud_test {
         $form->prepare_for_files();
         $entity = $form->save_data();
         $field = new editor('description');
-        $value = $field->format_value($entity->get('description'), $entity, $OUTPUT);
+        $value = $field->format_value($entity, $OUTPUT);
         $this->assertStringContainsString('tux-sample.png', $value);
         $this->assertStringContainsString('/local_cltools/simple_description/', $value);
         $this->assertStringContainsString('Description my text ', $value);

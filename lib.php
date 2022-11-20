@@ -27,19 +27,16 @@
 /**
  * Get plugin file
  *
- * @param object $course
- * @param object $cm
+ * @param object|null $course
+ * @param object|null $cm
  * @param context $context
  * @param string $filearea
  * @param array $args
  * @param bool $forcedownload
  * @param array $options
  * @return false|void
- * @throws coding_exception
- * @throws moodle_exception
- * @throws require_login_exception
  */
-function local_cltools_pluginfile(object $course, object $cm, context $context, string $filearea, array $args, bool $forcedownload,
+function local_cltools_pluginfile(?object $course, ?object $cm, context $context, string $filearea, array $args, bool $forcedownload,
         array $options = array()) {
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     // TODO: add new type of context - one per entity. See custom context in $CFG->custom_context_classes.
