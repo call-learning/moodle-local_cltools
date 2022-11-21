@@ -87,13 +87,13 @@ export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, 
             }
         }
     }
-    columndefs =  columndefs.map(
+    columndefs = columndefs.map(
         (columndef) => {
             if ("additionalParams" in columndef) {
                 const additionalProps = JSON.parse(columndef["additionalParams"]);
                 if (typeof additionalProps === 'object') {
                     columndef = Object.assign(columndef, additionalProps);
-                    delete(columndef.additionalParameters);
+                    delete (columndef.additionalParameters);
                 }
             }
             for (const colprop in columndef) {

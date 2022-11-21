@@ -73,7 +73,7 @@ export const validateRemote = async (tableHandler, tableHandlerParams, tableUniq
  * @param {String} tableUniqueid
  * @param {Object} data
  */
-export const cellEdited = (tableHandler, tableHandlerParams,tableUniqueid, data) => {
+export const cellEdited = (tableHandler, tableHandlerParams, tableUniqueid, data) => {
     const args = {
         handler: tableHandler,
         handlerparams: tableHandlerParams,

@@ -20,7 +20,6 @@ defined('MOODLE_INTERNAL') || die;
 use context;
 use context_system;
 use core_table\local\filter\filter;
-use external_api;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
@@ -44,7 +43,7 @@ require_once($CFG->dirroot . '/lib/externallib.php');
  * @copyright 2020 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class helper extends external_api {
+class helper {
     /**
      * Basic parameters for any query related to the table
      *

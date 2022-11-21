@@ -67,7 +67,7 @@ class set_value extends external_api {
                 'field' => $field,
                 'value' => $value,
                 'oldvalue' => $oldvalue,
-        ] = helper::validate_parameters(self::execute_parameters(), [
+        ] = self::validate_parameters(self::execute_parameters(), [
                 'handler' => $handler,
                 'handlerparams' => $handlerparams,
                 'uniqueid' => $uniqueid,

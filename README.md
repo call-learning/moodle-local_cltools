@@ -1,6 +1,8 @@
 Moodle Local cltools - CAL Learning tools
 ==
 
+[![CI Tests (Linting)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/lint.yml/badge.svg)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/lint.yml)
+[![CI Tests (Testing)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/ci.yml/badge.svg)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/ci.yml)
 
 Tools used in different project to fill the gap from missing features that are handy:
 * Real JS tables (using tabulator.js)

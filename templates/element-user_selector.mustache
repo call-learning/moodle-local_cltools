@@ -23,12 +23,13 @@
         "label": "Select user",
         "required": true,
         "advanced": false,
-        "error": null,
+        "error": "",
         "element": {
             "wrapperid": "fitem_id_fullname",
             "id": "id_fullname",
+            "iderror": "id_fullname_error",
             "name": "fullname",
-            "name": "userselector"
+            "contextid": 1
         }
     }
 }}
@@ -50,32 +51,35 @@
         var elementid = $('#{{element.id}}');
         var elusername = $('#user-selected-fullname-{{element.id}}');
         $('body').on('user-selected-event', function(e, uniqueId, userid, userfullname) {
-            if( uniqueId == '{{uniqid}}') {
+            if (uniqueId == '{{uniqid}}') {
                 elementid.val(userid);
-                Templates.replaceNodeContents(elusername, '<span class="user-selector-username p-2">' + userfullname + '</span>', '');
+                Templates.replaceNodeContents(elusername,
+                    '<span class="user-selector-username p-2">' + userfullname + '</span>', '');
             }
         });
     });
 {{/js}}
 {{^element.frozen}}
-    {{#js}}
-        require(['jquery', 'core/templates', 'core/modal_factory','core/fragment'],
-            function($, Templates, ModalFactory, Fragment) {
-                var trigger = $('#{{element.action.id}}');
-                var modalPromise = ModalFactory.create({
-                        large: true,
-                        type: ModalFactory.types.CANCEL,
-                        body: Fragment.loadFragment('local_cltools', 'userselector_table', {{element.contextid}}, {'uniqid': '{{uniqid}}'})
-                }, trigger);
-                $.when(modalPromise).done(function (modal) {
-                    modal.setTitle('{{#str}} userselector, local_cltools {{/str}}');
-                    $('body').on('user-selected-event', function(e, uniqueId) {
-                        if( uniqueId == '{{uniqid}}') {
-                            modal.hide();
-                        }
-                    });
-                });
+{{#js}}
+require(['jquery', 'core/templates', 'core/modal_factory', 'core/fragment'],
+    function($, Templates, ModalFactory, Fragment) {
+        var trigger = $('#{{element.action.id}}');
+        var modalPromise = ModalFactory.create({
+                large: true,
+                type: ModalFactory.types.CANCEL,
+                body: Fragment.loadFragment('local_cltools', 'userselector_table',
+                    {{element.contextid}}, {'uniqid': '{{uniqid}}'})
+        }, trigger);
+        $.when(modalPromise).done(function(modal) {
+            modal.setTitle('{{#str}} userselector, local_cltools {{/str}}');
+            $('body').on('user-selected-event', function(e, uniqueId) {
+                if (uniqueId == '{{uniqid}}') {
+                    modal.hide();
+                }
             });
-    {{/js}}
+        });
+    }
+);
+{{/js}}
 {{/element.frozen}}
 

@@ -52,7 +52,7 @@ export const TABULATOR_FORMATTERS = {
         const value = cell.getValue();
         return lookup[value];
     },
-    'generic_lookup':  (cell, formatterParams) => {
+    'generic_lookup': (cell, formatterParams) => {
         const lookup = genericLookup(formatterParams.type);
         const value = cell.getValue();
         return lookup[value];

@@ -47,7 +47,7 @@ export const prepareGenericLookup = async (mtype) => {
     window.onbeforeunload = () => {
         sessionStorage.removeItem(computePrefix(mtype));
     };
-    const lookupValues = await  genericTableLookup({
+    const lookupValues = await genericTableLookup({
         type: mtype,
     }).catch(Notification.exception)
         .then(

@@ -69,7 +69,7 @@ export const dateEditor = (cell, onRendered, success) => {
  */
 export const TABULATOR_EDITORS = {
     date: dateEditor,
-    'entity_lookup': function(cell, onRendered, success, cancel, editorParams) {
+    'entity_lookup': function (cell, onRendered, success, cancel, editorParams) {
         return this.editors.select(cell, onRendered, success, cancel,
             entityLookup(editorParams.entityclass, editorParams.displayfield));
     }

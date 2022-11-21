@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 // Register the form element.
-\MoodleQuickForm::registerElementType('sortable_list',
-    $CFG->dirroot . '/local/cltools/form/sortable_list.php',
-    'MoodleQuickForm_sortable_list');
 
 \MoodleQuickForm::registerElementType('user_selector',
     $CFG->dirroot . '/local/cltools/form/user_selector.php',

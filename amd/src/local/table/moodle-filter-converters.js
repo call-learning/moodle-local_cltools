@@ -40,7 +40,7 @@ const MOODLE_FILTER_CONVERTER = {
             if (Array.isArray(args)) {
                 return args.map(toNumericEqual);
             } else if (typeof args === 'boolean') {
-                return [toNumericEqual(args ? 1: 0)];
+                return [toNumericEqual(args ? 1 : 0)];
             } else {
                 return [toNumericEqual(args)];
             }

@@ -29,7 +29,7 @@ import {call as fetchMany} from 'core/ajax';
  * @param   {object} args
  * @returns {Promise}
  */
-export const getTableRows = args => fetchMany([{ methodname: 'cltools_dynamic_table_get_rows',args}])[0];
+export const getTableRows = args => fetchMany([{methodname: 'cltools_dynamic_table_get_rows', args}])[0];
 
 /**
  * Get all columns from a dynamic table
@@ -37,7 +37,7 @@ export const getTableRows = args => fetchMany([{ methodname: 'cltools_dynamic_ta
  * @param   {object} args
  * @returns {Promise}
  */
-export const getTableColumns = args => fetchMany([{ methodname: 'cltools_dynamic_table_get_columns',args}])[0];
+export const getTableColumns = args => fetchMany([{methodname: 'cltools_dynamic_table_get_columns', args}])[0];
 
 /**
  * Set a value from a table
@@ -45,7 +45,7 @@ export const getTableColumns = args => fetchMany([{ methodname: 'cltools_dynamic
  * @param   {object} args
  * @returns {Promise}
  */
-export const setTableValue = args => fetchMany([{ methodname: 'cltools_dynamic_table_set_value',args}])[0];
+export const setTableValue = args => fetchMany([{methodname: 'cltools_dynamic_table_set_value', args}])[0];
 
 /**
  * Check if a value is valid
@@ -53,7 +53,7 @@ export const setTableValue = args => fetchMany([{ methodname: 'cltools_dynamic_t
  * @param   {object} args
  * @returns {Promise}
  */
-export const validateTableValue = args => fetchMany([{ methodname: 'cltools_dynamic_table_validate_value',args}])[0];
+export const validateTableValue = args => fetchMany([{methodname: 'cltools_dynamic_table_validate_value', args}])[0];
 
 /**
  * Lookup values for an entity
@@ -61,7 +61,7 @@ export const validateTableValue = args => fetchMany([{ methodname: 'cltools_dyna
  * @param   {object} args
  * @returns {Promise}
  */
-export const entityTableLookup = args => fetchMany([{ methodname: 'cltools_entity_lookup',args}])[0];
+export const entityTableLookup = args => fetchMany([{methodname: 'cltools_entity_lookup', args}])[0];
 
 /**
  * Lookup values for generic moodle entities such as users or courses
@@ -69,4 +69,4 @@ export const entityTableLookup = args => fetchMany([{ methodname: 'cltools_entit
  * @param   {object} args
  * @returns {Promise}
  */
-export const genericTableLookup = args => fetchMany([{ methodname: 'cltools_generic_lookup',args}])[0];
+export const genericTableLookup = args => fetchMany([{methodname: 'cltools_generic_lookup', args}])[0];

@@ -77,6 +77,35 @@ class behat_local_cltools extends behat_base {
     }
 
     /**
+     * Return the list of partial named selectors for this plugin.
+     *
+     * @return behat_component_named_selector[]
+     */
+    public static function get_partial_named_selectors(): array {
+        return [
+            new behat_component_named_selector(
+                'Table Row', [
+                    <<<XPATH
+    .//div[contains(@class,'tabulator-row') and contains(normalize-space(.),%locator%)]
+XPATH
+                ]
+            ),
+        ];
+    }
+
+    /**
+     * Return a list of the exact named selectors for the component.
+     *
+     * @return behat_component_named_selector[]
+     */
+    public static function get_exact_named_selectors(): array {
+        return [
+            new behat_component_named_selector('row_action_button', [
+                "//a[contains(@class,'action-icon')]/i[contains(@aria-label, %locator%)]",
+            ]),
+        ];
+    }
+    /**
      * Create the simple entity / other entities tables for testing
      *
      * @param BeforeScenarioScope $scope

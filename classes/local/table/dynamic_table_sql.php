@@ -198,7 +198,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
      * @throws restricted_context_exception
      */
     public static function validate_access(context $context, bool $writeaccess = false): bool {
-        helper::validate_context($context);
+        \external_api::validate_context($context);
         return true;
     }
 
