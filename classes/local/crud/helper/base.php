@@ -284,11 +284,12 @@ abstract class base {
      * @param moodle_page $page
      */
     protected function setup_page_navigation($page): void {
-        $header = $this->get_page_header();
         $listpageurl = $this->persistentnavigation->get_list_url();
-        $page->navbar->add(
-                $header,
-                new moodle_url($listpageurl));
+        $stringprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
+        $actiontitle = get_string(crud_list::ACTION, 'local_cltools');
+        $actiontitle .= ' ' . entity_utils::get_string_for_entity($this->refpersistentclass, $stringprefix . ':entity');
+        $page->navbar->add($actiontitle, $listpageurl);
+
     }
 
     /**

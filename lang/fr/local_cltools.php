@@ -41,6 +41,7 @@ $string['simple:parentid'] = 'Chemin';
 $string['notavailable'] = 'Non disponible';
 $string['add'] = 'Ajouter';
 $string['edit'] = 'Editer';
+$string['list'] = 'Lister';
 $string['view'] = 'Voir';
 $string['delete'] = 'Effacer';
 $string['cltools:dynamictableread'] = 'Ne peut lire la table dynamique';

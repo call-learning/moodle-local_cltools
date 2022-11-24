@@ -117,7 +117,7 @@ class generic_selector extends persistent_field {
                     throw new required_capability_exception($context, 'moodle/user:viewdetails', 'cannotviewdetails',
                             'local_cltools');
                 }
-                $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cveteval', 'genericselectorcache');
+                $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cltools', 'genericselectorcache');
                 $values = $cache->get('users');
                 if (!$values) {
                     foreach ($DB->get_recordset('user') as $user) {

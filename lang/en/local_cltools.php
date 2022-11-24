@@ -40,6 +40,7 @@ $string['simple:path'] = 'Path';
 $string['simple:parentid'] = 'Path';
 $string['notavailable'] = 'Not available';
 $string['add'] = 'Add';
+$string['list'] = 'List';
 $string['edit'] = 'Edit';
 $string['view'] = 'View';
 $string['delete'] = 'Delete';

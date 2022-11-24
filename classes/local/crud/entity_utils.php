@@ -73,6 +73,8 @@ class entity_utils {
             $label = get_string($entityprefix . ':' . $stringname, $component, $args);
         } else if ($stringmanager->string_exists($stringname, $component, $args)) {
             $label = get_string($stringname, $component, $args);
+        } else if ($stringmanager->string_exists('event:' . $stringname, 'local_cltools', $args)) {
+            $label = get_string('event:' . $stringname, 'local_cltools', $args);
         } else {
             $label = $stringname;
         }
