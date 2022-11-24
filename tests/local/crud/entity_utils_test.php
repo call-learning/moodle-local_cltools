@@ -26,7 +26,7 @@ namespace local_cltools\local\crud;
 
 use context_system;
 use file_exception;
-use local_cltools\test\base_crud_test;
+use local_cltools\test\base_crud_test_helper;
 use ReflectionClass;
 use stored_file_creation_exception;
 
@@ -39,7 +39,7 @@ use stored_file_creation_exception;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \local_cltools\local\crud\entity_utils
  */
-class entity_utils_test extends base_crud_test {
+class entity_utils_test extends base_crud_test_helper {
 
     /**
      * Test persistent prefix finder
@@ -183,7 +183,7 @@ class entity_utils_test extends base_crud_test {
         $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
         $this->assertFalse(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));
         $roleid = $this->getDataGenerator()->create_role();
-        assign_capability('local/cltools:entitylookup', CAP_ALLOW, $roleid, $context->id);
+        assign_capability('local/cltools:dynamictableread', CAP_ALLOW, $roleid, $context->id);
         role_assign($roleid, $user->id, $context->id);
         $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\simple\\entity', $context));
         $this->assertTrue(entity_utils::validate_entity_access('\\local_cltools\\othersimple\\entity', $context));

@@ -36,7 +36,7 @@ export const init = ({uniqueid}) => {
                 const fullname = element.data('user-fullname');
                 jQuery('body').trigger(
                     'user-selected-event',
-                    [ uniqueid,  userid, fullname]
+                    [uniqueid, userid, fullname]
                     );
             });
         }

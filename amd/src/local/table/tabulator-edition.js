@@ -43,9 +43,9 @@ const formatWarnings = (result) => {
  * @param {String} tableHandlerParams
  * @param {String} tableUniqueid
  * @param {Object} cell
- * @param {Object} cell
+ * @param {Object} value
  */
-export const validateRemote = async (tableHandler, tableHandlerParams, tableUniqueid, cell, value) => {
+export const validateRemote = async(tableHandler, tableHandlerParams, tableUniqueid, cell, value) => {
     const args = {
         handler: tableHandler,
         handlerparams: tableHandlerParams,
@@ -72,6 +72,7 @@ export const validateRemote = async (tableHandler, tableHandlerParams, tableUniq
  * @param {String} tableHandlerParams
  * @param {String} tableUniqueid
  * @param {Object} data
+ * @return {Promise}
  */
 export const cellEdited = (tableHandler, tableHandlerParams, tableUniqueid, data) => {
     const args = {

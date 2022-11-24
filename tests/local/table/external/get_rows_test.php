@@ -42,22 +42,22 @@ class get_rows_test extends advanced_testcase {
      * A set of basic entity data
      */
     const BASIC_ENTITITES_DATA = [
-            [
-                    'shortname' => 'Shortname 1',
-                    'idnumber' => 'Idnumber 1',
-                    'description' => 'Description for B....',
-                    'sortorder' => 1,
-                    'parentid' => 0,
-                    'scaleid' => 0
-            ],
-            [
-                    'shortname' => 'Shortname 2',
-                    'idnumber' => 'Idnumber 2',
-                    'description' => 'Description for A....',
-                    'sortorder' => 2,
-                    'parentid' => 0,
-                    'scaleid' => 0
-            ]
+        [
+            'shortname' => 'Shortname 1',
+            'idnumber' => 'Idnumber 1',
+            'description' => 'Description for B....',
+            'sortorder' => 1,
+            'parentid' => 0,
+            'scaleid' => 0
+        ],
+        [
+            'shortname' => 'Shortname 2',
+            'idnumber' => 'Idnumber 2',
+            'description' => 'Description for A....',
+            'sortorder' => 2,
+            'parentid' => 0,
+            'scaleid' => 0
+        ]
     ];
     /**
      * @var stdClass $entities
@@ -67,7 +67,7 @@ class get_rows_test extends advanced_testcase {
     /**
      * Setup
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
         entity::delete_table();
@@ -77,16 +77,16 @@ class get_rows_test extends advanced_testcase {
         // Create a couple of entities.
         $otherentities = [];
         $otherentitiesdata = [
-                (object) [
-                        'shortname' => 'Shortname 1',
-                        'idnumber' => 'Idnumber 1',
-                        'sortorder' => 0,
-                ],
-                (object) [
-                        'shortname' => 'Shortname 2',
-                        'idnumber' => 'Idnumber 2',
-                        'sortorder' => 0,
-                ]
+            (object) [
+                'shortname' => 'Shortname 1',
+                'idnumber' => 'Idnumber 1',
+                'sortorder' => 0,
+            ],
+            (object) [
+                'shortname' => 'Shortname 2',
+                'idnumber' => 'Idnumber 2',
+                'sortorder' => 0,
+            ]
         ];
 
         foreach ($otherentitiesdata as $entityrecord) {
@@ -123,17 +123,22 @@ class get_rows_test extends advanced_testcase {
         $this->setAdminUser();
         $rows = get_rows::execute(table::class, "", '1234');
         $this->assertCount(2, $rows['data']);
-        $rowdata = array_map(function($row) {
+        $rowsdata = array_map(function($row) {
             return json_decode($row);
         }, $rows['data']);
 
-        $this->assertContains('<a href="edit.php?id=', $rowdata[0]->actions);
+        $this->assertStringContainsString('<a href="edit.php?id=', $rowsdata[0]->actions);
         $expected = self::BASIC_ENTITITES_DATA;
         $expected[0]['othersimpleid'] = 1;
         $expected[1]['othersimpleid'] = 2;
-        foreach ($expected as $index => $expecteddata) {
-            foreach ($expecteddata as $key => $value) {
-                $this->assertEquals($value, $rowdata[$index]->$key);
+        foreach ($expected as $expecteddata) {
+            foreach ($rowsdata as $rowdata) {
+                if ($rowdata->shortname == $expecteddata['shortname']) {
+                    foreach ($expecteddata as $key => $value) {
+                        $this->assertEquals($value, $rowdata->$key,
+                            "Value for $key is different (expected: $value and found {$rowdata->$key}");
+                    }
+                }
             }
         }
     }
@@ -148,23 +153,27 @@ class get_rows_test extends advanced_testcase {
         $pagesize = 5;
         for ($i = 0; $i < $pagesize * 2; $i++) {
             $entityrecord = (object) [
-                    'shortname' => "New entity $i",
-                    'idnumber' => "New entity $i",
-                    'description' => "Description $i....",
-                    'sortorder' => 1,
-                    'parentid' => 0,
-                    'othersimpleid' => $this->entities[0]->id,
-                    'scaleid' => 0
+                'shortname' => "New entity $i",
+                'idnumber' => "New entity $i",
+                'description' => "Description $i....",
+                'sortorder' => 1,
+                'parentid' => 0,
+                'othersimpleid' => $this->entities[0]->id,
+                'scaleid' => 0
             ];
             $entity = new entity(0, $entityrecord);
             $entity->save();
         }
         $this->setAdminUser();
+        $allrowsret = get_rows::execute(table::class, "", '1234');
+        $this->assertCount($pagesize * 2 + 2, $allrowsret['data']);
         $retval = get_rows::execute(table::class, "", '1234', [], [], 0, false, [], [], 1, $pagesize);
         $this->assertCount($pagesize, $retval['data']);
         $retval = get_rows::execute(table::class, "", '1234', [], [], 0, false, [], [], 2, $pagesize);
         $this->assertCount($pagesize, $retval['data']);
-        $this->assertContains("New entity 3", $retval['data'][0]); // First item is the New entity 3.
+        $expectedfirstelement = json_decode($allrowsret['data'][$pagesize]);
+        $actualfirstelement = json_decode($retval['data'][0]);
+        $this->assertEquals($expectedfirstelement->shortname, $actualfirstelement->shortname); // First item is the $pagesize item.
     }
 
     /**
@@ -192,43 +201,43 @@ class get_rows_test extends advanced_testcase {
      */
     public function sort_data_provider() {
         return [
-                'sort simple asc' => [
-                        'sortorder' => [
-                                [
-                                        'sortby' => 'sortorder',
-                                        'sortorder' => 'ASC'
-                                ]
-                        ],
-                        'expectedfirstresult' => [
-                                ['field' => 'sortorder', 'value' => 1]
-                        ]
+            'sort simple asc' => [
+                'sortorder' => [
+                    [
+                        'sortby' => 'sortorder',
+                        'sortorder' => 'ASC'
+                    ]
                 ],
-                'sort simple desc' => [
-                        'sortorder' => [
-                                [
-                                        'sortby' => 'sortorder',
-                                        'sortorder' => 'DESC'
-                                ]
-                        ],
-                        'expectedfirstresult' => [
-                                ['field' => 'sortorder', 'value' => 2]
-                        ]
+                'expectedfirstresult' => [
+                    ['field' => 'sortorder', 'value' => 1]
+                ]
+            ],
+            'sort simple desc' => [
+                'sortorder' => [
+                    [
+                        'sortby' => 'sortorder',
+                        'sortorder' => 'DESC'
+                    ]
                 ],
-                'sort compound asc' => [
-                        'sortorder' => [
-                                [
-                                        'sortby' => 'description',
-                                        'sortorder' => 'ASC'
-                                ],
-                                [
-                                        'sortby' => 'sortorder',
-                                        'sortorder' => 'DESC'
-                                ],
-                        ],
-                        'expectedfirstresult' => [
-                                ['field' => 'description', 'value' => 'Description for A....']
-                        ]
+                'expectedfirstresult' => [
+                    ['field' => 'sortorder', 'value' => 2]
+                ]
+            ],
+            'sort compound asc' => [
+                'sortorder' => [
+                    [
+                        'sortby' => 'description',
+                        'sortorder' => 'ASC'
+                    ],
+                    [
+                        'sortby' => 'sortorder',
+                        'sortorder' => 'DESC'
+                    ],
                 ],
+                'expectedfirstresult' => [
+                    ['field' => 'description', 'value' => 'Description for A....']
+                ]
+            ],
         ];
     }
 }

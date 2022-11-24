@@ -90,8 +90,8 @@ class generic_lookup_test extends advanced_testcase {
         $this->assertCount(4, $selectusers[0]); // 4 users => Guest, admin and the two others.
         foreach ($selectusers[0] as $user) {
             if ($user['id'] > 2) {
-                $this->assertContains(fullname($users[$user['id']]), $user['value']);
-                $this->assertContains($users[$user['id']]->email, $user['value']);
+                $this->assertStringContainsString(fullname($users[$user['id']]), $user['value']);
+                $this->assertStringContainsString($users[$user['id']]->email, $user['value']);
             }
         }
     }

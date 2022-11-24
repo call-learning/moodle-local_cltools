@@ -40,14 +40,6 @@ $capabilities = array(
                         'manager' => CAP_ALLOW
                 )
         ),
-        'local/cltools:entitylookup' => array(
-                'riskbitmask' => RISK_SPAM,
-                'captype' => 'read',
-                'contextlevel' => CONTEXT_SYSTEM,
-                'archetypes' => array(
-                        'manager' => CAP_ALLOW
-                )
-        ),
         'local/cltools:viewentityfiles' => array(
                 'riskbitmask' => RISK_SPAM,
                 'captype' => 'read',

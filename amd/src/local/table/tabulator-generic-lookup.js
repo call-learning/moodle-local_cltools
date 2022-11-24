@@ -27,6 +27,7 @@ const GENERIC_LOOKUP_PREFIX = "genericLookup";
 /**
  * Compute Prefix
  * @param {string} mtype
+ * @return {string}
  */
 const computePrefix = (mtype) => GENERIC_LOOKUP_PREFIX + "_" + mtype;
 /**
@@ -43,7 +44,7 @@ export const genericLookup = (mtype) => {
  * Moodle Entity Lookup preparation
  * @param {string} mtype
  */
-export const prepareGenericLookup = async (mtype) => {
+export const prepareGenericLookup = async(mtype) => {
     window.onbeforeunload = () => {
         sessionStorage.removeItem(computePrefix(mtype));
     };

@@ -43,7 +43,7 @@ class validate_value_test extends advanced_testcase {
     /**
      * Setup
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
         entity::delete_table();

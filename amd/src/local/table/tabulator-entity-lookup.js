@@ -30,6 +30,7 @@ const ENTITY_LOOKUP_PREFIX = "entityLookup";
  * Compute Prefix
  * @param {string} entityclass
  * @param {string} displayfield
+ * @return {string}
  */
 const computePrefix = (entityclass, displayfield) => ENTITY_LOOKUP_PREFIX + "_" + entityclass + "_" + displayfield;
 /**
@@ -47,8 +48,9 @@ export const entityLookup = (entityclass, displayfield) => {
  * Entity Lookup preparation
  * @param {string} entityclass
  * @param {string} displayfield
+ * @return {void}
  */
-export const prepareEntityLookup = async (entityclass, displayfield) => {
+export const prepareEntityLookup = async(entityclass, displayfield) => {
     window.onbeforeunload = () => {
         sessionStorage.removeItem(computePrefix(entityclass, displayfield));
     };

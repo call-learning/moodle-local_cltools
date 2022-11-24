@@ -30,6 +30,7 @@ use advanced_testcase;
 class persistent_field_test extends advanced_testcase {
     /**
      * Get the name of this field
+     * @covers \local_cltools\local\field\persistent_field::get_name
      */
     public function test_get_name() {
         $field = new boolean(['fieldname' => 'fieldname', 'fullname' => 'Full Name']);
@@ -42,6 +43,7 @@ class persistent_field_test extends advanced_testcase {
     /**
      * Check if the field is visible or not
      *
+     * @covers \local_cltools\local\field\persistent_field::is_visible
      */
     public function test_is_visible() {
         $field = new boolean(['fieldname' => 'fieldname', 'visible' => false]);

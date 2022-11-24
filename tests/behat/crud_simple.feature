@@ -94,7 +94,7 @@ Feature: As a user I want to be able to add/edit/view and list entities defined 
     And I am on the "simple" "local_cltools > Entity index" page
     Then I <cansee>
     Examples:
-      | user         | cansee                      |
-      | userreadonly | should see "Shortname1"     |
-      | simpleuser   | should not see "Shortname1" |
-      | admin        | should see "Shortname1"     |
+      | user         | cansee                                                                             |
+      | userreadonly | should see "Shortname1"                                                            |
+      | simpleuser   | should see "Sorry, you do not have permissions to read the content of this table." |
+      | admin        | should see "Shortname1"                                                            |

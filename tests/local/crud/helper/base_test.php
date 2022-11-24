@@ -16,7 +16,7 @@
 namespace local_cltools\local\crud\helper;
 
 use local_cltools\simple\entity;
-use local_cltools\test\base_crud_test;
+use local_cltools\test\base_crud_test_helper;
 use moodle_page;
 use moodle_url;
 
@@ -28,7 +28,7 @@ use moodle_url;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \local_cltools\local\crud\helper\base;
  */
-class base_test extends base_crud_test {
+class base_test extends base_crud_test_helper {
     /**
      * Get crud management
      * @covers \local_cltools\local\crud\helper\base
@@ -65,26 +65,26 @@ class base_test extends base_crud_test {
         global $PAGE;
         // Create a couple of entities.
         $entitiesdata = [
-                (object) [
-                        'shortname' => 'Shortname 1',
-                        'idnumber' => 'Idnumber 1',
-                        'description' => 'Description',
-                        'descriptionformat' => FORMAT_HTML,
-                        'sortorder' => 0,
-                        'othersimpleid' => 0,
-                        'scaleid' => 0,
-                        'parentid' => 0
-                ],
-                (object) [
-                        'shortname' => 'Shortname 2',
-                        'idnumber' => 'Idnumber 2',
-                        'description' => 'Description',
-                        'descriptionformat' => FORMAT_HTML,
-                        'sortorder' => 0,
-                        'othersimpleid' => 0,
-                        'scaleid' => 0,
-                        'parentid' => 0
-                ]
+            (object) [
+                'shortname' => 'Shortname 1',
+                'idnumber' => 'Idnumber 1',
+                'description' => 'Description',
+                'descriptionformat' => FORMAT_HTML,
+                'sortorder' => 0,
+                'othersimpleid' => 0,
+                'scaleid' => 0,
+                'parentid' => 0
+            ],
+            (object) [
+                'shortname' => 'Shortname 2',
+                'idnumber' => 'Idnumber 2',
+                'description' => 'Description',
+                'descriptionformat' => FORMAT_HTML,
+                'sortorder' => 0,
+                'othersimpleid' => 0,
+                'scaleid' => 0,
+                'parentid' => 0
+            ]
         ];
         foreach ($entitiesdata as $entityrecord) {
             $entity = new entity(0, $entityrecord);
@@ -98,8 +98,11 @@ class base_test extends base_crud_test {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user); // Make sure we have a logged in user.
         $rows = $persistenttable->get_rows(1000, true);
-        $this->assertStringContainsString('Shortname 1', $rows[0]->shortname);
-        $this->assertStringContainsString('Shortname 2', $rows[1]->shortname);
+        $rowshortnames = array_map(function($row) {
+            return $row->shortname;
+        }, $rows);
+        $this->assertContains('Shortname 1', $rowshortnames);
+        $this->assertContains('Shortname 2', $rowshortnames);
         $this->assertNotEmpty($rows[0]->actions); // This should be actually included in the table.
     }
 

@@ -28,23 +28,24 @@ use core_table\local\filter\filter;
 class enhanced_filterset_test extends advanced_testcase {
     /**
      * Get the optional filters.
+     *
      * @covers \local_cltools\local\filter\enhanced_filterset
      */
     public function test_get_required_optional_filters() {
         $enhancedfilters = new enhanced_filterset(
-                [
-                        'opttestfilter1' => [
-                                'filterclass' => numeric_comparison_filter::class,
-                                'optional' => true
-                        ],
-                        'reqtestfilter1' => [
-                                'filterclass' => numeric_comparison_filter::class,
-                                'required' => true
-                        ],
-                        'reqtestfilter2' => [
-                                'filterclass' => string_filter::class,
-                        ]
+            [
+                'opttestfilter1' => [
+                    'filterclass' => numeric_comparison_filter::class,
+                    'optional' => true
+                ],
+                'reqtestfilter1' => [
+                    'filterclass' => numeric_comparison_filter::class,
+                    'required' => true
+                ],
+                'reqtestfilter2' => [
+                    'filterclass' => string_filter::class,
                 ]
+            ]
         );
         $allfields = $enhancedfilters->get_all_filtertypes();
         $requiredfilters = $enhancedfilters->get_required_filters();
@@ -66,17 +67,19 @@ class enhanced_filterset_test extends advanced_testcase {
      * @param array $excludedfiltersname
      * @param array $expectedwhere
      * @param array $expectedparams
-     * @covers \local_cltools\local\filter\enhanced_filterset
+     * @covers       \local_cltools\local\filter\enhanced_filterset
      */
     public function test_get_sql_for_filter($filtersdef, $filtersvalues, $jointtype, $tableprefix, $excludedfiltersname,
-            $expectedwhere, $expectedparams) {
+        $expectedwhereelements, $expectedparams) {
         $enhancedfilters = new enhanced_filterset($filtersdef);
         $enhancedfilters->set_join_type($jointtype);
         foreach ($filtersvalues as $filtername => $filterval) {
             $enhancedfilters->add_filter_from_params($filtername, $filterval->jointtype, $filterval->values);
         }
         [$where, $params] = $enhancedfilters->get_sql_for_filter($tableprefix, $excludedfiltersname);
-        $this->assertEquals($expectedwhere, $where);
+        foreach ($expectedwhereelements as $expectedwhere) {
+            $this->assertStringContainsString($expectedwhere, $where);
+        }
         $this->assertEquals($expectedparams, $params);
     }
 
@@ -87,93 +90,95 @@ class enhanced_filterset_test extends advanced_testcase {
      */
     public function sql_filter_provider() {
         return [
-                'simplefilter' => [
-                        'filtersdef' => [
-                                'numericfilter1' => [
-                                        'filterclass' => numeric_comparison_filter::class,
-                                ],
-                                'stringfilter1' => [
-                                        'filterclass' => string_filter::class,
-                                ],
-                                'integerfilter1' => [
-                                        'filterclass' => integer_filter::class,
-                                ]
-                        ],
-                        'filtersvalues' => [
-                                'numericfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ALL,
-                                        'values' => [['direction' => '>', 'value' => 1]],
-                                ],
-                                'stringfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ALL,
-                                        'values' =>
-                                                ["A"]
-                                ],
-                                'integerfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ALL,
-                                        'values' =>
-                                                [1]
-                                ],
-                        ],
-                        'jointype' => filter::JOINTYPE_ANY,
-                        'tableprefix' => null,
-                        'excludedfiltersname' => null,
-                        'expectedwhere' => "( stringfilter1 LIKE :strp_stringfilter10  ESCAPE '\\\\' ) OR ( integerfilter1" .
-                                "  =  :intg_integerfilter10 ) OR ( COALESCE(numericfilter1,0)  >  :nump_numericfilter10 )",
-                        'expectedparams' => [
-                                'strp_stringfilter10' => '%A%',
-                                'intg_integerfilter10' => 1,
-                                'nump_numericfilter10' => 1,
-                        ]
-
+            'simplefilter' => [
+                'filtersdef' => [
+                    'numericfilter1' => [
+                        'filterclass' => numeric_comparison_filter::class,
+                    ],
+                    'stringfilter1' => [
+                        'filterclass' => string_filter::class,
+                    ],
+                    'integerfilter1' => [
+                        'filterclass' => integer_filter::class,
+                    ]
                 ],
-                'composedmultiple' => [
-                        'filtersdef' => [
-                                'numericfilter1' => [
-                                        'filterclass' => numeric_comparison_filter::class,
-                                ],
-                                'stringfilter1' => [
-                                        'filterclass' => string_filter::class,
-                                ],
-                                'integerfilter1' => [
-                                        'filterclass' => integer_filter::class,
-                                ]
-                        ],
-                        'filtersvalues' => [
-                                'numericfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ANY,
-                                        'values' => [['direction' => '>', 'value' => 1], ['direction' => '<', 'value' => 1]],
-                                ],
-                                'stringfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ANY,
-                                        'values' =>
-                                                ["A", "B"]
-                                ],
-                                'integerfilter1' => (object) [
-                                        'jointtype' => filter::JOINTYPE_ANY,
-                                        'values' =>
-                                                [1, 2]
-                                ],
-                        ],
-                        'jointype' => filter::JOINTYPE_ALL,
-                        'tableprefix' => null,
-                        'excludedfiltersname' => null,
-                        'expectedwhere' => "( stringfilter1 LIKE :strp_stringfilter10  ESCAPE '\\\\'  OR" .
-                                "  stringfilter1 LIKE :strp_stringfilter11  ESCAPE '\\\\' ) AND"
-                                ." ( integerfilter1  =  :intg_integerfilter10  OR" .
-                                "  integerfilter1  =  :intg_integerfilter11 )"
-                                ." AND ( COALESCE(numericfilter1,0)  <  :nump_numericfilter10  OR"
-                                . "  COALESCE(numericfilter1,0)  >  :nump_numericfilter11 )",
-                        'expectedparams' => [
-                                'strp_stringfilter10' => '%A%',
-                                'intg_integerfilter10' => 1,
-                                'nump_numericfilter10' => 1,
-                                'strp_stringfilter11' => '%B%',
-                                'intg_integerfilter11' => 2,
-                                'nump_numericfilter11' => 1,
-                        ]
-
+                'filtersvalues' => [
+                    'numericfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ALL,
+                        'values' => [['direction' => '>', 'value' => 1]],
+                    ],
+                    'stringfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ALL,
+                        'values' =>
+                            ["A"]
+                    ],
+                    'integerfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ALL,
+                        'values' =>
+                            [1]
+                    ],
+                ],
+                'jointype' => filter::JOINTYPE_ANY,
+                'tableprefix' => null,
+                'excludedfiltersname' => null,
+                'expectedwhereelements' => [
+                    'stringfilter1',
+                    'integerfilter1',
+                    'COALESCE(numericfilter1,0)'
+                ],
+                'expectedparams' => [
+                    'strp_stringfilter10' => '%A%',
+                    'intg_integerfilter10' => 1,
+                    'nump_numericfilter10' => 1,
                 ]
+
+            ],
+            'composedmultiple' => [
+                'filtersdef' => [
+                    'numericfilter1' => [
+                        'filterclass' => numeric_comparison_filter::class,
+                    ],
+                    'stringfilter1' => [
+                        'filterclass' => string_filter::class,
+                    ],
+                    'integerfilter1' => [
+                        'filterclass' => integer_filter::class,
+                    ]
+                ],
+                'filtersvalues' => [
+                    'numericfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ANY,
+                        'values' => [['direction' => '>', 'value' => 1], ['direction' => '<', 'value' => 1]],
+                    ],
+                    'stringfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ANY,
+                        'values' =>
+                            ["A", "B"]
+                    ],
+                    'integerfilter1' => (object) [
+                        'jointtype' => filter::JOINTYPE_ANY,
+                        'values' =>
+                            [1, 2]
+                    ],
+                ],
+                'jointype' => filter::JOINTYPE_ALL,
+                'tableprefix' => null,
+                'excludedfiltersname' => null,
+                'expectedwhereelements' => [
+                    'stringfilter1',
+                    'integerfilter1',
+                    'COALESCE(numericfilter1,0)'
+                ],
+                'expectedparams' => [
+                    'strp_stringfilter10' => '%A%',
+                    'intg_integerfilter10' => 1,
+                    'nump_numericfilter10' => 1,
+                    'strp_stringfilter11' => '%B%',
+                    'intg_integerfilter11' => 2,
+                    'nump_numericfilter11' => 1,
+                ]
+
+            ]
         ];
     }
 

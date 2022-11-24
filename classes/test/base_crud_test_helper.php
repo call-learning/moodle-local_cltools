@@ -28,11 +28,11 @@ use local_cltools\simple\entity;
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base_crud_test extends advanced_testcase {
+class base_crud_test_helper extends advanced_testcase {
     /**
      * Setup persistent table
      */
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setUp();
         spl_autoload_register(function() {
             global $CFG;
@@ -58,7 +58,7 @@ class base_crud_test extends advanced_testcase {
     /**
      * Remove persistent table
      */
-    public function tearDown() {
+    public function tearDown(): void {
         entity::delete_table();
         parent::tearDown();
     }

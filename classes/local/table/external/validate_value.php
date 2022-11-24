@@ -74,17 +74,26 @@ class validate_value extends external_api {
 
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
         $context = helper::get_current_context();
-        $instance::validate_access($context);
+        self::validate_context($context);
         $success = false;
         $warnings = array();
-        try {
-            $success = $instance->is_valid_value($id, $field, json_decode($value));
-        } catch (moodle_exception $e) {
-            $warnings[] = (object) [
+        if ($instance::validate_access($context)) {
+            try {
+                $success = $instance->is_valid_value($id, $field, json_decode($value));
+            } catch (moodle_exception $e) {
+                $warnings[] = (object) [
                     'item' => $field,
                     'itemid' => $id,
                     'warningcode' => 'setvalueerror',
                     'message' => "For table $handler: {$e->getMessage()}"
+                ];
+            }
+        } else {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools')
             ];
         }
         return [

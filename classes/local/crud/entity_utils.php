@@ -269,10 +269,10 @@ class entity_utils {
      * @param context $context
      * @return false|mixed
      */
-    public static function validate_entity_access($entityclass, $context) {
-        if (class_exists($entityclass) && method_exists($entityclass, 'validate_access')) {
-            return $entityclass::validate_access($context);
+    public static function validate_entity_access($entityclass, $context):bool {
+        if (class_exists($entityclass) && method_exists($entityclass, 'validate_entity_access')) {
+            return $entityclass::validate_entity_access($context);
         }
-        return has_capability('local/cltools:entitylookup', $context);
+        return has_capability('local/cltools:dynamictableread', $context);
     }
 }

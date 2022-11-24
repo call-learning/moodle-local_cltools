@@ -23,13 +23,13 @@ import {validateRemote} from './tabulator-edition';
 import {entityLookup, prepareEntityLookup} from "./tabulator-entity-lookup";
 import {genericLookup, prepareGenericLookup} from "./tabulator-generic-lookup";
 
-export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, tableUniqueId) => {
+export const columnSetup = async(columndefs, tableHandler, tableHandlerParams, tableUniqueId) => {
     const TABULATOR_CONVERTER = {
         'formatter': {},
         'filter': {
             'select': {
                 transformer: (coldef) => {
-                    coldef['headerFilterFunc'] = '=';
+                    coldef.headerFilterFunc = '=';
                     return coldef;
                 }
             },
@@ -90,7 +90,7 @@ export const columnSetup = async (columndefs, tableHandler, tableHandlerParams, 
     columndefs = columndefs.map(
         (columndef) => {
             if ("additionalParams" in columndef) {
-                const additionalProps = JSON.parse(columndef["additionalParams"]);
+                const additionalProps = JSON.parse(columndef.additionalParams);
                 if (typeof additionalProps === 'object') {
                     columndef = Object.assign(columndef, additionalProps);
                     delete (columndef.additionalParameters);

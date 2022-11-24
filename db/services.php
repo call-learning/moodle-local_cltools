@@ -66,7 +66,7 @@ $functions = array(
                 'description' => 'Get an associative array of identifier and display parameters',
                 'type' => 'read',
                 'ajax' => true,
-                'capabilities' => 'local/cltools:entitylookup',
+                'capabilities' => 'local/cltools:dynamictableread',
                 'loginrequired' => true
         ],
         'cltools_generic_lookup' => [
@@ -75,7 +75,7 @@ $functions = array(
                 'description' => 'Get an associative array of identifier and username or coursename',
                 'type' => 'read',
                 'ajax' => true,
-                'capabilities' => 'local/cltools:entitylookup,',
+                'capabilities' => 'local/cltools:dynamictableread,',
                 'loginrequired' => true
         ],
 );

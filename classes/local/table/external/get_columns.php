@@ -85,9 +85,13 @@ class get_columns extends external_api {
         ]);
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, $editable, $actionsdefs);
         $context = helper::get_current_context();
-        $instance::validate_access($context);
-        helper::setup_filters($instance, $filters, $jointype);
-        $columndefs = array_values($instance->get_fields_definition());
+        self::validate_context($context);
+        if ($instance::validate_access($context)) {
+            helper::setup_filters($instance, $filters, $jointype);
+            $columndefs = array_values($instance->get_fields_definition());
+        } else {
+            throw new \restricted_context_exception();
+        }
 
         return $columndefs;
     }

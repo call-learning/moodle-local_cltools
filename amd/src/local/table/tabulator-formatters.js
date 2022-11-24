@@ -24,10 +24,10 @@ import {entityLookup} from "./tabulator-entity-lookup";
 import {genericLookup} from "./tabulator-generic-lookup";
 
 export const TABULATOR_FORMATTERS = {
-    uppercase: function (cell) {
+    uppercase: function(cell) {
         return cell.getValue().toUpperCase();
     },
-    datets: function (cell, params) {
+    datets: function(cell, params) {
         if (cell.getValue() == 0) {
             return '';
         }
@@ -37,7 +37,7 @@ export const TABULATOR_FORMATTERS = {
         return moment.unix(cell.getValue()).format(formatterParams.outputFormat);
         // From Unix TS to displayable date.
     },
-    datetimets: function (cell, params) {
+    datetimets: function(cell, params) {
         if (cell.getValue() == 0) {
             return '';
         }

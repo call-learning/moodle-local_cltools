@@ -117,7 +117,10 @@ class get_rows extends external_api {
             $instance->set_sortdata($sortdata);
         }
         $context = helper::get_current_context();
-        $instance::validate_access($context);
+        self::validate_context($context);
+        if (!$instance::validate_access($context)) {
+            throw new \restricted_context_exception();
+        }
         $PAGE->set_context($context);
 
         $rows = $instance->get_rows($pagesize);

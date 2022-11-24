@@ -1,4 +1,4 @@
-Moodle Local cltools - CAL Learning tools
+Moodle Local cltools - CALL Learning tools
 ==
 
 [![CI Tests (Linting)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/lint.yml/badge.svg)](https://github.com/call-learning/moodle-local_cltools/actions/workflows/lint.yml)

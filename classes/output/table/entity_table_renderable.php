@@ -16,6 +16,10 @@
 
 namespace local_cltools\output\table;
 
+use core\notification;
+use local_cltools\local\crud\entity_utils;
+use renderer_base;
+
 /**
  * Renderable for entities table
  *
@@ -25,5 +29,20 @@ namespace local_cltools\output\table;
  */
 class entity_table_renderable extends dynamic_table_sql_renderable {
 
+    /**
+     * Export for template
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    public function export_for_template(renderer_base $output): array {
+        if (entity_utils::validate_entity_access(get_class($this->dynamictable), $this->dynamictable->get_context())) {
+            return parent::export_for_template($output);
+        } else {
+            $notification = new \core\output\notification(
+                get_string('cltools:dynamictableread:message', 'local_cltools'), 'error');
+            return ['error' => $notification->export_for_template($output)];
+        }
+    }
 }
 

@@ -25,7 +25,9 @@
 namespace local_cltools\local\crud\helper;
 
 use coding_exception;
+use core\persistent;
 use dml_exception;
+use local_cltools\local\crud\entity_exporter;
 use local_cltools\local\crud\entity_utils;
 use local_cltools\local\crud\generic\generic_entity_exporter_generator;
 use moodle_exception;
@@ -103,32 +105,45 @@ class crud_view extends base {
      * @throws ReflectionException
      */
     public function action_process($postprocesscb = null): string {
-        $returnedtext = '';
-        $persistentprefix = entity_utils::get_persistent_prefix($this->refpersistentclass);
-        $persistentcomponent = entity_utils::get_component($this->refpersistentclass);
         $id = required_param('id', PARAM_INT);
         $entity = $this->refpersistentclass->newInstance($id);
-        $returnedtext .= $this->renderer->container_start();
         $relatedexporter = $this->instanciate_related_exporter($entity);
         if (empty($relatedexporter)) {
             // Create a dummy exporter and make sure we point to the right class.
             $relatedexporter = generic_entity_exporter_generator::generate($entity);
         }
-        $exportedvalue = $relatedexporter->export($this->renderer);
+        $returnedtext = self::display_entity($entity, $relatedexporter, $this->renderer);
+        $this->trigger_event($entity);
+        return $returnedtext;
+    }
+
+    /**
+     * Public helper to display a given entity.
+     *
+     * @param persistent $entity
+     * @param entity_exporter $exporter
+     * @param \renderer_base $renderer
+     * @return string
+     */
+    public static function display_entity($entity, $exporter, $renderer): string {
+        $returnedtext = $renderer->container_start();
+
+        $exportedvalue = $exporter->export($renderer);
+        $refpersistentclass = new \ReflectionClass($entity);
+        $persistentprefix = entity_utils::get_persistent_prefix($refpersistentclass);
+        $persistentcomponent = entity_utils::get_component($refpersistentclass);
         try {
-            $returnedtext .= $this->renderer->render_from_template(
-                    "$persistentcomponent/$persistentprefix",
-                    $exportedvalue
+            $returnedtext .= $renderer->render_from_template(
+                "$persistentcomponent/$persistentprefix",
+                $exportedvalue
             );
         } catch (moodle_exception $e) {
-            $returnedtext .= $this->renderer->render_from_template(
-                    "local_cltools/persistent_info",
-                    $exportedvalue
+            $returnedtext .= $renderer->render_from_template(
+                "local_cltools/persistent_info",
+                $exportedvalue
             );
         }
-
-        $returnedtext .= $this->renderer->container_end();
-        $this->trigger_event($entity);
+        $returnedtext .= $renderer->container_end();
         return $returnedtext;
     }
 }

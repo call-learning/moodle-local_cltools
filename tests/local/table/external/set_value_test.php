@@ -42,7 +42,7 @@ class set_value_test extends advanced_testcase {
     /**
      * Setup
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest(true);
         entity::delete_table();
@@ -108,7 +108,7 @@ class set_value_test extends advanced_testcase {
                 'item' => 'shortname',
                 'itemid' => 1,
                 'warningcode' => 'setvalueerror',
-                'message' => 'Cannot set value"',
+                'message' => 'Sorry, you do not have permissions to write any content in this table.',
         ], $returnval['warnings'][0]);
         $entity = new entity($this->entities[0]->id);
         $this->assertEquals('Shortname 1', $entity->get('shortname')); // Value has not changed.

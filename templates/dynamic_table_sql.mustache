@@ -33,6 +33,7 @@
         "actionsdefs": "[]"
     }
 }}
+{{^error}}
 <div id="table-{{uniqid}}"
      class="dynamic-table-sql"
      data-table-uniqueid='{{tableuniqueid}}'
@@ -53,3 +54,7 @@
         dynamic.init('table-{{uniqid}}');
     });
 {{/js}}
+{{/error}}
+{{#error}}
+    {{> core/notification_error}}
+{{/error}}

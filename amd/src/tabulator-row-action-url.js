@@ -22,7 +22,7 @@
 import $ from 'jquery';
 
 export const init = (tableuniqueid, baseurl, parameters) => {
-    $(document).on('tabulator-row-click', function (event, row, uniqueid) {
+    $(document).on('tabulator-row-click', function(event, row, uniqueid) {
         if (uniqueid === tableuniqueid) {
             const data = row.getData();
             if (typeof (data.id) !== "undefined") {

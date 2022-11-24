@@ -103,6 +103,6 @@ class entity extends persistent implements enhanced_persistent {
      * @throws restricted_context_exception
      */
     public static function validate_access(context $context, $writeaccess = false): bool {
-        return has_capability('local/cltools:entitylookup', $context);
+        return has_capability('local/cltools:dynamictableread', $context);
     }
 }

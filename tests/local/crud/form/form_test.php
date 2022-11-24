@@ -33,7 +33,7 @@ use local_cltools\local\field\files;
 use local_cltools\local\field\editor;
 use local_cltools\simple\entity;
 use local_cltools\simple\form;
-use local_cltools\test\base_crud_test;
+use local_cltools\test\base_crud_test_helper;
 use moodle_url;
 
 /**
@@ -43,7 +43,7 @@ use moodle_url;
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class form_test extends base_crud_test {
+class form_test extends base_crud_test_helper {
     /**
      * A smoke check to see if all fields are represented
      *

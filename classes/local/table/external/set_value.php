@@ -76,21 +76,29 @@ class set_value extends external_api {
                 'value' => $value,
                 'oldvalue' => $oldvalue,
         ]);
-
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
         $context = helper::get_current_context();
-        $instance::validate_access($context, true);
         $success = false;
         $warnings = array();
-        try {
-            $instance->set_value($id, $field, json_decode($value), json_decode($oldvalue));
-            $success = true;
-        } catch (moodle_exception $e) {
-            $warnings[] = (object) [
+        self::validate_context($context);
+        if ($instance::validate_access($context, true)) {
+            try {
+                $instance->set_value($id, $field, json_decode($value), json_decode($oldvalue));
+                $success = true;
+            } catch (moodle_exception $e) {
+                $warnings[] = (object) [
                     'item' => $field,
                     'itemid' => $id,
                     'warningcode' => 'setvalueerror',
                     'message' => $e->getMessage()
+                ];
+            }
+        } else {
+            $warnings[] = (object) [
+                'item' => $field,
+                'itemid' => $id,
+                'warningcode' => 'setvalueerror',
+                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools')
             ];
         }
         return [

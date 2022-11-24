@@ -66,14 +66,14 @@ const rowQuery = (tableHandler,
     return getTableRows(args).catch(Notification.exception);
 };
 
-const ajaxResponseProcessor = function (url, params, response) {
+const ajaxResponseProcessor = function(url, params, response) {
     response.data = response.data.map(
         (rowstring) => JSON.parse(rowstring)
     );
     return response;
 };
 
-export const init = async (tabulatorelementid) => {
+export const init = async(tabulatorelementid) => {
     const tableelement = $("#" + tabulatorelementid);
     const rowClickCallback = (e, row) => {
         $(document).trigger('tabulator-row-click', [row, tableelement.data('tableUniqueid')]);
@@ -90,7 +90,7 @@ export const init = async (tabulatorelementid) => {
         tableelement.data('tableActionsDefs'),
     );
 };
-export const tableInit = async (
+export const tableInit = async(
     tableElement,
     tableHandler,
     tableHandlerParams,
@@ -126,7 +126,7 @@ export const tableInit = async (
     columns = await columnSetup(columns, tableHandler, tableHandlerParams, tableUniqueId);
 
     let options = {
-        ajaxRequestFunc: function (url, config, params) {
+        ajaxRequestFunc: function(url, config, params) {
             const pageSize = this.table.getPageSize();
             return rowQuery(
                 tableHandler,
@@ -144,7 +144,7 @@ export const tableInit = async (
         paginationSize: tablePageSize,
         ajaxFiltering: true,
         ajaxSorting: true,
-        dataFiltered: function () {
+        dataFiltered: function() {
             $(document).trigger('tabulator-filter-changed', [
                     tableHandler, tableHandlerParams, tableUniqueId, this.getFilters(true)
                 ]
@@ -154,7 +154,7 @@ export const tableInit = async (
             "last_page": "pagescount", // Change last_page parameter name to "pagescount".
         },
         ajaxResponse: ajaxResponseProcessor,
-        cellEdited: function (data) {
+        cellEdited: function(data) {
             cellEdited(tableHandler, tableHandlerParams, tableUniqueId, data);
         },
         validationMode: "highlight",

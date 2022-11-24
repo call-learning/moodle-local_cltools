@@ -29,6 +29,7 @@ class filter_helper_test extends advanced_testcase {
     /**
      * Map join types to corresponding SQL values
      *
+     * @covers \local_cltools\local\filter\filter_helper
      */
     public function test_get_jointype_to_sql_join() {
         $this->assertEquals('AND', trim(filter_helper::get_jointype_to_sql_join(filter::JOINTYPE_ALL)));
@@ -40,6 +41,7 @@ class filter_helper_test extends advanced_testcase {
     /**
      * Return filter SQL joined but the filter type
      *
+     * @covers \local_cltools\local\filter\filter_helper
      */
     public function test_get_sql_filter_join() {
         $filter = new numeric_comparison_filter('numeric', filter::JOINTYPE_ANY);
@@ -50,6 +52,7 @@ class filter_helper_test extends advanced_testcase {
     /**
      * Return filter sanitized name (for use in SQL)
      *
+     * @covers \local_cltools\local\filter\filter_helper
      */
     public function test_get_sanitized_name() {
         $this->assertEquals('abcd', filter_helper::get_sanitized_name('ABCD '));

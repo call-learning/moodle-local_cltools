@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 namespace local_cltools\local\crud;
 
+use context;
 use core\persistent;
 use html_writer;
 use local_cltools\local\table\dynamic_table_sql;
@@ -175,5 +176,22 @@ class entity_table extends dynamic_table_sql {
             $imageshtml .= html_writer::img($src, $altmessage, array('class' => 'img-thumbnail'));
         }
         return $imageshtml;
+    }
+
+    /**
+     * Validate current user has access to the table instance
+     *
+     * Note: this can involve a more complicated check if needed and requires filters and all
+     * setup to be done in order to make sure we validated against the right information
+     * (such as for example a filter needs to be set in order not to return data a user should not see).
+     *
+     * @param context $context
+     * @param bool $writeaccess
+     */
+    public static function validate_access(context $context, bool $writeaccess = false): bool {
+        if ($writeaccess) {
+            return has_capability('local/cltools:dynamictablewrite', $context);
+        }
+        return has_capability('local/cltools:dynamictableread', $context);
     }
 }

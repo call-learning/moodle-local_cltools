@@ -1,4 +1,5 @@
-/**!
+/* eslint-disable */
+/** !
  * @fileOverview An easy to use interactive table generation JavaScript library (http://tabulator.info).
  * @version v4.9.3
  * @license
@@ -22,7 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* eslint-disable */
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 /* Tabulator v4.9.3 (c) Oliver Folkerd */
 

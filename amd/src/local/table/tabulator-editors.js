@@ -23,11 +23,11 @@ import moment from 'local_cltools/local/moment-lazy';
 import {entityLookup} from "./tabulator-entity-lookup";
 
 /**
- * dateEditor
+ * DateEditor
  *
- * @param cell
- * @param onRendered
- * @param success
+ * @param {Object} cell
+ * @param {Function} onRendered
+ * @param {Function} success
  * @returns {HTMLInputElement}
  */
 export const dateEditor = (cell, onRendered, success) => {
@@ -45,12 +45,13 @@ export const dateEditor = (cell, onRendered, success) => {
     editor.value = moment(cell.getValue(), "DD/MM/YYYY").format("YYYY-MM-DD");
 
     // Set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM).
-    onRendered(function () {
+    onRendered(function() {
         editor.focus();
         editor.style.css = "100%";
     });
 
     // When the value has been set, trigger the cell to update.
+    // eslint-disable-next-line require-jsdoc
     function successFunc() {
         success(moment(editor.value, "YYYY-MM-DD").format("DD/MM/YYYY"));
     }
@@ -69,7 +70,7 @@ export const dateEditor = (cell, onRendered, success) => {
  */
 export const TABULATOR_EDITORS = {
     date: dateEditor,
-    'entity_lookup': function (cell, onRendered, success, cancel, editorParams) {
+    'entity_lookup': function(cell, onRendered, success, cancel, editorParams) {
         return this.editors.select(cell, onRendered, success, cancel,
             entityLookup(editorParams.entityclass, editorParams.displayfield));
     }
