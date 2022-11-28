@@ -19,8 +19,10 @@ namespace local_cltools\local\field;
 use cache;
 use cache_store;
 use context_system;
+use core\persistent;
 use moodle_exception;
 use MoodleQuickForm;
+use renderer_base;
 use required_capability_exception;
 
 /**
@@ -110,26 +112,13 @@ class generic_selector extends persistent_field {
     public static function get_generic_entities(string $type): array {
         global $DB;
         $context = context_system::instance();
-        $values = [];
         switch ($type) {
             case 'user':
                 if (!has_capability('moodle/user:viewdetails', $context)) {
                     throw new required_capability_exception($context, 'moodle/user:viewdetails', 'cannotviewdetails',
                             'local_cltools');
                 }
-                $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cltools', 'genericselectorcache');
-                $values = $cache->get('users');
-                if (!$values) {
-                    foreach ($DB->get_recordset('user') as $user) {
-                        $userdisplay = ucwords(fullname($user)) . " ($user->email)";
-
-                        $values[] = [
-                            'id' => $user->id,
-                            'value' => $userdisplay
-                        ];
-                    }
-                    $cache->set('user', $values);
-                }
+                $values = array_values(self::get_users());
                 break;
             default:
                 throw new moodle_exception('cannotfetchentity', 'local_cltools');
@@ -144,5 +133,47 @@ class generic_selector extends persistent_field {
      */
     public function get_form_field_type(): string {
         return "searchableselector";
+    }
+
+    /**
+     * Return a printable version of the value provided in input
+     *
+     * @param persistent|null $persistent
+     * @param renderer_base|null $renderer
+     * @return string
+     */
+    public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
+        $value = parent::format_value($persistent, $renderer);
+        if (!empty($value) && is_numeric($value) && !empty($persistent)) {
+            switch ($this->mtype) {
+                case 'user':
+                    $users = self::get_users();
+                    return $users[$value]['value'] ?? '';
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Get users but cache the value.
+     *
+     * @return array
+     */
+    private static function get_users(): array {
+        global $DB;
+        $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cltools', 'genericselectorcache');
+        $values = $cache->get('users');
+        if (!$values) {
+            foreach ($DB->get_recordset('user') as $user) {
+                $userdisplay = ucwords(fullname($user)) . " ($user->email)";
+
+                $values[$user->id] = [
+                    'id' => $user->id,
+                    'value' => $userdisplay
+                ];
+            }
+            $cache->set('user', $values);
+        }
+        return $values;
     }
 }
