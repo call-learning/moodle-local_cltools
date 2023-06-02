@@ -175,8 +175,10 @@ class entity_selector extends persistent_field {
     public function format_value(?persistent $persistent = null, ?renderer_base $renderer = null): string {
         $value = parent::format_value($persistent, $renderer);
         if (!empty($value) && is_numeric($value)) {
-            $record = $this->entityclass::get_record(['id' => $value], 'ASC');
-            return $record->get($this->displayfield);
+            $record = $this->entityclass::get_record(['id' => $value]);
+            if ($record) {
+                return $record->get($this->displayfield);
+            }
         }
         return $value;
     }

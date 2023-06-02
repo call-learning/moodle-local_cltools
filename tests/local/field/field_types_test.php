@@ -238,7 +238,7 @@ class field_types_test extends advanced_testcase {
      * @return entity
      */
     private function create_mock_entity(persistent_field $field, $expectation) {
-        $entity = new class() extends persistent implements enhanced_persistent {
+        $entity = new class($field) extends persistent implements enhanced_persistent {
             use enhanced_persistent_impl;
 
             /**
@@ -253,21 +253,24 @@ class field_types_test extends advanced_testcase {
 
             /**
              * Create an instance of this class.
+             * @param persistent_field $field
              *
              */
-            public function __construct() {
+            public function __construct(persistent_field $field) {
+                static::$fields = [$field];
+                $this->field = $field;
             }
 
             /**
              * Create an instance of this class.
              *
-             * @param persistent_field $field
              * @param mixed $rawvalue
              * @return void
              */
-            public function init($field, $rawvalue) {
-                $this->field = $field;
-                $this->raw_set($field->get_name(), $rawvalue);
+            public function init($rawvalue) {
+                // This is a hack. Since MDL-73420 there is a silly static cache that prevents overriding the
+                // property definition. So we have to work around that.
+                $this->data[$this->field->get_name()] = $rawvalue;
             }
 
             /**
@@ -296,10 +299,19 @@ class field_types_test extends advanced_testcase {
             public function get_template_name(): ?string {
                 return null;
             }
+
+            /**
+             * Get field name
+             *
+             * @return string
+             */
+            public function get_fieldname() {
+                // This is a hack. Since MDL-73420 there is a silly static cache that prevents overriding the
+                // property definition. So we have to work around that.
+                return $this->data[$this->field->get_name()];
+            }
         };
-        $entityclass = new \ReflectionClass($entity);
-        $entityclass->setStaticPropertyValue('fields', [$field]);
-        $entity->init($field, $expectation);
+        $entity->init($expectation);
         return $entity;
     }
 

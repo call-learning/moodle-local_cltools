@@ -65,7 +65,7 @@ class enhanced_filterset_test extends advanced_testcase {
      * @param int $jointtype
      * @param string $tableprefix
      * @param array $excludedfiltersname
-     * @param array $expectedwhere
+     * @param array $expectedwhereelements
      * @param array $expectedparams
      * @covers       \local_cltools\local\filter\enhanced_filterset
      */

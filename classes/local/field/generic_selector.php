@@ -164,6 +164,7 @@ class generic_selector extends persistent_field {
         $cache = cache::make_from_params(cache_store::MODE_APPLICATION, 'local_cltools', 'genericselectorcache');
         $values = $cache->get('users');
         if (!$values) {
+            $values = [];
             foreach ($DB->get_recordset('user') as $user) {
                 $userdisplay = ucwords(fullname($user)) . " ($user->email)";
 
