@@ -72,19 +72,27 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     protected $fieldaliases = [];
 
     /**
+     * @var object|null $additionalparams additional params
+     */
+    protected $additionalparams;
+
+    /**
      * Constructor for dynamic table
      *
      * @param string|null $uniqueid a random unique id
      * @param array|null $actionsdefs an array of action
      * @param bool $editable is the table editable ?
+     * @param object|null $additionalparams additional params
      */
     public function __construct(?string $uniqueid = null,
             ?array $actionsdefs = null,
-            ?bool $editable = false
+            ?bool $editable = false,
+            ?object $additionalparams = null
     ) {
         $this->uniqueid = $uniqueid ?? html_writer::random_id('dynamictable');
         $this->actionsdefs = $actionsdefs;
         $this->iseditable = (bool) $editable;
+        $this->additionalparams = $additionalparams;
         list($cols, $headers) = $this->get_table_columns_definitions();
         $this->define_columns($cols);
         $this->define_headers($headers);
@@ -502,6 +510,13 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
     protected function setup_other_fields() {
     }
 
+    /**
+     * Get additional params from this
+     * @return object|null
+     */
+    public function get_additional_params() : ?object {
+        return $this->additionalparams;
+    }
     /**
      * Format the action cell.
      *

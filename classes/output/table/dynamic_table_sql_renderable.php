@@ -87,9 +87,12 @@ class dynamic_table_sql_renderable implements renderable, templatable {
                 'actionsdefs' => json_encode([]),
 
         ];
+        $additionalparams = $this->dynamictable->get_additional_params();
+        $handlerparams = $additionalparams ?? new \stdClass();
         if (method_exists($this->dynamictable, 'get_persistent_class')) {
-            $context['handlerparams'] = $this->dynamictable->define_class();
+            $handlerparams->genericpersistentclass = $this->dynamictable->get_persistent_class();
         }
+        $context['handlerparams'] = json_encode($handlerparams);
         if ($this->otheroptions) {
             $context['otheroptions'] = json_encode($this->otheroptions);
         }

@@ -80,7 +80,7 @@ export const init = async(tabulatorelementid) => {
     };
     tableInit("#" + tabulatorelementid,
         tableelement.data('tableHandler'),
-        tableelement.data('tableHandlerParams'),
+        JSON.stringify(tableelement.data('tableHandlerParams')),
         tableelement.data('tableUniqueid'),
         tableelement.data('tablePagesize'),
         tableelement.data('tableFilters'),

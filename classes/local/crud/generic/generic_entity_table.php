@@ -26,35 +26,13 @@ use local_cltools\local\crud\entity_table;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class generic_entity_table extends entity_table {
-
-    /**
-     * @var string $genericpersistentclass entity class name
-     */
-    private $genericpersistentclass;
-
-    /**
-     * Constructor
-     * @param string|null $uniqueid a random unique id
-     * @param array|null $actionsdefs an array of action
-     * @param bool $editable is the table editable ?
-     * @param string $genericclassname the generic entity name
-     */
-    public function __construct(?string $uniqueid,
-            ?array $actionsdefs,
-            bool $editable,
-            string $genericclassname
-    ) {
-        $this->genericpersistentclass = $genericclassname;
-        parent::__construct($uniqueid, $actionsdefs, $editable);
-    }
-
     /**
      * Can be overriden
      *
      * @return string|null
      */
     public function define_class() {
-        return $this->genericpersistentclass;
+        return $this->additionalparams->genericpersistentclass ?? null;
     }
 
     /**
@@ -63,6 +41,6 @@ class generic_entity_table extends entity_table {
      * @return string
      */
     public function get_persistent_class(): string {
-        return $this->genericpersistentclass;
+        return $this->additionalparams->genericpersistentclass ?? "";
     }
 }

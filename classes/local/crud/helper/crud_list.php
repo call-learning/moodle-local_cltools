@@ -87,11 +87,12 @@ class crud_list extends base {
      * Process the action
      *
      * @param callable $postprocesscb
+     * @param object|null $handleroptions
      * @return string
      */
-    public function action_process($postprocesscb = null): string {
+    public function action_process($postprocesscb = null, ?object $handleroptions = null): string {
         $returnedtext = '';
-        $entitylist = $this->instanciate_related_persistent_table();
+        $entitylist = $this->instanciate_related_persistent_table($handleroptions);
         // Here the form is just the filter form.
         $renderable = new entity_table_renderable($entitylist);
         $returnedtext .= $this->renderer->render($renderable);

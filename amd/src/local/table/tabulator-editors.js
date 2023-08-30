@@ -51,7 +51,7 @@ export const dateEditor = (cell, onRendered, success) => {
     });
 
     // When the value has been set, trigger the cell to update.
-    // eslint-disable-next-line require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc
     function successFunc() {
         success(moment(editor.value, "YYYY-MM-DD").format("DD/MM/YYYY"));
     }

@@ -106,11 +106,11 @@ abstract class base {
      * @param object|null $persistentnavigation optional persitent navigation
      */
     public function __construct(string $entityclassname,
-            ?string $entityprefix,
-            ?string $formclassname,
-            ?string $tableclassname,
-            ?string $exporterclassname,
-            ?object $persistentnavigation
+        ?string $entityprefix,
+        ?string $formclassname,
+        ?string $tableclassname,
+        ?string $exporterclassname,
+        ?object $persistentnavigation
     ) {
         $this->refpersistentclass = new ReflectionClass($entityclassname);
         $entitynamespace = $this->refpersistentclass->getNamespaceName();
@@ -140,7 +140,7 @@ abstract class base {
             $formentity = $reflectionclass->newInstanceArgs([$this->actionurl, ['persistent' => $entity]] + $formparameters);
         } else {
             $formentity = generic_entity_form_generator::generate($this->refpersistentclass->getName(),
-                    [$this->actionurl, ['persistent' => $entity]] + $formparameters);
+                [$this->actionurl, ['persistent' => $entity]] + $formparameters);
         }
         return $formentity;
     }
@@ -167,7 +167,7 @@ abstract class base {
      * @return ReflectionClass
      */
     protected function get_related_persistent_reflectionclass(string $persistentclassname,
-            string $reflectionclassname): ?ReflectionClass {
+        string $reflectionclassname): ?ReflectionClass {
         if ($persistentclassname) {
             return new ReflectionClass($persistentclassname);
         } else {
@@ -199,33 +199,36 @@ abstract class base {
     /**
      * Get related table class
      *
+     * @param object|null $handleroptions
      * @return entity_table|object
      */
-    public function instanciate_related_persistent_table(): entity_table {
+    public function instanciate_related_persistent_table(?object $handleroptions = null): entity_table {
         $uniqueid = html_writer::random_id(entity_utils::get_persistent_prefix($this->refpersistentclass));
         $actionsdefs = [
-                (object) [
-                        'name' => 'edit',
-                        'icon' => 't/edit',
-                        'url' => $this->persistentnavigation->get_edit_url()
-                ],
-                (object) [
-                        'name' => 'view',
-                        'icon' => 'e/search',
-                        'url' => $this->persistentnavigation->get_view_url(),
-                ],
-                (object) [
-                        'name' => 'delete',
-                        'icon' => 't/delete',
-                        'url' => $this->persistentnavigation->get_delete_url()
-                ]
+            (object) [
+                'name' => 'edit',
+                'icon' => 't/edit',
+                'url' => $this->persistentnavigation->get_edit_url()
+            ],
+            (object) [
+                'name' => 'view',
+                'icon' => 'e/search',
+                'url' => $this->persistentnavigation->get_view_url(),
+            ],
+            (object) [
+                'name' => 'delete',
+                'icon' => 't/delete',
+                'url' => $this->persistentnavigation->get_delete_url()
+            ]
         ];
         $reflectionclass = $this->get_related_class('table');
+        $handleroptions = $handleroptions ?? new \stdClass();
+        $handleroptions->genericpersistentclass = $this->refpersistentclass->getName();
         if ($reflectionclass) {
-            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false, $this->refpersistentclass->getName());
+            $listentity = $reflectionclass->newInstance($uniqueid, $actionsdefs, false, $handleroptions);
         } else {
             // Default list boilerplate.
-            $listentity = new generic_entity_table(null, $actionsdefs, false, $this->refpersistentclass->getName());
+            $listentity = new generic_entity_table(null, $actionsdefs, false, $handleroptions);
         }
         return $listentity;
     }
@@ -275,7 +278,7 @@ abstract class base {
         $entityname = entity_utils::get_persistent_prefix($this->refpersistentclass);
 
         return ucfirst(entity_utils::get_string_for_entity($this->refpersistentclass,
-                'entity:' . static::ACTION_DONE, $entityname));
+            'entity:' . static::ACTION_DONE, $entityname));
     }
 
     /**
@@ -299,9 +302,9 @@ abstract class base {
      */
     protected function trigger_event(persistent $entity): void {
         $eventparams = [
-                'objectid' => $entity->get('id'),
-                'context' => context_system::instance(),
-                'other' => ['objecttable' => $entity::TABLE],
+            'objectid' => $entity->get('id'),
+            'context' => context_system::instance(),
+            'other' => ['objecttable' => $entity::TABLE],
         ];
         $eventclass = $this->get_action_event_class();
         if (class_exists($eventclass)) {
@@ -317,9 +320,9 @@ abstract class base {
      */
     private function get_action_event_class(): string {
         $globaleventclass = entity_utils::get_component($this->refpersistentclass)
-                . '\\event\\'
-                . entity_utils::get_persistent_prefix($this->refpersistentclass)
-                . '_' . static::ACTION_DONE;
+            . '\\event\\'
+            . entity_utils::get_persistent_prefix($this->refpersistentclass)
+            . '_' . static::ACTION_DONE;
         if (class_exists($globaleventclass)) {
             return $globaleventclass;
         }
@@ -339,21 +342,21 @@ abstract class base {
      * @return base
      */
     public static function create(string $entityclassname,
-            string $action = crud_add::ACTION,
-            ?string $entityprefix = null,
-            ?string $formclassname = null,
-            ?string $tableclassname = null,
-            ?string $exporterclassname = null,
-            ?object $persistentnavigation = null
+        string $action = crud_add::ACTION,
+        ?string $entityprefix = null,
+        ?string $formclassname = null,
+        ?string $tableclassname = null,
+        ?string $exporterclassname = null,
+        ?object $persistentnavigation = null
     ): base {
         $action = $action ?? 'add';
         $actionclass = "\\local_cltools\\local\\crud\\helper\\crud_$action";
         return new $actionclass($entityclassname,
-                $entityprefix,
-                $formclassname,
-                $tableclassname,
-                $exporterclassname,
-                $persistentnavigation
+            $entityprefix,
+            $formclassname,
+            $tableclassname,
+            $exporterclassname,
+            $persistentnavigation
         );
     }
 

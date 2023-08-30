@@ -23,7 +23,6 @@ use core_table\local\filter\filter;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
-use local_cltools\local\crud\generic\generic_entity_table;
 use local_cltools\local\filter\enhanced_filterset;
 use local_cltools\local\table\dynamic_table_interface;
 use local_cltools\local\table\dynamic_table_sql;
@@ -188,11 +187,8 @@ class helper {
             throw new UnexpectedValueException("Table handler class {$handler} must be defined in
                          {$CFG->dirroot}, instead of {$classfilepath}.");
         }
-        if ($handler == generic_entity_table::class || is_subclass_of($handler, generic_entity_table::class)) {
-            $instance = new $handler($uniqueid, $actionsdefs, $editable, $handlerparams);
-        } else {
-            $instance = new $handler($uniqueid, $actionsdefs, $editable);
-        }
+        $handlerparams = json_decode($handlerparams);
+        $instance = new $handler($uniqueid, $actionsdefs, $editable, $handlerparams);
         return $instance;
     }
 
