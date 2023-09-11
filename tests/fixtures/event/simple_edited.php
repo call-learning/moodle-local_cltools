@@ -23,7 +23,7 @@ use core\event\base;
  *
  * Message sent /created when entity is added
  *
- * @package   local_envf
+ * @package   local_cltools
  * @copyright 2021 - CALL Learning - Laurent David <laurent@call-learning.fr>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -33,7 +33,7 @@ class crud_event_added extends base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event:entity:added', 'local_envf');
+        return get_string('event:entity:added', 'local_cltools');
     }
 
     /**
@@ -61,7 +61,7 @@ class crud_event_added extends base {
      * @return string
      */
     public function get_description() {
-        return get_string('entity:added', 'local_envf', "{$this->objecttable}({$this->objectid})");
+        return get_string('entity:added', 'local_cltools', "{$this->objecttable}({$this->objectid})");
     }
 
     /**
