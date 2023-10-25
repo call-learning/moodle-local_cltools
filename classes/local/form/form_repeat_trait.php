@@ -89,8 +89,8 @@ trait form_repeat_trait {
         $mform->addElement('hidden', $repeathiddenname, $repeats);
         $mform->setType($repeathiddenname, PARAM_INT);
         // Value not to be overridden by submitted value.
-        $mform->setConstants(array($repeathiddenname => $repeats));
-        $namecloned = array();
+        $mform->setConstants([$repeathiddenname => $repeats]);
+        $namecloned = [];
         for ($i = 0; $i < $repeats; $i++) {
             foreach ($elementobjs as $elementobj) {
                 $elementclone = fullclone($elementobj);
@@ -122,8 +122,8 @@ trait form_repeat_trait {
                             $mform->setDefault($realelementname, str_replace('{no}', $i + 1, $params));
                             break;
                         case 'helpbutton' :
-                            $params = array_merge(array($realelementname), $params);
-                            call_user_func_array(array(&$mform, 'addHelpButton'), $params);
+                            $params = array_merge([$realelementname], $params);
+                            call_user_func_array([&$mform, 'addHelpButton'], $params);
                             break;
                         case 'disabledif' :
                             foreach ($namecloned as $num => $name) {
@@ -132,8 +132,8 @@ trait form_repeat_trait {
                                     break;
                                 }
                             }
-                            $params = array_merge(array($realelementname), $params);
-                            call_user_func_array(array(&$mform, 'disabledIf'), $params);
+                            $params = array_merge([$realelementname], $params);
+                            call_user_func_array([&$mform, 'disabledIf'], $params);
                             break;
                         case 'hideif' :
                             foreach ($namecloned as $num => $name) {
@@ -142,15 +142,15 @@ trait form_repeat_trait {
                                     break;
                                 }
                             }
-                            $params = array_merge(array($realelementname), $params);
-                            call_user_func_array(array(&$mform, 'hideIf'), $params);
+                            $params = array_merge([$realelementname], $params);
+                            call_user_func_array([&$mform, 'hideIf'], $params);
                             break;
                         case 'rule' :
                             if (is_string($params)) {
-                                $params = array(null, $params, null, 'client');
+                                $params = [null, $params, null, 'client'];
                             }
-                            $params = array_merge(array($realelementname), $params);
-                            call_user_func_array(array(&$mform, 'addRule'), $params);
+                            $params = array_merge([$realelementname], $params);
+                            call_user_func_array([&$mform, 'addRule'], $params);
                             break;
 
                         case 'type':

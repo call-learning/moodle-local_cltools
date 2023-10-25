@@ -23,30 +23,30 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-        'local/cltools:dynamictableread' => array(
+$capabilities = [
+        'local/cltools:dynamictableread' => [
                 'riskbitmask' => RISK_SPAM,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
-                'archetypes' => array(
-                        'manager' => CAP_ALLOW
-                )
-        ),
-        'local/cltools:dynamictablewrite' => array(
+                'archetypes' => [
+                        'manager' => CAP_ALLOW,
+                ],
+        ],
+        'local/cltools:dynamictablewrite' => [
                 'riskbitmask' => RISK_SPAM,
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
-                'archetypes' => array(
-                        'manager' => CAP_ALLOW
-                )
-        ),
-        'local/cltools:viewentityfiles' => array(
+                'archetypes' => [
+                        'manager' => CAP_ALLOW,
+                ],
+        ],
+        'local/cltools:viewentityfiles' => [
                 'riskbitmask' => RISK_SPAM,
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_SYSTEM,
-                'archetypes' => array(
+                'archetypes' => [
                         'manager' => CAP_ALLOW,
                         'user' => CAP_ALLOW,
-                )
-        )
-);
+                ],
+        ],
+];

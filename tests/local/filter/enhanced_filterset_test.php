@@ -36,15 +36,15 @@ class enhanced_filterset_test extends advanced_testcase {
             [
                 'opttestfilter1' => [
                     'filterclass' => numeric_comparison_filter::class,
-                    'optional' => true
+                    'optional' => true,
                 ],
                 'reqtestfilter1' => [
                     'filterclass' => numeric_comparison_filter::class,
-                    'required' => true
+                    'required' => true,
                 ],
                 'reqtestfilter2' => [
                     'filterclass' => string_filter::class,
-                ]
+                ],
             ]
         );
         $allfields = $enhancedfilters->get_all_filtertypes();
@@ -88,7 +88,7 @@ class enhanced_filterset_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function sql_filter_provider() {
+    public static function sql_filter_provider(): array {
         return [
             'simplefilter' => [
                 'filtersdef' => [
@@ -100,7 +100,7 @@ class enhanced_filterset_test extends advanced_testcase {
                     ],
                     'integerfilter1' => [
                         'filterclass' => integer_filter::class,
-                    ]
+                    ],
                 ],
                 'filtersvalues' => [
                     'numericfilter1' => (object) [
@@ -110,12 +110,12 @@ class enhanced_filterset_test extends advanced_testcase {
                     'stringfilter1' => (object) [
                         'jointtype' => filter::JOINTYPE_ALL,
                         'values' =>
-                            ["A"]
+                            ["A"],
                     ],
                     'integerfilter1' => (object) [
                         'jointtype' => filter::JOINTYPE_ALL,
                         'values' =>
-                            [1]
+                            [1],
                     ],
                 ],
                 'jointype' => filter::JOINTYPE_ANY,
@@ -124,13 +124,13 @@ class enhanced_filterset_test extends advanced_testcase {
                 'expectedwhereelements' => [
                     'stringfilter1',
                     'integerfilter1',
-                    'COALESCE(numericfilter1,0)'
+                    'COALESCE(numericfilter1,0)',
                 ],
                 'expectedparams' => [
                     'strp_stringfilter10' => '%A%',
                     'intg_integerfilter10' => 1,
                     'nump_numericfilter10' => 1,
-                ]
+                ],
 
             ],
             'composedmultiple' => [
@@ -143,7 +143,7 @@ class enhanced_filterset_test extends advanced_testcase {
                     ],
                     'integerfilter1' => [
                         'filterclass' => integer_filter::class,
-                    ]
+                    ],
                 ],
                 'filtersvalues' => [
                     'numericfilter1' => (object) [
@@ -153,12 +153,12 @@ class enhanced_filterset_test extends advanced_testcase {
                     'stringfilter1' => (object) [
                         'jointtype' => filter::JOINTYPE_ANY,
                         'values' =>
-                            ["A", "B"]
+                            ["A", "B"],
                     ],
                     'integerfilter1' => (object) [
                         'jointtype' => filter::JOINTYPE_ANY,
                         'values' =>
-                            [1, 2]
+                            [1, 2],
                     ],
                 ],
                 'jointype' => filter::JOINTYPE_ALL,
@@ -167,7 +167,7 @@ class enhanced_filterset_test extends advanced_testcase {
                 'expectedwhereelements' => [
                     'stringfilter1',
                     'integerfilter1',
-                    'COALESCE(numericfilter1,0)'
+                    'COALESCE(numericfilter1,0)',
                 ],
                 'expectedparams' => [
                     'strp_stringfilter10' => '%A%',
@@ -176,9 +176,9 @@ class enhanced_filterset_test extends advanced_testcase {
                     'strp_stringfilter11' => '%B%',
                     'intg_integerfilter11' => 2,
                     'nump_numericfilter11' => 1,
-                ]
+                ],
 
-            ]
+            ],
         ];
     }
 

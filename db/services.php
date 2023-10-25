@@ -22,7 +22,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
+$functions = [
         'cltools_dynamic_table_get_rows' => [
                 'classname' => 'local_cltools\\local\\table\\external\\get_rows',
                 'methodname' => 'execute',
@@ -30,7 +30,7 @@ $functions = array(
                 'type' => 'read',
                 'capabilities' => 'local/cltools:dynamictableread',
                 'loginrequired' => true,
-                'ajax' => true
+                'ajax' => true,
         ],
         'cltools_dynamic_table_get_columns' => [
                 'classname' => 'local_cltools\\local\\table\\external\\get_columns',
@@ -39,7 +39,7 @@ $functions = array(
                 'type' => 'read',
                 'capabilities' => 'local/cltools:dynamictableread',
                 'loginrequired' => true,
-                'ajax' => true
+                'ajax' => true,
         ],
         'cltools_dynamic_table_set_value' => [
                 'classname' => 'local_cltools\\local\\table\\external\\set_value',
@@ -48,7 +48,7 @@ $functions = array(
                 'type' => 'write',
                 'capabilities' => 'local/cltools:dynamictablewrite',
                 'loginrequired' => true,
-                'ajax' => true
+                'ajax' => true,
         ],
         'cltools_dynamic_table_is_value_valid' => [
                 'classname' => 'local_cltools\\local\\table\\external\\validate_value',
@@ -57,7 +57,7 @@ $functions = array(
                 'type' => 'read',
                 'capabilities' => 'local/cltools:dynamictableread',
                 'loginrequired' => true,
-                'ajax' => true
+                'ajax' => true,
         ],
 
         'cltools_entity_lookup' => [
@@ -67,7 +67,7 @@ $functions = array(
                 'type' => 'read',
                 'ajax' => true,
                 'capabilities' => 'local/cltools:dynamictableread',
-                'loginrequired' => true
+                'loginrequired' => true,
         ],
         'cltools_generic_lookup' => [
                 'classname' => 'local_cltools\\local\\table\\external\\generic_lookup',
@@ -76,6 +76,6 @@ $functions = array(
                 'type' => 'read',
                 'ajax' => true,
                 'capabilities' => 'local/cltools:dynamictableread,',
-                'loginrequired' => true
+                'loginrequired' => true,
         ],
-);
+];

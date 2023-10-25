@@ -62,8 +62,8 @@ class entity_lookup extends external_api {
         $values = [
                 [
                         'id' => 0,
-                        'value' => get_string('notavailable', 'local_cltools')
-                ]
+                        'value' => get_string('notavailable', 'local_cltools'),
+                ],
         ];
         $warnings = [];
         $context = helper::get_current_context();
@@ -80,12 +80,12 @@ class entity_lookup extends external_api {
                     'itemid' => 0,
                     'displayfield' => $displayfield,
                     'warningcode' => "lookuperror",
-                    'message' => "Lookup error for entity $entityclass: {$e->getMessage()} and $displayfield."
+                    'message' => "Lookup error for entity $entityclass: {$e->getMessage()} and $displayfield.",
             ];
         }
         return [
                 'values' => $values,
-                'warnings' => $warnings
+                'warnings' => $warnings,
         ];
     }
 
@@ -107,7 +107,7 @@ class entity_lookup extends external_api {
                                 'Name of the field used to display values',
                                 VALUE_DEFAULT,
                                 ''
-                        )
+                        ),
                 ]
         );
 
@@ -120,7 +120,7 @@ class entity_lookup extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-                array(
+                [
                         'values' => new \external_multiple_structure(
                                 new external_single_structure(
                                         [
@@ -129,8 +129,8 @@ class entity_lookup extends external_api {
                                         ]
                                 )
                         ),
-                        'warnings' => new external_warnings()
-                )
+                        'warnings' => new external_warnings(),
+                ]
         );
     }
 

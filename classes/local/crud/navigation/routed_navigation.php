@@ -59,7 +59,7 @@ class routed_navigation extends flat_navigation {
      */
     public function get_add_url(): moodle_url {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php", array('action' => crud_add::ACTION));
+        return new moodle_url("$rootdir/index.php", ['action' => crud_add::ACTION]);
     }
 
     /**
@@ -69,7 +69,7 @@ class routed_navigation extends flat_navigation {
      */
     public function get_delete_url(): moodle_url {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php", array('action' => crud_delete::ACTION));
+        return new moodle_url("$rootdir/index.php", ['action' => crud_delete::ACTION]);
     }
 
     /**
@@ -79,7 +79,7 @@ class routed_navigation extends flat_navigation {
      */
     public function get_edit_url(): moodle_url {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php", array('action' => crud_edit::ACTION));
+        return new moodle_url("$rootdir/index.php", ['action' => crud_edit::ACTION]);
     }
 
     /**
@@ -89,6 +89,6 @@ class routed_navigation extends flat_navigation {
      */
     public function get_view_url(): moodle_url {
         $rootdir = $this->get_root_url();
-        return new moodle_url("$rootdir/index.php", array('action' => crud_view::ACTION));
+        return new moodle_url("$rootdir/index.php", ['action' => crud_view::ACTION]);
     }
 }

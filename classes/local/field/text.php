@@ -35,7 +35,7 @@ class text extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_TEXT,
-                'default' => ''
+                'default' => '',
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
@@ -49,7 +49,7 @@ class text extends persistent_field {
      */
     public function get_column_editor(): ?object {
         return (object) [
-                'editor' => 'input'
+                'editor' => 'input',
         ];
     }
 
@@ -73,7 +73,7 @@ class text extends persistent_field {
      */
     public function get_column_validator(): ?object {
         return (object) [
-                'validator' => 'string'
+                'validator' => 'string',
         ];
     }
 

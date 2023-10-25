@@ -73,7 +73,7 @@ trait tabulator_default_trait {
      */
     public function get_column_formatter(): ?object {
         return (object) [
-                'headerSort' => $this->can_sort()
+                'headerSort' => $this->can_sort(),
         ];
     }
 

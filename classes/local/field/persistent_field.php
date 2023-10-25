@@ -232,7 +232,7 @@ abstract class persistent_field implements sql_query_adapter, tabulator_adapter,
     protected function init($fielddef, array $defaultvalues) {
         if (is_string($fielddef)) {
             $fielddef = [
-                    'fieldname' => $fielddef
+                    'fieldname' => $fielddef,
             ];
         }
         // Get default values.

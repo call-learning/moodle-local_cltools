@@ -58,7 +58,7 @@ class generic_lookup extends external_api {
         self::validate_context($context);
         $values = generic_selector::get_generic_entities($type);
         return [
-                'values' => $values
+                'values' => $values,
         ];
     }
 
@@ -83,7 +83,7 @@ class generic_lookup extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-                array(
+                [
                         'values' => new \external_multiple_structure(
                                 new external_single_structure(
                                         [
@@ -91,8 +91,8 @@ class generic_lookup extends external_api {
                                                 'value' => new external_value(PARAM_RAW, 'display value'),
                                         ]
                                 )
-                        )
-                )
+                        ),
+                ]
         );
     }
 

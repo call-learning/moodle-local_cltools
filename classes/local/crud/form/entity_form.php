@@ -68,7 +68,7 @@ abstract class entity_form extends persistent {
      */
     const EDITOR_SUFFIX = '_editor';
     /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton');
+    protected static $fieldstoremove = ['submitbutton'];
     /**
      * @var array|mixed $fields form fields
      */
@@ -262,7 +262,7 @@ abstract class entity_form extends persistent {
                         'noclean' => true,
                         'context' => $this->get_persistent()->get_context(),
                         'enable_filemanagement' => true,
-                        'changeformat' => true
+                        'changeformat' => true,
                 ];
         $formoptions =
                 empty($forminfo['editoroptions']) ? $formoptions : array_merge($formoptions, $fieldinfo['editoroptions']);

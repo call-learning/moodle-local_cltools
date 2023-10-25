@@ -44,7 +44,7 @@ class select_choice extends persistent_field {
                 'required' => false,
                 'rawtype' => PARAM_INT,
                 'choices' => [],
-                'default' => 0
+                'default' => 0,
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         $this->choices = empty($fielddef->choices) ? [] : $fielddef->choices;
@@ -65,7 +65,7 @@ class select_choice extends persistent_field {
                     'filter' => 'select',
                     'filterParams' => (object) $this->choices,
                     'editor' => 'select',
-                    'editorParams' => (object) $this->choices
+                    'editorParams' => (object) $this->choices,
             ];
         }
         return null;
@@ -95,7 +95,7 @@ class select_choice extends persistent_field {
     public function get_column_editor(): ?object {
         return (object) [
                 'editor' => 'select',
-                'editorParams' => (object) $this->choices
+                'editorParams' => (object) $this->choices,
         ];
     }
 
@@ -108,7 +108,7 @@ class select_choice extends persistent_field {
      */
     public function get_column_validator(): ?object {
         return (object) [
-                'validator' => "in:" . join('|', (array) array_keys($this->choices))
+                'validator' => "in:" . join('|', (array) array_keys($this->choices)),
         ];
     }
 

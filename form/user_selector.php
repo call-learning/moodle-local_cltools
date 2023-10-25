@@ -55,7 +55,7 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
      * @param mixed $attributes Array of typical HTML attributes plus additional options, such as:
      *                       'multiple' - boolean multi select
      */
-    public function __construct($elementname = null, $elementlabel = null, $attributes = array()) {
+    public function __construct($elementname = null, $elementlabel = null, $attributes = []) {
         $this->_type = 'user_selector';
         if (!is_array($attributes)) {
             $attributes = [];
@@ -81,7 +81,7 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
             new moodle_url(''),
             '',
             null,
-            array('class' => 'btn btn-secondary'),
+            ['class' => 'btn btn-secondary'],
             new pix_icon('i/search', get_string('usersearch', 'local_cltools'))
         );
         $data['action'] = $action->export_for_template($output);
@@ -103,7 +103,7 @@ class MoodleQuickForm_user_selector extends \HTML_QuickForm_input implements tem
      * @return    void
      */
     function setValue($value) {
-        $this->updateAttributes(array('value' => $value));
+        $this->updateAttributes(['value' => $value]);
     }
     // phpcs:enable moodle.NamingConventions.ValidFunctionName.LowercaseMethod,Squiz.Scope.MethodScope.Missing
 }

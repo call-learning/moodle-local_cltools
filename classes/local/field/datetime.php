@@ -37,7 +37,7 @@ class datetime extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_INT,
-                'default' => time()
+                'default' => time(),
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
@@ -55,8 +55,8 @@ class datetime extends persistent_field {
                 'formatterParams' => (object) [
                         'outputFormat' => get_string('momentjsdatetimeformat', 'local_cltools'),
                         'locale' => current_language(),
-                        'timezone' => usertimezone()
-                ]
+                        'timezone' => usertimezone(),
+                ],
         ];
         return $format;
     }

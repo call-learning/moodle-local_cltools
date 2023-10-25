@@ -69,14 +69,14 @@ class validate_value extends external_api {
                 'uniqueid' => $uniqueid,
                 'id' => $id,
                 'field' => $field,
-                'value' => $value
+                'value' => $value,
         ]);
 
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
         $context = helper::get_current_context();
         self::validate_context($context);
         $success = false;
-        $warnings = array();
+        $warnings = [];
         if ($instance::validate_access($context)) {
             try {
                 $success = $instance->is_valid_value($id, $field, json_decode($value));
@@ -85,7 +85,7 @@ class validate_value extends external_api {
                     'item' => $field,
                     'itemid' => $id,
                     'warningcode' => 'setvalueerror',
-                    'message' => "For table $handler: {$e->getMessage()}"
+                    'message' => "For table $handler: {$e->getMessage()}",
                 ];
             }
         } else {
@@ -93,12 +93,12 @@ class validate_value extends external_api {
                 'item' => $field,
                 'itemid' => $id,
                 'warningcode' => 'setvalueerror',
-                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools')
+                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools'),
             ];
         }
         return [
                 'success' => $success,
-                'warnings' => $warnings
+                'warnings' => $warnings,
         ];
     }
 
@@ -125,7 +125,7 @@ class validate_value extends external_api {
                                                 PARAM_RAW,
                                                 'New value',
                                                 VALUE_REQUIRED
-                                        )
+                                        ),
                         ]
                 )
         );
@@ -138,10 +138,10 @@ class validate_value extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-                array(
+                [
                         'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
-                        'warnings' => new external_warnings()
-                )
+                        'warnings' => new external_warnings(),
+                ]
         );
     }
 }

@@ -36,7 +36,7 @@ class html extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_RAW,
-                'default' => ''
+                'default' => '',
         ];
         $this->init($fielnameordef, $standarddefaults);
     }

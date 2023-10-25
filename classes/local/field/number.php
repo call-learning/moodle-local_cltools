@@ -43,7 +43,7 @@ class number extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => $isfloat ? PARAM_FLOAT : PARAM_INT,
-                'default' => 0
+                'default' => 0,
         ];
         $this->isfloat = $isfloat;
         $this->init($fielnameordef, $standarddefaults);
@@ -57,7 +57,7 @@ class number extends persistent_field {
      */
     public function get_column_filter(): ?object {
         return (object) [
-                'filter' => $this->get_type()
+                'filter' => $this->get_type(),
         ];
     }
 

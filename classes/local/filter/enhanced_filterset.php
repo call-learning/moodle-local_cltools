@@ -158,6 +158,6 @@ class enhanced_filterset extends filterset {
                 }
             }
         }
-        return array(join(" $joinsql ", $filtesetwheres), $filtesetparams);
+        return [join(" $joinsql ", $filtesetwheres), $filtesetparams];
     }
 }

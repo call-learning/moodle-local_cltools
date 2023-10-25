@@ -83,7 +83,7 @@ class helper {
                                                 new external_value(PARAM_RAW, 'Filter value'),
                                                 'The value to filter on',
                                                 VALUE_REQUIRED
-                                        )
+                                        ),
                                 ]),
                                 'The filters that will be applied in the request',
                                 VALUE_DEFAULT,

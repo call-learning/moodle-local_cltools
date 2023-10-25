@@ -190,7 +190,7 @@ trait table_sql_trait {
      * columns are sorted then column names must correspond to a field in sql.
      */
     protected function define_columns($columns) {
-        $this->columns = array();
+        $this->columns = [];
         $colnum = 0;
 
         foreach ($columns as $column) {
@@ -236,9 +236,9 @@ trait table_sql_trait {
      * @param array $textsortcols other columns to sort by
      * @return string SQL fragment that can be used in an ORDER BY clause.
      */
-    protected function construct_order_by($cols, $textsortcols = array()) {
+    protected function construct_order_by($cols, $textsortcols = []) {
         global $DB;
-        $bits = array();
+        $bits = [];
 
         foreach ($cols as $column => $order) {
             if (in_array($column, $textsortcols)) {
@@ -268,7 +268,7 @@ trait table_sql_trait {
         if (is_array($row)) {
             $row = (object) $row;
         }
-        $formattedrow = array();
+        $formattedrow = [];
         foreach (array_keys($this->columns) as $column) {
             $colmethodname = 'col_' . $column;
             if (method_exists($this, $colmethodname)) {
@@ -324,10 +324,10 @@ trait table_sql_trait {
             $userid = $row->id;
         }
         if ($COURSE->id == SITEID) {
-            $profileurl = new moodle_url('/user/profile.php', array('id' => $userid));
+            $profileurl = new moodle_url('/user/profile.php', ['id' => $userid]);
         } else {
             $profileurl = new moodle_url('/user/view.php',
-                    array('id' => $userid, 'course' => $COURSE->id));
+                    ['id' => $userid, 'course' => $COURSE->id]);
         }
         return html_writer::link($profileurl, $name);
     }

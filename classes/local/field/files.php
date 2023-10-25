@@ -52,7 +52,7 @@ class files extends persistent_field {
                 'required' => false,
                 'rawtype' => PARAM_INT,
                 'filemanageroptions' => [],
-                'default' => 0 // No default if not it makes it required.
+                'default' => 0, // No default if not it makes it required.
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         if ($fielddef->filemanageroptions) {

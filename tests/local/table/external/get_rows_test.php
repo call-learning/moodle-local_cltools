@@ -48,7 +48,7 @@ class get_rows_test extends advanced_testcase {
             'description' => 'Description for B....',
             'sortorder' => 1,
             'parentid' => 0,
-            'scaleid' => 0
+            'scaleid' => 0,
         ],
         [
             'shortname' => 'Shortname 2',
@@ -56,8 +56,8 @@ class get_rows_test extends advanced_testcase {
             'description' => 'Description for A....',
             'sortorder' => 2,
             'parentid' => 0,
-            'scaleid' => 0
-        ]
+            'scaleid' => 0,
+        ],
     ];
     /**
      * @var stdClass $entities
@@ -86,7 +86,7 @@ class get_rows_test extends advanced_testcase {
                 'shortname' => 'Shortname 2',
                 'idnumber' => 'Idnumber 2',
                 'sortorder' => 0,
-            ]
+            ],
         ];
 
         foreach ($otherentitiesdata as $entityrecord) {
@@ -159,7 +159,7 @@ class get_rows_test extends advanced_testcase {
                 'sortorder' => 1,
                 'parentid' => 0,
                 'othersimpleid' => $this->entities[0]->id,
-                'scaleid' => 0
+                'scaleid' => 0,
             ];
             $entity = new entity(0, $entityrecord);
             $entity->save();
@@ -199,44 +199,44 @@ class get_rows_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function sort_data_provider() {
+    public static function sort_data_provider(): array {
         return [
             'sort simple asc' => [
                 'sortorder' => [
                     [
                         'sortby' => 'sortorder',
-                        'sortorder' => 'ASC'
-                    ]
+                        'sortorder' => 'ASC',
+                    ],
                 ],
                 'expectedfirstresult' => [
-                    ['field' => 'sortorder', 'value' => 1]
-                ]
+                    ['field' => 'sortorder', 'value' => 1],
+                ],
             ],
             'sort simple desc' => [
                 'sortorder' => [
                     [
                         'sortby' => 'sortorder',
-                        'sortorder' => 'DESC'
-                    ]
+                        'sortorder' => 'DESC',
+                    ],
                 ],
                 'expectedfirstresult' => [
-                    ['field' => 'sortorder', 'value' => 2]
-                ]
+                    ['field' => 'sortorder', 'value' => 2],
+                ],
             ],
             'sort compound asc' => [
                 'sortorder' => [
                     [
                         'sortby' => 'description',
-                        'sortorder' => 'ASC'
+                        'sortorder' => 'ASC',
                     ],
                     [
                         'sortby' => 'sortorder',
-                        'sortorder' => 'DESC'
+                        'sortorder' => 'DESC',
                     ],
                 ],
                 'expectedfirstresult' => [
-                    ['field' => 'description', 'value' => 'Description for A....']
-                ]
+                    ['field' => 'description', 'value' => 'Description for A....'],
+                ],
             ],
         ];
     }

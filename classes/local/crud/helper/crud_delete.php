@@ -84,7 +84,7 @@ class crud_delete extends base {
             $deleteurl = $this->persistentnavigation->get_delete_url();
             $confirmurl =
                     new moodle_url($deleteurl,
-                            array('confirm' => true, 'id' => $id, 'sesskey' => sesskey()));
+                            ['confirm' => true, 'id' => $id, 'sesskey' => sesskey()]);
             $cancelurl = new moodle_url($this->persistentnavigation->get_list_url());
             $returnedtext .= $this->renderer->confirm(
                     entity_utils::get_string_for_entity($this->refpersistentclass, 'delete'),

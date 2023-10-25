@@ -71,8 +71,8 @@ class helper_test extends advanced_testcase {
                         'type' => 'string_filter',
                         'required' => true,
                         'jointype' => filter::JOINTYPE_ALL,
-                        'values' => ['Short...']
-                ]
+                        'values' => ['Short...'],
+                ],
         ];
         helper::setup_filters($instance, $filterset, filter::JOINTYPE_ALL);
         $this->assertNotNull($instance->get_filterset());

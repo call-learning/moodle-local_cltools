@@ -40,7 +40,7 @@ class filter_helper {
                     . join(" " . static::get_jointype_to_sql_join($filter->get_join_type())
                             . " ", $wheres)
                     . ")",
-                    $params];
+                    $params, ];
         }
         return [];
     }

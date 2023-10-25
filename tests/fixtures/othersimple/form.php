@@ -35,8 +35,8 @@ class form extends entity_form {
     protected static $persistentclass = entity::class;
 
     /** @var array Fields to remove when getting the final data. */
-    protected static $fieldstoremove = array('submitbutton', 'files');
+    protected static $fieldstoremove = ['submitbutton', 'files'];
 
     /** @var string[] $foreignfields */
-    protected static $foreignfields = array();
+    protected static $foreignfields = [];
 }

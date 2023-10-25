@@ -48,7 +48,7 @@ class generic_selector extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_INT,
-                'default' => ''
+                'default' => '',
         ];
         $this->init($fielnameordef, $standarddefaults);
         $this->mtype = empty($fielddef->type) ? 'user' : $fielddef->type;
@@ -83,7 +83,7 @@ class generic_selector extends persistent_field {
                 'editor' => 'generic_lookup',
                 'editorParams' => (object) [
                         'type' => $this->mtype,
-                ]
+                ],
         ];
     }
 
@@ -170,7 +170,7 @@ class generic_selector extends persistent_field {
 
                 $values[$user->id] = [
                     'id' => $user->id,
-                    'value' => $userdisplay
+                    'value' => $userdisplay,
                 ];
             }
             $cache->set('user', $values);

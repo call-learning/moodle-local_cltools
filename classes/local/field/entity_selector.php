@@ -50,7 +50,7 @@ class entity_selector extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_INT,
-                'default' => 0
+                'default' => 0,
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         if (empty($fielddef->entityclass)) {
@@ -75,7 +75,7 @@ class entity_selector extends persistent_field {
         $format->formatter = 'entity_lookup';
         $format->formatterParams = (object) [
                 'entityclass' => $this->entityclass,
-                'displayfield' => $this->displayfield
+                'displayfield' => $this->displayfield,
         ];
         return $format;
     }
@@ -92,8 +92,8 @@ class entity_selector extends persistent_field {
                 'editor' => 'entity_lookup',
                 'editorParams' => (object) [
                         'entityclass' => $this->entityclass,
-                        'displayfield' => $this->displayfield
-                ]
+                        'displayfield' => $this->displayfield,
+                ],
         ];
     }
 

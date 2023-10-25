@@ -78,7 +78,7 @@ class generic_lookup_test extends advanced_testcase {
         $this->resetAfterTest();
         $usersdata = [
                 ['firstname' => 'User 1', 'lastname' => 'User 1'],
-                ['firstname' => 'User 2', 'lastname' => 'User 2']
+                ['firstname' => 'User 2', 'lastname' => 'User 2'],
         ];
         foreach ($usersdata as $record) {
             $user = $this->getDataGenerator()->create_user($record);

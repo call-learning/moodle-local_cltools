@@ -77,12 +77,12 @@ class form_test extends base_crud_test_helper {
                 'description_editor' => [
                         'text' => 'Description',
                         'format' => FORMAT_HTML,
-                        'itemid' => null
+                        'itemid' => null,
                 ],
                 'sortorder' => 0,
                 'othersimpleid' => 0,
                 'scaleid' => 0,
-                'parentid' => 0
+                'parentid' => 0,
         ];
 
         ['draftitemid' => $submitteddata['image']] = $this->create_user_file_in_draft_area($user,
@@ -151,12 +151,12 @@ class form_test extends base_crud_test_helper {
                 'description_editor' => [
                         'text' => 'Description my text <image src="@@PLUGINFILE@@/tux-sample.png"/>',
                         'format' => FORMAT_HTML,
-                        'itemid' => null
+                        'itemid' => null,
                 ],
                 'sortorder' => 0,
                 'othersimpleid' => 0,
                 'scaleid' => 0,
-                'parentid' => 0
+                'parentid' => 0,
         ];
 
         [

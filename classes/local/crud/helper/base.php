@@ -208,7 +208,7 @@ abstract class base {
             (object) [
                 'name' => 'edit',
                 'icon' => 't/edit',
-                'url' => $this->persistentnavigation->get_edit_url()
+                'url' => $this->persistentnavigation->get_edit_url(),
             ],
             (object) [
                 'name' => 'view',
@@ -218,8 +218,8 @@ abstract class base {
             (object) [
                 'name' => 'delete',
                 'icon' => 't/delete',
-                'url' => $this->persistentnavigation->get_delete_url()
-            ]
+                'url' => $this->persistentnavigation->get_delete_url(),
+            ],
         ];
         $reflectionclass = $this->get_related_class('table');
         $handleroptions = $handleroptions ?? new \stdClass();

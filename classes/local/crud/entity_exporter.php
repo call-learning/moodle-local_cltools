@@ -60,14 +60,14 @@ abstract class entity_exporter extends exporter {
      * @param persistent $persistent
      * @param array $related
      */
-    public function __construct(persistent $persistent, array $related = array()) {
+    public function __construct(persistent $persistent, array $related = []) {
         $this->persistentcomponent = entity_utils::get_component(new \ReflectionClass($persistent));
         $this->instanceid = (int) $persistent->get('id');
         $related = array_merge($related,
                 [
                         'context' => context_system::instance(),
                         'component' => $this->persistentcomponent,
-                        'itemid' => (int) $persistent->get('id')
+                        'itemid' => (int) $persistent->get('id'),
                 ]
         );
         $this->persistent = $persistent;
@@ -86,7 +86,7 @@ abstract class entity_exporter extends exporter {
      * @return string[]
      */
     protected static function define_related() {
-        return array('context' => '\\context', 'component' => 'string?', 'itemid' => 'int?');
+        return ['context' => '\\context', 'component' => 'string?', 'itemid' => 'int?'];
     }
 
     /**
@@ -99,13 +99,13 @@ abstract class entity_exporter extends exporter {
         $fields = entity_utils::get_defined_fields(static::define_class());
         $props = [
                 'usermodifiedfullname' => [
-                        'type' => PARAM_ALPHANUMEXT
-                ]
+                        'type' => PARAM_ALPHANUMEXT,
+                ],
         ];
         foreach ($fields as $field) {
             /* @var persistent_field $field a persistent field */
             $props[$field->get_name() . 'formatted'] = [
-                    'type' => $field->get_raw_param_type()
+                    'type' => $field->get_raw_param_type(),
             ];
 
         }
@@ -126,18 +126,18 @@ abstract class entity_exporter extends exporter {
      */
     protected static function define_properties() {
         $fields = entity_utils::get_defined_fields(static::define_class());
-        $properties['timecreated'] = array(
+        $properties['timecreated'] = [
                 'default' => 0,
                 'type' => PARAM_INT,
-        );
-        $properties['timemodified'] = array(
+        ];
+        $properties['timemodified'] = [
                 'default' => 0,
-                'type' => PARAM_INT
-        );
-        $properties['usermodified'] = array(
+                'type' => PARAM_INT,
+        ];
+        $properties['usermodified'] = [
                 'default' => 0,
-                'type' => PARAM_INT
-        );
+                'type' => PARAM_INT,
+        ];
         foreach ($fields as $field) {
             $properties = array_merge($properties, $field->get_persistent_properties());
         }

@@ -35,7 +35,7 @@ class hidden extends persistent_field {
                 'rawtype' => PARAM_RAW,
                 'default' => false,
                 'visible' => false,
-                'editable' => false
+                'editable' => false,
         ];
         $this->init($fielnameordef, $standarddefaults);
         $this->visible = false;

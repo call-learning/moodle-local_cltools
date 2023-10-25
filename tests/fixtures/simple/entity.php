@@ -88,28 +88,28 @@ class entity extends persistent implements enhanced_persistent {
     public static function define_fields(): array {
         global $CFG;
         require_once($CFG->dirroot . '/local/cltools/tests/fixtures/othersimple/entity.php');
-        return array(
+        return [
                 new text('shortname'),
                 new text('idnumber'),
                 new editor('description'), // Description format is automatically added.
                 new entity_selector([
                         'fieldname' => 'parentid',
                         'entityclass' => self::class,
-                        'displayfield' => 'shortname'
+                        'displayfield' => 'shortname',
                 ]),
                 new text('path'),
                 new number('sortorder'),
                 new entity_selector([
                         'fieldname' => 'othersimpleid',
                         'entityclass' => \local_cltools\othersimple\entity::class,
-                        'displayfield' => 'shortname'
+                        'displayfield' => 'shortname',
                 ]),
                 new select_choice([
                         'fieldname' => 'scaleid',
-                        'choices' => [1 => 'scale1', 2 => 'scale2']
+                        'choices' => [1 => 'scale1', 2 => 'scale2'],
                 ]),
                 new files('image'),
-        );
+        ];
     }
 
 
@@ -147,7 +147,7 @@ class entity extends persistent implements enhanced_persistent {
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
 
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $dbman->create_table($table);
     }
 

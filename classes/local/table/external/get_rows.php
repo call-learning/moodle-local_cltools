@@ -96,7 +96,7 @@ class get_rows extends external_api {
             'actionsdefs' => $actionsdefs,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
-            'hiddencolumns' => $hiddencolumns
+            'hiddencolumns' => $hiddencolumns,
         ]);
 
         /* @var $instance dynamic_table_interface the dynamic table itself */
@@ -134,7 +134,7 @@ class get_rows extends external_api {
                     return json_encode($r);
                 },
                 $rows
-            )
+            ),
         ];
         if ($instance->is_pageable()) {
             $returnval['pagescount'] = intval(floor($instance->get_total_rows() / $instance->get_page_size()));
@@ -173,7 +173,7 @@ class get_rows extends external_api {
                         'The number of records per page',
                         VALUE_DEFAULT,
                         0
-                    )
+                    ),
                 ]
             )
         );
@@ -190,7 +190,7 @@ class get_rows extends external_api {
             'pagescount' => new external_value(PARAM_INT, 'Maximum page count.', VALUE_OPTIONAL),
             'data' => new external_multiple_structure(
                 new external_value(PARAM_RAW, 'JSON encoded values in return.')
-            )
+            ),
         ]);
     }
 }

@@ -38,7 +38,7 @@ class boolean extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_BOOL,
-                'default' => false
+                'default' => false,
         ];
         $this->init($fielnameordef, $standarddefaults);
     }
@@ -54,7 +54,7 @@ class boolean extends persistent_field {
         $format->formatter = 'tickCross';
         $format->formatterParams = (object) [
                 'allowEmpty' => true,
-                'allowTruthy' => false
+                'allowTruthy' => false,
         ];
         return $format;
     }
@@ -72,7 +72,7 @@ class boolean extends persistent_field {
                         'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                         'allowEmpty' => true,
                         'allowTruthy' => true,
-                ]
+                ],
         ];
     }
 
@@ -89,8 +89,8 @@ class boolean extends persistent_field {
                         'indeterminateValue' => get_string('notavailable', 'local_cltools'),
                         'allowEmpty' => true,
                         'allowTruthy' => true,
-                        'tristate' => true
-                ]
+                        'tristate' => true,
+                ],
         ];
     }
 
@@ -134,7 +134,7 @@ class boolean extends persistent_field {
                 true,
                 1,
                 'true',
-                '1'
+                '1',
         ], true);
     }
 
@@ -150,7 +150,7 @@ class boolean extends persistent_field {
                 false,
                 0,
                 'false',
-                '0'
+                '0',
         ], true);
     }
 

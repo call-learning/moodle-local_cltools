@@ -48,7 +48,7 @@ class editor extends persistent_field {
         $standarddefaults = [
                 'required' => false,
                 'rawtype' => PARAM_RAW,
-                'default' => ''
+                'default' => '',
         ];
         $fielddef = $this->init($fielnameordef, $standarddefaults);
         if (!empty($fielddef->editoroptions)) {
@@ -107,7 +107,7 @@ class editor extends persistent_field {
                 'maxfiles' => EDITOR_UNLIMITED_FILES,
                 'changeformat' => true,
                 'maxbytes' => $CFG->maxbytes,
-                'trusttext' => true
+                'trusttext' => true,
         ];
         return array_merge($defaultoptions, $this->editoroptions);
     }
@@ -187,8 +187,8 @@ class editor extends persistent_field {
                 "{$this->get_name()}format" => [
                         'type' => PARAM_INT,
                         'default' => FORMAT_HTML,
-                        'choices' => array(FORMAT_PLAIN, FORMAT_HTML, FORMAT_MOODLE, FORMAT_MARKDOWN)
-                ]
+                        'choices' => [FORMAT_PLAIN, FORMAT_HTML, FORMAT_MOODLE, FORMAT_MARKDOWN],
+                ],
         ];
     }
 

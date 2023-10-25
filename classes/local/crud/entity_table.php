@@ -41,7 +41,7 @@ class entity_table extends dynamic_table_sql {
      * @return array
      */
     protected static function define_column_order() {
-        return array();
+        return [];
     }
 
     /**
@@ -50,7 +50,7 @@ class entity_table extends dynamic_table_sql {
      * @return array
      */
     protected static function define_properties() {
-        return array();
+        return [];
     }
 
     /**
@@ -173,7 +173,7 @@ class entity_table extends dynamic_table_sql {
                 $entityfilecomponent);
         $imageshtml = '';
         foreach ($imagesurls as $src) {
-            $imageshtml .= html_writer::img($src, $altmessage, array('class' => 'img-thumbnail'));
+            $imageshtml .= html_writer::img($src, $altmessage, ['class' => 'img-thumbnail']);
         }
         return $imageshtml;
     }

@@ -78,7 +78,7 @@ class entity_utils_test extends base_crud_test_helper {
     public function test_external_get_files_url() {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $this->upload_files(array('icon.png'), array('icon'), 'simple', 'local_cltools');
+        $this->upload_files(['icon.png'], ['icon'], 'simple', 'local_cltools');
         $files = entity_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(1, $files);
         $this->assertEquals('https://www.example.com/moodle/pluginfile.php/1/local_cltools/simple/0/icon',
@@ -107,14 +107,14 @@ class entity_utils_test extends base_crud_test_helper {
             if (!empty($destfilenames[$index])) {
                 $destfilename = $destfilenames[$index];
             }
-            $filerecord = array(
+            $filerecord = [
                     'contextid' => $contextsystem->id,
                     'component' => $component,
                     'filearea' => $filearea,
                     'itemid' => $draftitemid,
                     'filepath' => '/',
                     'filename' => $destfilename,
-            );
+            ];
             // Create an area to upload the file.
             // Create a file from the string that we made earlier.
             if (!($file = $fs->get_file($filerecord['contextid'],
@@ -152,7 +152,7 @@ class entity_utils_test extends base_crud_test_helper {
     public function test_external_get_files_url_with_item_id() {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $this->upload_files(array('icon.png', 'icon.png'), array('icon', 'icon2'), 'simple', 'local_cltools', 1);
+        $this->upload_files(['icon.png', 'icon.png'], ['icon', 'icon2'], 'simple', 'local_cltools', 1);
         $files = entity_utils::get_files_urls(0, 'simple', 'local_cltools');
         $this->assertCount(0, $files);
         $files = entity_utils::get_files_urls(1, 'simple', 'local_cltools');

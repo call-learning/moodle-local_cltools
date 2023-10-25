@@ -45,11 +45,11 @@ class entity extends persistent implements enhanced_persistent {
      * @return array
      */
     public static function define_fields(): array {
-        return array(
+        return [
                 new text('shortname'),
                 new text('idnumber'),
                 new number('sortorder'),
-        );
+        ];
     }
 
     /**
@@ -78,7 +78,7 @@ class entity extends persistent implements enhanced_persistent {
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
 
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $dbman->create_table($table);
     }
 

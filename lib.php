@@ -38,7 +38,7 @@
  */
 function local_cltools_pluginfile(?object $course, ?object $cm, context $context, string $filearea, array $args,
     bool $forcedownload,
-    array $options = array()) {
+    array $options = []) {
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     // TODO: add new type of context - one per entity. See custom context in $CFG->custom_context_classes.
     if ($context->contextlevel != CONTEXT_SYSTEM) {

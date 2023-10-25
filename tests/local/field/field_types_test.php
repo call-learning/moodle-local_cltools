@@ -71,78 +71,78 @@ class field_types_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function expected_types_values() {
+    public static function expected_types_values(): array {
         return [
             'boolean' => [
                 'field' => new boolean('fieldname'),
                 'expectations' => [
                     'format' => [
                         [true, 'true'],
-                        [false, 'false']
+                        [false, 'false'],
                     ],
                     'type' => PARAM_BOOL,
                     'isvalid' => [
                         [true, true], [false, false], ['true', true], ['15', false], ['Truer', false],
-                    ]
-                ]
+                    ],
+                ],
             ],
             'date' => [
                 'field' => new date('fieldname'),
                 'expectations' => [
                     'format' => [
                         [1633229569, '3/10/21'],
-                        [1633229500, '3/10/21']
+                        [1633229500, '3/10/21'],
                     ],
                     'type' => PARAM_INT,
                     'isvalid' => [
                         ['3/10/21', true], ['AAAA3/10/21', false],
-                    ]
-                ]
+                    ],
+                ],
             ],
             'datetime' => [
                 'field' => new datetime('fieldname'),
                 'expectations' => [
                     'format' => [
                         [1633229569, '3/10/21, 10:52'],
-                        [1633229500, '3/10/21, 10:51']
+                        [1633229500, '3/10/21, 10:51'],
                     ],
                     'type' => PARAM_INT,
                     'isvalid' => [
                         ['3/10/21, 10:51', true], ['AAAA3/10/21', false],
-                    ]
-                ]
+                    ],
+                ],
             ],
             'editor' => [
                 'field' => new editor('fieldname'),
                 'expectations' => [
                     'format' => [
-                        ['<p>Test</p>', '<p>Test</p>']
+                        ['<p>Test</p>', '<p>Test</p>'],
                     ],
                     'type' => PARAM_RAW,
                     'isvalid' => [
                         ['ABCDEF', true],
-                    ]
-                ]
+                    ],
+                ],
             ],
             'entity_selector' => [
                 'field' => new entity_selector([
                         'fieldname' => 'fieldname',
                         'entityclass' => entity::class,
-                        'displayfield' => 'shortname']
+                        'displayfield' => 'shortname', ]
                 ),
                 'expectations' => [
                     'format' => [],
                     'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'files' => [
                 'field' => new files('fieldname'),
                 'expectations' => [
                     'format' => [],
                     'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'hidden' => [
                 'field' => new hidden('fieldname'),
@@ -151,8 +151,8 @@ class field_types_test extends advanced_testcase {
                         ['ABCDE', 'ABCDE'],
                     ],
                     'type' => PARAM_RAW,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'html' => [
                 'field' => new html('fieldname'),
@@ -160,19 +160,19 @@ class field_types_test extends advanced_testcase {
                     'format' => [
                     ],
                     'type' => PARAM_RAW,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'number float' => [
                 'field' => new number('fieldname', true),
                 'expectations' => [
                     'format' => [
                         [1, '1'],
-                        [1.1, '1.1']
+                        [1.1, '1.1'],
                     ],
                     'type' => PARAM_FLOAT,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'number' => [
                 'field' => new number('fieldname'),
@@ -181,8 +181,8 @@ class field_types_test extends advanced_testcase {
                         [1, '1'],
                     ],
                     'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'select_choice' => [
                 'field' => new select_choice(
@@ -191,23 +191,23 @@ class field_types_test extends advanced_testcase {
                 'expectations' => [
                     'format' => [
                         [1, 'choice1'],
-                        [2, 'choice2']
+                        [2, 'choice2'],
                     ],
                     'type' => PARAM_INT,
-                    'isvalid' => []
-                ]
+                    'isvalid' => [],
+                ],
             ],
             'text' => [
                 'field' => new text('fieldname'),
                 'expectations' => [
                     'format' => [
                         ['ABCDE', 'ABCDE'],
-                        ['<p>ABCDE</p>', "ABCDE\n"]
+                        ['<p>ABCDE</p>', "ABCDE\n"],
                     ],
                     'type' => PARAM_TEXT,
-                    'isvalid' => []
-                ]
-            ]
+                    'isvalid' => [],
+                ],
+            ],
 
         ];
     }

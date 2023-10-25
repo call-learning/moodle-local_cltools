@@ -52,8 +52,8 @@ class table extends entity_table {
                 [
                         'url' => 'edit.php',
                         'icon' => 't/edit',
-                        'name' => 'edit'
-                ]
+                        'name' => 'edit',
+                ],
         ];
         parent::__construct($uniqueid, $actionsdefs, $editable);
     }

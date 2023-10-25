@@ -116,7 +116,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         if ($this->actionsdefs) {
             $this->fields[] = new blank_field([
                     'fieldname' => 'actions',
-                    'fullname' => get_string('actions', 'local_cltools')
+                    'fullname' => get_string('actions', 'local_cltools'),
             ]);
         }
         $hasidfield = false;
@@ -163,7 +163,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
             foreach ($filterset->get_required_filters() as $filtername => $filterclass) {
                 $filter = [
                         'required' => true,
-                        'filterclass' => $filterclass
+                        'filterclass' => $filterclass,
                 ];
                 if (!empty($aliases[$filtername])) {
                     $filter['alias'] = $aliases[$filtername];
@@ -173,7 +173,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
             foreach ($filterset->get_optional_filters() as $filtername => $filterdef) {
                 $filter = [
                         'optional' => true,
-                        'filterclass' => $filterclass
+                        'filterclass' => $filterclass,
                 ];
                 if (!empty($aliases[$filtername])) {
                     $filter['alias'] = $aliases[$filtername];
@@ -183,7 +183,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
             foreach ($filterset->get_optional_filters() as $filtername => $filterdef) {
                 $this->filterset->add_filter_definition($filtername, (object) [
                         'optional' => true,
-                        'filterclass' => $filterclass
+                        'filterclass' => $filterclass,
                 ]);
             }
             foreach ($filterset->get_filters() as $filter) {
@@ -373,7 +373,7 @@ abstract class dynamic_table_sql implements dynamic_table_interface {
         }
 
         if (empty($this->sortdata)) {
-            return array();
+            return [];
         }
         foreach ($this->sortdata as $sortcolumn => $sortorder) {
             if (!empty($this->fieldaliases[$sortcolumn])) {

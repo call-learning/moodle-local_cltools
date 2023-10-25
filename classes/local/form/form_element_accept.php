@@ -127,15 +127,15 @@ trait form_element_accept {
                     $elementcontext['wrapperid'] = 'fitem_' . $elementcontext['id'];
                 }
 
-                $context = array(
+                $context = [
                         'element' => $elementcontext,
                         'label' => $label,
                         'text' => $text,
                         'required' => $required,
                         'advanced' => $advanced,
                         'helpbutton' => $helpbutton,
-                        'error' => $error
-                );
+                        'error' => $error,
+                ];
                 return $localrenderer->render_from_template($templatename, $context);
             }
         } catch (Exception $e) {

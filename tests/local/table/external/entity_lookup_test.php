@@ -55,7 +55,7 @@ class entity_lookup_test extends advanced_testcase {
                         'shortname' => 'Shortname 2',
                         'idnumber' => 'Idnumber 2',
                         'sortorder' => 0,
-                ]
+                ],
         ];
         foreach ($entitiesdata as $entityrecord) {
             $entity = new entity(0, $entityrecord);
@@ -132,7 +132,7 @@ class entity_lookup_test extends advanced_testcase {
                         [
                                 'id' => 0,
                                 'value' => 'Not available',
-                        ]
+                        ],
                 ],
                 $warningmessage[0]
         );

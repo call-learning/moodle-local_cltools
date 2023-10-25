@@ -49,7 +49,7 @@ class entity_utils {
     /**
      * Properties that are usually reserved
      */
-    const RESERVED_PROPERTIES = array('id', 'timecreated', 'timemodified', 'usermodified');
+    const RESERVED_PROPERTIES = ['id', 'timecreated', 'timemodified', 'usermodified'];
     /**
      * Default plugin component name
      */
@@ -145,10 +145,10 @@ class entity_utils {
      */
     public static function external_get_filter_generic_parameters() {
         return new external_function_parameters(
-                array(
+                [
                         'filters' => new external_multiple_structure (
                                 new external_single_structure(
-                                        array(
+                                        [
                                                 'type' => new external_value(PARAM_ALPHANUM,
                                                         'Type of filter'),
                                                 'shortname' => new external_value(PARAM_ALPHANUM,
@@ -156,8 +156,8 @@ class entity_utils {
                                                         VALUE_OPTIONAL),
                                                 'operator' => new external_value(PARAM_INT,
                                                         'This will be EQUAL, CONTAINS, NOTEQUAL...'),
-                                                'value' => new external_value(PARAM_RAW, 'The value of the filter to look for.')
-                                        )
+                                                'value' => new external_value(PARAM_RAW, 'The value of the filter to look for.'),
+                                        ]
                                 ),
                                 'Filter the results',
                                 VALUE_OPTIONAL
@@ -166,18 +166,18 @@ class entity_utils {
                         'offset' => new external_value(PARAM_INT, 'Result set offset', VALUE_DEFAULT, 0),
                         'sorting' => new external_multiple_structure(
                                 new external_single_structure(
-                                        array(
+                                        [
                                                 'column' => new external_value(PARAM_ALPHANUM,
                                                         'Column name for the sorting'),
                                                 'order' => new external_value(PARAM_ALPHA,
                                                         'ASC for ascending, DESC for descending, ascending by default'
                                                 ),
-                                        )
+                                        ]
                                 ),
                                 'Sort the results',
                                 VALUE_OPTIONAL
                         ),
-                )
+                ]
         );
     }
 

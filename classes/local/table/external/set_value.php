@@ -79,7 +79,7 @@ class set_value extends external_api {
         $instance = helper::get_table_handler_instance($handler, $handlerparams, $uniqueid, true);
         $context = helper::get_current_context();
         $success = false;
-        $warnings = array();
+        $warnings = [];
         self::validate_context($context);
         if ($instance::validate_access($context, true)) {
             try {
@@ -90,7 +90,7 @@ class set_value extends external_api {
                     'item' => $field,
                     'itemid' => $id,
                     'warningcode' => 'setvalueerror',
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ];
             }
         } else {
@@ -98,12 +98,12 @@ class set_value extends external_api {
                 'item' => $field,
                 'itemid' => $id,
                 'warningcode' => 'setvalueerror',
-                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools')
+                'message' => get_string('cltools:dynamictablewrite:message', 'local_cltools'),
             ];
         }
         return [
                 'success' => $success,
-                'warnings' => $warnings
+                'warnings' => $warnings,
         ];
     }
 
@@ -149,10 +149,10 @@ class set_value extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure(
-                array(
+                [
                         'success' => new external_value(PARAM_BOOL, 'True if the value was updated, false otherwise.'),
-                        'warnings' => new external_warnings()
-                )
+                        'warnings' => new external_warnings(),
+                ]
         );
     }
 }

@@ -73,7 +73,7 @@ class base_test extends base_crud_test_helper {
                 'sortorder' => 0,
                 'othersimpleid' => 0,
                 'scaleid' => 0,
-                'parentid' => 0
+                'parentid' => 0,
             ],
             (object) [
                 'shortname' => 'Shortname 2',
@@ -83,8 +83,8 @@ class base_test extends base_crud_test_helper {
                 'sortorder' => 0,
                 'othersimpleid' => 0,
                 'scaleid' => 0,
-                'parentid' => 0
-            ]
+                'parentid' => 0,
+            ],
         ];
         foreach ($entitiesdata as $entityrecord) {
             $entity = new entity(0, $entityrecord);
@@ -173,7 +173,7 @@ class base_test extends base_crud_test_helper {
                 'sortorder' => 0,
                 'othersimpleid' => 0,
                 'scaleid' => 0,
-                'parentid' => 0
+                'parentid' => 0,
         ]);
         $existingentity->create();
         $crudmgmt = base::create(entity::class, $action);
@@ -210,7 +210,7 @@ class base_test extends base_crud_test_helper {
      *
      * @return array[]
      */
-    public function action_data_provider() {
+    public static function action_data_provider(): array {
         return [
                 'add' => [
                         'action' => crud_add::ACTION,
@@ -218,7 +218,7 @@ class base_test extends base_crud_test_helper {
                                 'title' => 'Add Simple entity',
                                 'header' => 'Add Simple entity',
                                 'eventdescription' => 'Add Simple entity',
-                                'eventclass' => 'local_cltools\\event\\simple_added'
+                                'eventclass' => 'local_cltools\\event\\simple_added',
                         ],
                         'formdata' => [
                                 'shortname' => 'Entity Test Added',
@@ -227,7 +227,7 @@ class base_test extends base_crud_test_helper {
                                 'descriptionformat' => FORMAT_HTML,
                                 'parentid' => "",
                                 'otherentityid' => "",
-                                'scaleid' => ""
+                                'scaleid' => "",
                         ],
                 ],
                 'delete' => [
@@ -236,7 +236,7 @@ class base_test extends base_crud_test_helper {
                                 'title' => 'Delete Simple entity',
                                 'header' => 'Delete Simple entity',
                                 'eventdescription' => 'Delete Simple entity',
-                                'eventclass' => 'local_cltools\\event\\crud_event_deleted'
+                                'eventclass' => 'local_cltools\\event\\crud_event_deleted',
                         ],
                 ],
                 'edit' => [
@@ -245,7 +245,7 @@ class base_test extends base_crud_test_helper {
                                 'title' => 'Edit Simple entity',
                                 'header' => 'Edit Simple entity',
                                 'eventdescription' => 'Edit Simple entity',
-                                'eventclass' => 'local_cltools\\event\\simple_edited'
+                                'eventclass' => 'local_cltools\\event\\simple_edited',
                         ],
                         'formdata' => [
                                 'shortname' => 'Entity Test Modified',
@@ -254,8 +254,8 @@ class base_test extends base_crud_test_helper {
                                 'descriptionformat' => FORMAT_HTML,
                                 'parentid' => "",
                                 'otherentityid' => "",
-                                'scaleid' => ""
-                        ]
+                                'scaleid' => "",
+                        ],
                 ],
                 'list' => [
                         'action' => crud_list::ACTION,
@@ -263,9 +263,9 @@ class base_test extends base_crud_test_helper {
                                 'title' => 'List Simple entity',
                                 'header' => 'List Simple entity',
                                 'eventdescription' => 'List Simple entity',
-                                'eventclass' => ''
-                        ]
-                ]
+                                'eventclass' => '',
+                        ],
+                ],
         ];
     }
 }

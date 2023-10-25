@@ -88,6 +88,7 @@ class behat_local_cltools extends behat_base {
                     <<<XPATH
     .//div[contains(@class,'tabulator-row') and contains(normalize-space(.),%locator%)]
 XPATH
+,
                 ]
             ),
         ];
