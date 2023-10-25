@@ -222,7 +222,7 @@ class field_types_test extends advanced_testcase {
      */
     public function test_format_string($field, $expectations) {
         $this->resetAfterTest();
-
+        $this->setTimezone('Australia/Perth');
         foreach ($expectations['format'] as $expectation) {
             $entity = $this->create_mock_entity($field, $expectation[0]);
             $this->assertEquals($expectation[1], $field->format_value($entity, null),

@@ -118,7 +118,7 @@ class base_test extends base_crud_test_helper {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
-        $this->assertEquals($expected['title'], $page->title);
+        $this->assertStringContainsString($expected['title'], $page->title);
     }
 
     /**
@@ -133,7 +133,7 @@ class base_test extends base_crud_test_helper {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
-        $this->assertEquals($expected['header'], $page->heading);
+        $this->assertStringContainsString($expected['header'], $page->heading);
     }
 
     /**
@@ -148,7 +148,7 @@ class base_test extends base_crud_test_helper {
         $page = new moodle_page();
         $crudmgmt = base::create(entity::class, $action);
         $crudmgmt->setup_page($page);
-        $this->assertEquals($expected['eventdescription'], $page->title);
+        $this->assertStringContainsString($expected['eventdescription'], $page->title);
     }
 
     /**

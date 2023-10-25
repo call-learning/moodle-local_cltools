@@ -188,7 +188,7 @@ abstract class base {
      */
     public function instanciate_related_exporter(persistent $entity): entity_exporter {
         $reflectionclass = $this->get_related_class('exporter');
-        if (!class_exists($reflectionclass)) {
+        if (empty($reflectionclass) || !class_exists($reflectionclass)) {
             $exporterentity = generic_entity_exporter_generator::generate($entity);
         } else {
             $exporterentity = $reflectionclass->newInstance($entity);
